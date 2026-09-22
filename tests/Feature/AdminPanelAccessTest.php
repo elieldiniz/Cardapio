@@ -2,13 +2,13 @@
 
 use App\Models\User;
 
-it('does not let a dono user access the admin panel', function () {
+test('a dono user cannot access the admin panel', function () {
     $dono = User::factory()->create();
 
     $this->actingAs($dono)->get('/admin')->assertForbidden();
 });
 
-it('lets a super admin user access the admin panel', function () {
+test('a super admin user can access the admin panel', function () {
     $admin = User::factory()->superAdmin()->create();
 
     $this->actingAs($admin)->get('/admin')->assertOk();
