@@ -4,9 +4,13 @@ namespace App\Providers;
 
 use App\Contracts\MuxClient;
 use App\Contracts\VideoGenerationProvider;
+use App\Models\Restaurant;
+use App\Models\Subscription;
+use App\Models\SubscriptionItem;
 use App\Services\Ai\VideoGenerationProviderResolver;
 use App\Services\Mux\MuxApiClient;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // The billable is Restaurant, not the default Cashier User.
+        Cashier::useCustomerModel(Restaurant::class);
+        Cashier::useSubscriptionModel(Subscription::class);
+        Cashier::useSubscriptionItemModel(SubscriptionItem::class);
     }
 }

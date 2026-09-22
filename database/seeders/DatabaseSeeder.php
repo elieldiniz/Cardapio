@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             DiscountTypeSeeder::class,
             BadgeSeeder::class,
             AdminActionSeeder::class,
+            PlanSeeder::class,
         ]);
 
         // User::factory(10)->create();
