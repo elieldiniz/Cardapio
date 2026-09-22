@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Restaurant;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +27,11 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'restaurant_id' => Restaurant::factory(),
+            'role_id' => Role::query()->firstOrCreate(
+                ['slug' => 'dono'],
+                ['name' => 'Dono']
+            )->id,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -40,6 +47,20 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a platform super admin, with no owning restaurant.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'restaurant_id' => null,
+            'role_id' => Role::query()->firstOrCreate(
+                ['slug' => 'super_admin'],
+                ['name' => 'Super Admin']
+            )->id,
         ]);
     }
 }
