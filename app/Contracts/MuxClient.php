@@ -19,6 +19,11 @@ interface MuxClient
     public function createDirectUpload(array $options = []): array;
 
     /**
+     * Permanently delete an asset, e.g. content removed by moderation.
+     */
+    public function deleteAsset(string $assetId): void;
+
+    /**
      * Verify a Mux webhook signature header against the raw request payload.
      */
     public function verifyWebhookSignature(string $payload, string $signatureHeader): bool;

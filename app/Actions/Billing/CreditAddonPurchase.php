@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\DB;
  */
 class CreditAddonPurchase
 {
-    public function handle(Restaurant $restaurant, VideoAddonPackage $package, string $checkoutSessionId): void
+    public function handle(Restaurant $restaurant, VideoAddonPackage $package, string $checkoutSessionId, ?int $amountCents = null): void
     {
-        DB::transaction(function () use ($restaurant, $package, $checkoutSessionId) {
+        DB::transaction(function () use ($restaurant, $package, $checkoutSessionId, $amountCents) {
             $reference = "stripe_checkout:{$checkoutSessionId}";
 
             if (GenerationLedger::query()->where('restaurant_id', $restaurant->id)->where('reference', $reference)->exists()) {
@@ -31,6 +31,7 @@ class CreditAddonPurchase
                 'restaurant_id' => $restaurant->id,
                 'type_id' => GenerationLedgerType::idFor('compra'),
                 'quantity' => $package->generations_count,
+                'amount_cents' => $amountCents ?? $package->price_cents,
                 'reference' => $reference,
             ]);
         });

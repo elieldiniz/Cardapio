@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['restaurant_id', 'type_id', 'quantity', 'reference'])]
+#[Fillable(['restaurant_id', 'type_id', 'quantity', 'amount_cents', 'reference'])]
 class GenerationLedger extends Model
 {
     protected $table = 'generation_ledger';

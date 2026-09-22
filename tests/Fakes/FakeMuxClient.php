@@ -31,6 +31,14 @@ class FakeMuxClient implements MuxClient
         return ['id' => $id, 'url' => "https://storage.mux.test/{$id}", 'status' => 'waiting'];
     }
 
+    /** @var array<int, string> */
+    public array $deleted = [];
+
+    public function deleteAsset(string $assetId): void
+    {
+        $this->deleted[] = $assetId;
+    }
+
     public function verifyWebhookSignature(string $payload, string $signatureHeader): bool
     {
         return $signatureHeader === 'valid-signature';

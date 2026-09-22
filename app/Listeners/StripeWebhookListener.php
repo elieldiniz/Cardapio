@@ -125,7 +125,7 @@ class StripeWebhookListener
         $package = VideoAddonPackage::find($session['metadata']['addon_package_id'] ?? null);
 
         if ($restaurant !== null && $package !== null) {
-            $this->creditAddonPurchase->handle($restaurant, $package, (string) $session['id']);
+            $this->creditAddonPurchase->handle($restaurant, $package, (string) $session['id'], isset($session['amount_total']) ? (int) $session['amount_total'] : null);
         }
     }
 

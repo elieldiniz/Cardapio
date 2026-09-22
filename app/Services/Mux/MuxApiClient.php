@@ -47,6 +47,16 @@ class MuxApiClient implements MuxClient
         return $response->json('data') ?? [];
     }
 
+    public function deleteAsset(string $assetId): void
+    {
+        $response = $this->client()->delete('/video/v1/assets/'.rawurlencode($assetId));
+
+        // Already gone is fine; anything else is a real failure.
+        if ($response->status() !== 404) {
+            $response->throw();
+        }
+    }
+
     public function verifyWebhookSignature(string $payload, string $signatureHeader): bool
     {
         if ($this->webhookSecret === '') {
