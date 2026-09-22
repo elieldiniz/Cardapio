@@ -13,6 +13,8 @@ const PRELOAD_AHEAD = 2;
 const UNLOAD_DISTANCE = 3;
 const SHEET_CLOSE_THRESHOLD = 140;
 const HINT_KEY = 'feed-hint-seen';
+const SESSION_KEY = 'feed-session';
+const FLUSH_INTERVAL_MS = 15000;
 
 const root = document.querySelector('[data-feed]');
 
@@ -403,6 +405,10 @@ function initFeed(root) {
         }));
     }
 
+    // ---- Watch-time tracking (US-1.4 / US-6.3): batched, one report per dish ----
+
+    initTracking(root);
+
     // ---- Boot ----
 
     observeAll();
@@ -427,5 +433,96 @@ function storageSet(key, value) {
         window.localStorage.setItem(key, value);
     } catch {
         // Private mode / storage disabled — the hint simply shows again.
+    }
+}
+
+/**
+ * Accumulates the seconds each dish's video actually played and reports them
+ * in batches — never one request per second. The server folds every report
+ * into one row per (dish, session, day).
+ */
+function initTracking(root) {
+    const url = root.dataset.trackUrl;
+
+    if (!url) {
+        return;
+    }
+
+    const sessionToken = sessionTokenFor();
+    const pending = new Map();
+    let current = null;
+    let lastTime = null;
+
+    const record = (dishId, seconds) => {
+        if (!dishId) {
+            return;
+        }
+
+        pending.set(dishId, (pending.get(dishId) ?? 0) + seconds);
+    };
+
+    root.addEventListener('feed:active-dish', (event) => {
+        const video = event.detail.dish.querySelector('video');
+
+        current = { dishId: event.detail.dishId, video };
+        lastTime = null;
+        record(current.dishId, 0);
+    });
+
+    // timeupdate deltas count only real playback; a loop restart yields a negative delta and is skipped.
+    root.addEventListener(
+        'timeupdate',
+        (event) => {
+            if (!current || event.target !== current.video) {
+                return;
+            }
+
+            const time = event.target.currentTime;
+
+            if (lastTime !== null) {
+                const delta = time - lastTime;
+
+                if (delta > 0 && delta < 2) {
+                    record(current.dishId, delta);
+                }
+            }
+
+            lastTime = time;
+        },
+        true,
+    );
+
+    const flush = () => {
+        if (pending.size === 0) {
+            return;
+        }
+
+        const views = Array.from(pending, ([dishId, seconds]) => ({ dish_id: Number(dishId), seconds: Math.round(seconds * 10) / 10 }));
+        pending.clear();
+
+        const body = JSON.stringify({ session_token: sessionToken, views });
+
+        if (!(navigator.sendBeacon && navigator.sendBeacon(url, body))) {
+            fetch(url, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+        }
+    };
+
+    setInterval(flush, FLUSH_INTERVAL_MS);
+    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flush());
+    window.addEventListener('pagehide', flush);
+}
+
+function sessionTokenFor() {
+    try {
+        let token = window.sessionStorage.getItem(SESSION_KEY);
+
+        if (!token) {
+            token = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+            window.sessionStorage.setItem(SESSION_KEY, token);
+        }
+
+        return token;
+    } catch {
+        return String(Date.now()) + Math.random().toString(16).slice(2);
     }
 }

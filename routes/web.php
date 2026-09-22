@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Feed\DishViewController;
+use App\Http\Controllers\Feed\FeedController;
 use App\Http\Controllers\Webhooks\MuxWebhookController;
 use App\Support\Dev\FeedPreview;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,20 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/sair', LogoutController::class)->middleware('auth')->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Feed público do cliente (US-1.1–US-1.4) — sem login
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('r/{restaurant:slug}')->name('feed.')->group(function () {
+    Route::get('/', [FeedController::class, 'show'])->name('show');
+    Route::get('/categorias/{category}', [FeedController::class, 'category'])->name('category');
+    Route::post('/visualizacoes', [DishViewController::class, 'store'])
+        ->middleware('throttle:120,1')
+        ->name('views');
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -3,10 +3,13 @@
 use App\Contracts\MuxClient;
 use App\Models\AiPreset;
 use App\Models\AiProvider;
+use App\Models\Category;
 use App\Models\Dish;
 use App\Models\DishPhoto;
 use App\Models\GenerationBalance;
+use App\Models\Restaurant;
 use App\Models\User;
+use App\Models\Video;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -116,4 +119,21 @@ function ownerWithDish(int $photos = 1, int $monthly = 0, int $addon = 5): array
     DishPhoto::factory()->count($photos)->sequence(fn ($sequence) => ['display_order' => $sequence->index])->create(['dish_id' => $dish->id]);
 
     return [$dono, $dish->fresh()];
+}
+
+/**
+ * A feed-eligible dish: approved active video, visible category.
+ */
+function feedDish(Restaurant $restaurant, array $attributes = [], ?Category $category = null): Dish
+{
+    $category ??= Category::factory()->create(['restaurant_id' => $restaurant->id]);
+    $dish = Dish::factory()->create(array_merge([
+        'restaurant_id' => $restaurant->id,
+        'category_id' => $category->id,
+    ], $attributes));
+
+    $video = Video::factory()->approved()->create(['dish_id' => $dish->id]);
+    $dish->update(['active_video_id' => $video->id]);
+
+    return $dish->fresh(['activeVideo']);
 }

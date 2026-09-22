@@ -27,9 +27,6 @@
         @if ($first['cover_url'])
             <link rel="preload" as="image" href="{{ $first['cover_url'] }}" fetchpriority="high">
         @endif
-        @if ($first['video_url'])
-            <link rel="preload" as="video" href="{{ $first['video_url'] }}" type="video/mp4">
-        @endif
     @endif
 
     @fonts
