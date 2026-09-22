@@ -3,9 +3,13 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Feed\DishViewController;
 use App\Http\Controllers\Feed\FeedController;
+use App\Http\Controllers\Panel\AppearancePreviewController;
 use App\Http\Controllers\Webhooks\MuxWebhookController;
-use App\Support\Dev\FeedPreview;
+use App\Support\FeedSample;
+use App\Support\QrCode;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 Route::get('/', function () {
     return view('welcome');
@@ -58,6 +62,15 @@ Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('pa
     Route::livewire('/pratos/{dish}/editar', 'pages::panel.dish-form')->name('dishes.edit');
     Route::livewire('/pratos/{dish}/video', 'pages::panel.dish-video')->name('dishes.video');
     Route::livewire('/assinatura', 'pages::panel.subscription')->name('subscription');
+    Route::livewire('/aparencia', 'pages::panel.appearance')->name('appearance');
+    Route::get('/aparencia/previa', AppearancePreviewController::class)->name('appearance.preview');
+    Route::livewire('/qr-code', 'pages::panel.qr-code')->name('qr-code');
+    Route::get('/qr-code/imprimir', fn (Request $request) => view('panel.qr-print', [
+        'restaurant' => $request->user()->restaurant,
+        'svg' => QrCode::svg($request->user()->restaurant->feedUrl()),
+        'table' => Str::limit((string) $request->query('mesa'), 10, ''),
+    ]))->name('qr-code.print');
+    Route::livewire('/visualizacoes', 'pages::panel.views')->name('views');
 });
 
 /*
@@ -76,8 +89,8 @@ Route::post('/webhooks/mux', MuxWebhookController::class)->name('webhooks.mux');
 
 if (app()->environment(['local', 'testing'])) {
     Route::view('/dev/components', 'dev.components')->name('dev.components');
-    Route::get('/dev/feed', fn () => view('feed.show', FeedPreview::page()))->name('dev.feed');
+    Route::get('/dev/feed', fn () => view('feed.show', FeedSample::page()))->name('dev.feed');
     Route::get('/dev/feed/categorias/{category}', fn (string $category) => [
-        'dishes' => FeedPreview::dishes($category),
+        'dishes' => FeedSample::dishes($category),
     ])->name('dev.feed.category');
 }

@@ -405,6 +405,36 @@ function initFeed(root) {
         }));
     }
 
+    // ---- Appearance live preview (US-6.1): the panel posts unsaved values ----
+
+    if (root.hasAttribute('data-preview')) {
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin || event.data?.type !== 'appearance') {
+                return;
+            }
+
+            const { accent, font, logoUrl } = event.data;
+            const style = document.documentElement.style;
+
+            if (accent) {
+                style.setProperty('--accent', accent);
+            }
+
+            if (font) {
+                style.setProperty('--feed-display-font', `'${font}'`);
+            }
+
+            const logo = root.querySelector('[data-brand-logo]');
+            const initial = root.querySelector('[data-brand-initial]');
+
+            if (logo && logoUrl) {
+                logo.src = logoUrl;
+                logo.hidden = false;
+                initial.hidden = true;
+            }
+        });
+    }
+
     // ---- Watch-time tracking (US-1.4 / US-6.3): batched, one report per dish ----
 
     initTracking(root);

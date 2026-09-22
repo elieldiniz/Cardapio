@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Support\Dev;
+namespace App\Support;
 
 use App\Models\Restaurant;
 
 /**
- * Sample cardápio from the "Cardápio Fumaça - Feed" mockup, used only by the
- * dev feed preview route to exercise the feed shell without real data.
+ * Sample cardápio from the "Cardápio Fumaça - Feed" mockup. Used by the dev
+ * feed preview and by the appearance preview while a restaurant has no
+ * published dish yet.
  */
-class FeedPreview
+class FeedSample
 {
     /**
      * @return array<string, array{name: string, dishes: array<int, array<string, mixed>>}>

@@ -22,6 +22,15 @@ class Restaurant extends Model
      */
     public const DEFAULT_ACCENT_COLOR = '#FF6B3D';
 
+    /**
+     * The public feed URL encoded in the table QR code. It only depends on the
+     * slug, so it stays valid across any content or appearance edit (US-6.2).
+     */
+    public function feedUrl(): string
+    {
+        return route('feed.show', $this);
+    }
+
     public function accentColor(): string
     {
         return $this->accent_color ?: self::DEFAULT_ACCENT_COLOR;

@@ -8,12 +8,16 @@
       $activeCategoryId int|null
       $dishes           array<FeedDish>  dishes of the active category, first one embedded for first paint
       $trackUrl         string|null      watch-time endpoint (Phase 14.3)
+      $preview          bool             appearance live preview inside the panel (Phase 16)
 --}}
 @php
     $first = $dishes[0] ?? null;
+    $preview ??= false;
+    $fonts = config('feed.fonts');
+    $font = array_key_exists($restaurant['font'] ?? '', $fonts) ? $restaurant['font'] : config('feed.default_font');
 @endphp
 <!DOCTYPE html>
-<html lang="pt-BR" style="--accent: {{ $restaurant['accent'] }};@if ($restaurant['font'] ?? null) --feed-font: {{ $restaurant['font'] }};@endif">
+<html lang="pt-BR" style="--accent: {{ $restaurant['accent'] }}; --feed-display-font: '{{ $font }}';">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -29,6 +33,16 @@
         @endif
     @endif
 
+    @if ($preview)
+        {{-- Every selectable font, so the live preview can switch instantly. --}}
+        @foreach (array_filter($fonts) as $bunnyFamily)
+            <link rel="stylesheet" href="https://fonts.bunny.net/css?family={{ $bunnyFamily }}&display=swap">
+        @endforeach
+    @elseif ($fonts[$font] ?? null)
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="stylesheet" href="https://fonts.bunny.net/css?family={{ $fonts[$font] }}&display=swap">
+    @endif
+
     @fonts
     @vite(['resources/css/feed.css', 'resources/js/feed.js'])
 </head>
@@ -36,17 +50,18 @@
     <div
         class="feed-app"
         data-feed
-        data-sw-url="{{ asset('feed-sw.js') }}"
-        data-sw-scope="{{ url('/r').'/' }}"
-        @if ($trackUrl ?? null) data-track-url="{{ $trackUrl }}" @endif
+        @if ($preview)
+            data-preview
+        @else
+            data-sw-url="{{ asset('feed-sw.js') }}"
+            data-sw-scope="{{ url('/r').'/' }}"
+            @if ($trackUrl ?? null) data-track-url="{{ $trackUrl }}" @endif
+        @endif
     >
         <header class="feed-header">
             <div class="feed-brand">
-                @if ($restaurant['logo_url'])
-                    <img class="feed-brand__logo" src="{{ $restaurant['logo_url'] }}" alt="" width="34" height="34">
-                @else
-                    <span class="feed-brand__logo feed-brand__logo--initial">{{ mb_substr($restaurant['name'], 0, 1) }}</span>
-                @endif
+                <img class="feed-brand__logo" data-brand-logo src="{{ $restaurant['logo_url'] }}" alt="" width="34" height="34" @unless ($restaurant['logo_url']) hidden @endunless>
+                <span class="feed-brand__logo feed-brand__logo--initial" data-brand-initial @if ($restaurant['logo_url']) hidden @endif>{{ mb_substr($restaurant['name'], 0, 1) }}</span>
                 <span class="feed-brand__name">{{ $restaurant['name'] }}</span>
             </div>
 

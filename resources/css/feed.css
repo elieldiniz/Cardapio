@@ -4,7 +4,7 @@
  */
 :root {
     --accent: #ff6b3d;
-    --feed-font: 'DM Sans';
+    --feed-display-font: 'DM Serif Display';
     --bg: #101010;
     --sheet-bg: #161412;
     --sold-out: rgba(130, 32, 22, 0.9);
@@ -16,13 +16,17 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 html,
 body {
     margin: 0;
     height: 100%;
     background: #000;
     color: #fff;
-    font-family: var(--feed-font), 'DM Sans', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
 }
@@ -131,7 +135,7 @@ button {
 
 .dish__name {
     margin: 0;
-    font: 400 22px/1.15 'DM Serif Display', serif;
+    font: 400 22px/1.15 var(--feed-display-font), 'DM Serif Display', serif;
 }
 
 .dish__price {
@@ -210,11 +214,11 @@ button {
     align-items: center;
     justify-content: center;
     background: var(--accent);
-    font: 400 17px 'DM Serif Display', serif;
+    font: 400 17px var(--feed-display-font), 'DM Serif Display', serif;
 }
 
 .feed-brand__name {
-    font: 400 18px 'DM Serif Display', serif;
+    font: 400 18px var(--feed-display-font), 'DM Serif Display', serif;
 }
 
 .feed-categories {
@@ -368,7 +372,7 @@ button {
 
 .sheet__name {
     margin: 0;
-    font: 400 26px/1.15 'DM Serif Display', serif;
+    font: 400 26px/1.15 var(--feed-display-font), 'DM Serif Display', serif;
 }
 
 .sheet__price {
