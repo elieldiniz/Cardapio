@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body{margin:0;background:#ECE9E4;font-family:'DM Sans',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  a{color:#FF6B3D}
+  a:hover{color:#E85A2C}
+  ::-webkit-scrollbar{display:none}
+  @keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+  @keyframes tapPulse{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px 20px;box-sizing:border-box">
+  <div style="font:600 12px 'DM Sans',sans-serif;letter-spacing:.02em;color:rgba(20,18,16,0.5);text-align:center">Grade estilo Instagram — toque num prato para abrir o feed em vídeo</div>
+
+  <div style="position:relative;width:390px;height:844px;border-radius:44px;overflow:hidden;background:#0c0c0c;box-shadow:0 30px 60px -20px rgba(0,0,0,0.35),0 0 0 1px rgba(0,0,0,0.06)">
+
+    <sc-if value="{{ isGridView }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;background:#161412;display:flex;flex-direction:column">
+        <div style="position:relative;height:130px;flex:none;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <image-slot id="restaurant-cover" placeholder="Foto de capa do restaurante" style="position:absolute;inset:0"></image-slot>
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(36,31,26,0.5),rgba(15,13,11,0.65))"></div>
+          <image-slot id="restaurant-logo" shape="circle" placeholder="Logo" style="position:relative;width:82px;height:82px;border-radius:50%;box-shadow:0 0 0 3px {{ accent }}"></image-slot>
+        </div>
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:5px">
+          <span style="font:400 20px 'DM Serif Display',serif;color:#fff;line-height:1.2">{{ restaurantName }}</span>
+          <span style="font:400 13px/1.4 'DM Sans',sans-serif;color:rgba(255,255,255,0.6)">Churrascaria & fumeiro contemporâneo. Carnes defumadas 12h na casa.</span>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 18px 10px"></div>
+        <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 18px 14px">
+          <sc-for list="{{ gridFilterTabs }}" as="cat" hint-placeholder-count="4">
+            <button onClick="{{ cat.onClick }}" style="flex:none;border:none;padding:7px 14px;border-radius:999px;font:600 13px 'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;background:{{ cat.pillBg }};color:{{ cat.textColor }}">{{ cat.name }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;gap:14px 10px;padding:0 18px 20px;align-content:flex-start">
+          <sc-for list="{{ gridItems }}" as="item" hint-placeholder-count="9">
+            <div onClick="{{ item.onClick }}" style="position:relative;flex:0 0 calc(50% - 5px);aspect-ratio:4/5;border-radius:10px;overflow:hidden;cursor:pointer">
+              <image-slot id="{{ item.slotId }}" placeholder="{{ item.placeholder }}" style="position:absolute;inset:0"></image-slot>
+              <sc-if value="{{ item.soldOut }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);pointer-events:none"></div>
+              </sc-if>
+              <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 7px 6px;background:linear-gradient(to top,rgba(0,0,0,0.75),rgba(0,0,0,0));pointer-events:none">
+                <span style="font:600 11.5px/1.25 'DM Sans',sans-serif;color:#fff;display:block;max-height:29px;overflow:hidden">{{ item.name }}</span>
+              </div>
+              <sc-if value="{{ item.soldOut }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:6px;top:6px;font:700 9px 'DM Sans',sans-serif;letter-spacing:.03em;text-transform:uppercase;color:#fff;background:rgba(130,32,22,0.9);padding:2px 5px;border-radius:4px;pointer-events:none">Esgotado</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFeedView }}" hint-placeholder-val="{{ false }}">
+    <div ref="{{ setFeedRef }}" style="position:absolute;inset:0;overflow:hidden;background:#101010"
+      onPointerDown="{{ onFeedPointerDown }}" onPointerMove="{{ onFeedPointerMove }}" onPointerUp="{{ onFeedPointerUp }}" onPointerLeave="{{ onFeedPointerCancel }}" onPointerCancel="{{ onFeedPointerCancel }}">
+      <sc-if value="{{ hasPrev }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;transform:translateY({{ prevTranslate }}px);transition:{{ slideTransition }};touch-action:none">
+          <image-slot id="{{ prevSlotId }}" placeholder="{{ prevPlaceholder }}"></image-slot>
+        </div>
+      </sc-if>
+      <div style="position:absolute;inset:0;transform:translateY({{ currentTranslate }}px);transition:{{ slideTransition }};opacity:{{ currentOpacity }};touch-action:none">
+        <image-slot id="{{ currentSlotId }}" placeholder="{{ currentPlaceholder }}"></image-slot>
+        <sc-if value="{{ currentSoldOut }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);pointer-events:none"></div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;transform:translateY({{ nextTranslate }}px);transition:{{ slideTransition }};touch-action:none">
+          <image-slot id="{{ nextSlotId }}" placeholder="{{ nextPlaceholder }}"></image-slot>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="position:absolute;top:0;left:0;right:0;height:170px;background:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0));pointer-events:none;z-index:2"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:280px;background:linear-gradient(to top,rgba(0,0,0,0.78),rgba(0,0,0,0));pointer-events:none;z-index:2"></div>
+
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;opacity:{{ paused }}" data-hint="pause-overlay">
+    </div>
+
+    <div style="position:absolute;top:16px;left:16px;right:16px;z-index:3;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onClick="{{ openGrid }}" style="width:34px;height:34px;border-radius:999px;background:rgba(20,20,20,0.45);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span style="font:400 18px 'DM Serif Display',serif;color:#fff">{{ restaurantName }}</span>
+      </div>
+      <div ref="{{ setTabBarRef }}" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px">
+        <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="4">
+          <button ref="{{ cat.setRef }}" onClick="{{ cat.onClick }}" style="flex:none;border:none;padding:7px 14px;border-radius:999px;font:600 13px 'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;background:{{ cat.pillBg }};color:{{ cat.textColor }}">{{ cat.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="position:absolute;right:14px;bottom:172px;z-index:3;display:flex;flex-direction:column;gap:18px;align-items:center">
+      <div style="position:relative">
+        <button onClick="{{ toggleRating }}" style="width:40px;height:40px;border-radius:999px;background:rgba(20,20,20,0.45);border:1px solid rgba(255,255,255,0.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ starFill }}" stroke="#fff" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span style="font:700 9px 'DM Sans',sans-serif;color:#fff">{{ currentRating }}</span>
+        </button>
+        <sc-if value="{{ ratingOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;right:48px;top:0;background:rgba(20,18,16,0.92);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;white-space:nowrap">
+            <span style="font:600 11px 'DM Sans',sans-serif;color:rgba(255,255,255,0.7)">Avalie este prato</span>
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ starOptions }}" as="star" hint-placeholder-count="5">
+                <button onClick="{{ star.onClick }}" style="background:none;border:none;padding:2px;cursor:pointer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="{{ star.fill }}" stroke="#fff" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <button onClick="{{ toggleMute }}" style="width:40px;height:40px;border-radius:999px;background:rgba(20,20,20,0.45);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <sc-if value="{{ muted }}" hint-placeholder-val="{{ true }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        </sc-if>
+        <sc-if value="{{ mutedOff }}" hint-placeholder-val="{{ false }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 010 7.07"></path><path d="M19.07 4.93a10 10 0 010 14.14"></path></svg>
+        </sc-if>
+      </button>
+      <button onClick="{{ openDetail }}" style="width:40px;height:40px;border-radius:999px;background:rgba(20,20,20,0.45);border:1px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="11"></line><circle cx="12" cy="7.5" r="0.6" fill="#fff" stroke="none"></circle></svg>
+      </button>
+    </div>
+
+    <div style="position:absolute;left:16px;right:78px;bottom:26px;z-index:3;display:flex;flex-direction:column;gap:9px">
+      <sc-if value="{{ hasBadges }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ currentBadges }}" as="badge" hint-placeholder-count="1">
+            <span style="font:700 10.5px 'DM Sans',sans-serif;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:999px;color:#fff;background:{{ badge.bg }}">{{ badge.label }}</span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font:400 22px 'DM Serif Display',serif;color:#fff">{{ currentName }}</span>
+        <span style="font:700 17px 'DM Sans',sans-serif;color:{{ accent }}">{{ currentPrice }}</span>
+      </div>
+      <div style="font:400 14px/1.4 'DM Sans',sans-serif;color:rgba(255,255,255,0.88);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ currentShortDesc }}</div>
+      <button onClick="{{ openDetail }}" style="align-self:flex-start;background:none;border:none;padding:0;font:700 13px 'DM Sans',sans-serif;color:rgba(255,255,255,0.75);text-decoration:underline;cursor:pointer">mais</button>
+    </div>
+
+    <div style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;transition:opacity 300ms ease;opacity:{{ hintOpacity }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="animation:hintBounce 1.3s ease-in-out infinite"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      <span style="font:600 11.5px 'DM Sans',sans-serif;color:rgba(255,255,255,0.85);letter-spacing:.02em">deslize para navegar</span>
+    </div>
+
+    <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:8" onClick="{{ closeDetail }}"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;z-index:9;max-height:70%;background:#161412;border-radius:22px 22px 0 0;padding:14px 22px 30px;box-sizing:border-box;transform:translateY({{ sheetTranslate }}px);transition:{{ sheetTransition }};display:flex;flex-direction:column;gap:14px;overflow-y:auto"
+        onPointerDown="{{ onSheetHandlePointerDown }}" onPointerMove="{{ onSheetPointerMove }}" onPointerUp="{{ onSheetPointerUp }}" onPointerLeave="{{ onSheetPointerCancel }}">
+        <div style="width:40px;height:4px;border-radius:4px;background:rgba(255,255,255,0.25);align-self:center"></div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+          <span style="font:400 26px 'DM Serif Display',serif;color:#fff">{{ currentName }}</span>
+          <span style="font:700 19px 'DM Sans',sans-serif;color:{{ accent }};white-space:nowrap">{{ currentPrice }}</span>
+        </div>
+        <sc-if value="{{ hasBadges }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ currentBadges }}" as="badge" hint-placeholder-count="1">
+              <span style="font:700 10.5px 'DM Sans',sans-serif;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:999px;color:#fff;background:{{ badge.bg }}">{{ badge.label }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="font:400 15px/1.55 'DM Sans',sans-serif;color:rgba(255,255,255,0.85)">{{ currentFullDesc }}</div>
+        <sc-if value="{{ hasVariations }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ currentVariations }}" as="v" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:8px 14px">
+                <span style="font:700 13px 'DM Sans',sans-serif;color:#fff">{{ v.label }}</span>
+                <span style="font:600 12px 'DM Sans',sans-serif;color:rgba(255,255,255,0.7)">{{ v.price }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 480, &quot;height&quot;: 900},
+  &quot;accentColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#FF6B3D&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#FF6B3D&quot;, &quot;#2E9E6B&quot;, &quot;#3E7BFA&quot;, &quot;#D94F8C&quot;]},
+  &quot;restaurantName&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Fumaça&quot;, &quot;tsType&quot;: &quot;string&quot;},
+  &quot;showFirstUseHint&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;}
+}">
+const FEED_H = 844;
+const SNAP_THRESH = 70;
+const TAP_THRESH = 6;
+
+const DISHES = [
+  { id: 'b1', categoryId: 'burgers', categoryName: 'Burgers', name: 'Burger Clássico', price: 'R$ 32,90', shortDesc: 'Pão brioche, blend 180g, queijo cheddar, picles e maionese da casa.', fullDesc: 'Blend de 180g grelhado no ponto, queijo cheddar derretido, picles artesanais e maionese da casa, servido no pão brioche tostado na manteiga. Acompanha batata rústica.', badges: ['Mais pedido'] },
+  { id: 'b2', categoryId: 'burgers', categoryName: 'Burgers', name: 'Burger Fumaça', price: 'R$ 39,90', shortDesc: 'Blend 180g, queijo gouda fumado, cebola caramelizada e bacon crocante.', fullDesc: 'Blend 180g grelhado na brasa, queijo gouda defumado na casa, cebola caramelizada lentamente e bacon crocante, com toque de fumaça em cada camada.', badges: ['Novo'] },
+  { id: 'b3', categoryId: 'burgers', categoryName: 'Burgers', name: 'Burger Duplo', price: 'R$ 44,90', shortDesc: 'Dois blends de 120g, queijo cheddar duplo, molho barbecue da casa.', fullDesc: 'Dois blends de 120g grelhados na brasa, queijo cheddar duplo derretido e molho barbecue da casa, servido no pão australiano. Serve bem duas pessoas.', badges: ['Serve 2'] },
+  { id: 'f1', categoryId: 'fumados', categoryName: 'Fumados', name: 'Costela 12h', price: 'R$ 68,90', shortDesc: 'Costela bovina defumada por 12 horas, finalizada na brasa, molho barbecue.', fullDesc: 'Costela bovina defumada lentamente por 12 horas em fumeiro próprio, finalizada na brasa e servida com molho barbecue da casa e farofa crocante.', badges: ['Mais pedido'] },
+  { id: 'f2', categoryId: 'fumados', categoryName: 'Fumados', name: 'Peito Fumado', price: 'R$ 54,90', shortDesc: 'Peito bovino defumado lentamente, fatiado fino, servido com farofa.', fullDesc: 'Peito bovino defumado por horas até ficar macio e suculento, fatiado fino e servido com farofa crocante e vinagrete da casa.', badges: [], soldOut: true },
+  { id: 'f3', categoryId: 'fumados', categoryName: 'Fumados', name: 'Costelinha de Porco', price: 'R$ 49,90', shortDesc: 'Costelinha suína defumada, glaceada com melado e pimenta.', fullDesc: 'Costelinha suína defumada lentamente e glaceada com melado e pimenta biquinho, finalizada na brasa para caramelizar.', badges: ['Novo'] },
+  { id: 'a1', categoryId: 'acomp', categoryName: 'Acompanhamentos', name: 'Batata Rústica', price: 'R$ 18,90', shortDesc: 'Batatas rústicas assadas com alecrim e páprica.', fullDesc: 'Batatas rústicas assadas no forno a lenha com alecrim fresco, páprica e azeite, finalizadas com flor de sal.', badges: ['Vegetariano'] },
+  { id: 'a2', categoryId: 'acomp', categoryName: 'Acompanhamentos', name: 'Onion Rings', price: 'R$ 21,90', shortDesc: 'Anéis de cebola empanados, crocantes, com molho especial.', fullDesc: 'Anéis de cebola empanados à mão e fritos até ficarem crocantes, servidos com molho especial da casa à base de maionese e páprica.', badges: [] },
+  { id: 'a3', categoryId: 'acomp', categoryName: 'Acompanhamentos', name: 'Purê Defumado', price: 'R$ 19,90', shortDesc: 'Purê de batata com toque de fumaça e manteiga.', fullDesc: 'Purê de batata cremoso, finalizado com manteiga defumada na casa e um toque de páprica fumada.', badges: ['Vegetariano'] },
+  { id: 'd1', categoryId: 'bebidas', categoryName: 'Bebidas', name: 'Limonada Suíça', price: 'R$ 10,90', shortDesc: 'Limonada batida com leite condensado e hortelã.', fullDesc: 'Limonada batida na hora com leite condensado e folhas de hortelã fresca, bem gelada.', badges: [], variations: [{ label: 'P', price: 'R$ 10,90' }, { label: 'G', price: 'R$ 14,90' }] },
+  { id: 'd2', categoryId: 'bebidas', categoryName: 'Bebidas', name: 'Chopp Artesanal', price: 'R$ 16,90', shortDesc: 'Chopp da casa, receita exclusiva, servido bem gelado.', fullDesc: 'Chopp artesanal de receita exclusiva da casa, leve e refrescante, servido bem gelado no copo próprio.', badges: [], variations: [{ label: 'P', price: 'R$ 12,90' }, { label: 'M', price: 'R$ 16,90' }, { label: 'G', price: 'R$ 21,90' }] },
+];
+
+class Component extends DCLogic {
+  dishes = DISHES;
+  tabRefs = {};
+
+  state = {
+    view: 'grid',
+    gridFilter: 'all',
+    dishIndex: 0,
+    dragY: 0,
+    isDragging: false,
+    transitioning: false,
+    fading: false,
+    muted: true,
+    paused: false,
+    detailOpen: false,
+    sheetDragY: 0,
+    sheetDragging: false,
+    hintDismissed: false,
+    ratingOpen: false,
+    userRatings: {},
+  };
+
+  setFeedRef = (el) => { this.feedEl = el; };
+  setTabRef = (id, el) => { this.tabRefs[id] = el; };
+  setTabBarRef = (el) => { this.tabBarEl = el; };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.dishIndex !== this.state.dishIndex) {
+      const catId = this.dishes[this.state.dishIndex].categoryId;
+      this.scrollTabIntoView(catId);
+    }
+  }
+
+  scrollTabIntoView(catId) {
+    const el = this.tabRefs[catId];
+    const container = this.tabBarEl;
+    if (!el || !container) return;
+    const target = el.offsetLeft - (container.clientWidth - el.clientWidth) / 2;
+    container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }
+
+  onFeedPointerDown = (e) => {
+    if (this.state.detailOpen) return;
+    this.dragStartY = e.clientY;
+    this.setState({ isDragging: true, dragY: 0 });
+  };
+  onFeedPointerMove = (e) => {
+    if (!this.state.isDragging) return;
+    this.setState({ dragY: e.clientY - this.dragStartY });
+  };
+  onFeedPointerUp = () => {
+    if (!this.state.isDragging) return;
+    const delta = this.state.dragY;
+    const abs = Math.abs(delta);
+    this.setState({ isDragging: false, hintDismissed: true });
+    if (abs < TAP_THRESH) { this.togglePause(); return; }
+    if (delta <= -SNAP_THRESH && this.state.dishIndex < this.dishes.length - 1) { this.goNext(); return; }
+    if (delta >= SNAP_THRESH && this.state.dishIndex > 0) { this.goPrev(); return; }
+    this.snapBack();
+  };
+
+  goNext = () => {
+    this.setState({ transitioning: true, dragY: -FEED_H });
+    setTimeout(() => this.setState((s) => ({ dishIndex: s.dishIndex + 1, dragY: 0, transitioning: false })), 260);
+  };
+  goPrev = () => {
+    this.setState({ transitioning: true, dragY: FEED_H });
+    setTimeout(() => this.setState((s) => ({ dishIndex: s.dishIndex - 1, dragY: 0, transitioning: false })), 260);
+  };
+  snapBack = () => {
+    this.setState({ transitioning: true, dragY: 0 });
+    setTimeout(() => this.setState({ transitioning: false }), 220);
+  };
+
+  selectCategory = (catId) => {
+    const idx = this.dishes.findIndex((d) => d.categoryId === catId);
+    if (idx === -1 || idx === this.state.dishIndex) return;
+    this.setState({ fading: true });
+    setTimeout(() => this.setState({ dishIndex: idx, dragY: 0, fading: false }), 200);
+  };
+
+  togglePause = () => this.setState((s) => ({ paused: !s.paused }));
+  toggleMute = () => this.setState((s) => ({ muted: !s.muted }));
+  openDetail = () => this.setState({ detailOpen: true, sheetDragY: 0 });
+  closeDetail = () => this.setState({ detailOpen: false, sheetDragY: 0 });
+  openGrid = () => this.setState({ view: 'grid' });
+  toggleRating = () => this.setState((s) => ({ ratingOpen: !s.ratingOpen }));
+  submitRating = (dishId, n) => this.setState((s) => ({ ratingOpen: false, userRatings: Object.assign({}, s.userRatings, { [dishId]: n }) }));
+  openFeedAt = (idx) => this.setState({ view: 'feed', dishIndex: idx, hintDismissed: true });
+  setGridFilter = (catId) => this.setState({ gridFilter: catId });
+
+  onSheetHandlePointerDown = (e) => {
+    this.sheetStartY = e.clientY;
+    this.setState({ sheetDragging: true });
+  };
+  onSheetPointerMove = (e) => {
+    if (!this.state.sheetDragging) return;
+    const d = Math.max(0, e.clientY - this.sheetStartY);
+    this.setState({ sheetDragY: d });
+  };
+  onSheetPointerUp = () => {
+    if (!this.state.sheetDragging) return;
+    const shouldClose = this.state.sheetDragY > 140;
+    this.setState({ sheetDragging: false, sheetDragY: 0, detailOpen: shouldClose ? false : this.state.detailOpen });
+  };
+
+  renderVals() {
+    const accent = this.props.accentColor ?? '#FF6B3D';
+    const restaurantName = this.props.restaurantName ?? 'Fumaça';
+    const showHint = (this.props.showFirstUseHint ?? true) && !this.state.hintDismissed;
+    const { view, gridFilter, dishIndex, dragY, muted, paused, detailOpen, sheetDragY, sheetDragging, fading } = this.state;
+    const dishes = this.dishes;
+    const current = dishes[dishIndex];
+    const prev = dishIndex > 0 ? dishes[dishIndex - 1] : null;
+    const next = dishIndex < dishes.length - 1 ? dishes[dishIndex + 1] : null;
+
+    const catSeen = {};
+    const categories = [];
+    dishes.forEach((d) => { if (!catSeen[d.categoryId]) { catSeen[d.categoryId] = true; categories.push({ id: d.categoryId, name: d.categoryName }); } });
+    const categoriesOut = categories.map((c) => ({
+      id: c.id, name: c.name,
+      onClick: () => this.selectCategory(c.id), setRef: (el) => this.setTabRef(c.id, el),
+      pillBg: c.id === current.categoryId ? accent : 'transparent',
+      textColor: c.id === current.categoryId ? '#ffffff' : 'rgba(255,255,255,0.65)',
+    }));
+
+    const slideTransition = this.state.transitioning ? 'transform 260ms cubic-bezier(.22,.61,.36,1)' : 'none';
+
+    const badgesFor = (d) => (d.badges || []).map((b) => ({ label: b, bg: accent })).concat(d.soldOut ? [{ label: 'Esgotado', bg: 'rgba(130,32,22,0.9)' }] : []);
+    const variationsFor = (d) => (d.variations || []).map((v) => ({ label: v.label, price: v.price }));
+    const currentBadges = badgesFor(current);
+    const currentVariations = variationsFor(current);
+
+    const gridFilterTabs = [{ id: 'all', name: 'Todos' }, ...categories].map((c) => ({
+      id: c.id, name: c.name,
+      onClick: () => this.setGridFilter(c.id),
+      pillBg: c.id === gridFilter ? accent : 'rgba(255,255,255,0.1)',
+      textColor: c.id === gridFilter ? '#ffffff' : 'rgba(255,255,255,0.75)',
+    }));
+    const gridItems = dishes
+      .map((d, i) => ({ d, i }))
+      .filter(({ d }) => gridFilter === 'all' || d.categoryId === gridFilter)
+      .map(({ d, i }) => ({
+        id: d.id, slotId: 'dish-' + d.id, placeholder: 'Foto do prato — ' + d.name,
+        name: d.name, price: d.price, soldOut: !!d.soldOut,
+        badgeLabel: d.badges && d.badges[0] ? d.badges[0] : null,
+        onClick: () => this.openFeedAt(i),
+      }));
+
+    return {
+      accent, restaurantName,
+      setFeedRef: this.setFeedRef,
+      onFeedPointerDown: this.onFeedPointerDown, onFeedPointerMove: this.onFeedPointerMove,
+      onFeedPointerUp: this.onFeedPointerUp, onFeedPointerCancel: this.onFeedPointerUp,
+      hasPrev: !!prev, hasNext: !!next,
+      prevSlotId: prev ? 'dish-' + prev.id : 'dish-none-prev', prevPlaceholder: prev ? ('Foto do prato — ' + prev.name) : '',
+      currentSlotId: 'dish-' + current.id, currentPlaceholder: 'Foto do prato — ' + current.name,
+      nextSlotId: next ? 'dish-' + next.id : 'dish-none-next', nextPlaceholder: next ? ('Foto do prato — ' + next.name) : '',
+      prevTranslate: -FEED_H + dragY, currentTranslate: dragY, nextTranslate: FEED_H + dragY,
+      slideTransition,
+      currentOpacity: fading ? 0 : 1,
+      currentSoldOut: !!current.soldOut,
+      isFeedView: view === 'feed', isGridView: view === 'grid',
+      openGrid: this.openGrid, openFirst: () => this.openFeedAt(0),
+      dishCount: dishes.length, categoryCount: categories.length,
+      gridFilterTabs, gridItems,
+      setTabBarRef: this.setTabBarRef,
+      categories: categoriesOut,
+      toggleMute: this.toggleMute, muted, mutedOff: !muted,
+      paused,
+      openDetail: this.openDetail, closeDetail: this.closeDetail, detailOpen,
+      currentBadges, hasBadges: currentBadges.length > 0,
+      currentName: current.name, currentPrice: current.price, currentShortDesc: current.shortDesc,
+      currentFullDesc: current.fullDesc,
+      currentVariations, hasVariations: currentVariations.length > 0,
+      sheetTranslate: sheetDragY,
+      sheetTransition: sheetDragging ? 'none' : 'transform 220ms ease',
+      onSheetHandlePointerDown: this.onSheetHandlePointerDown, onSheetPointerMove: this.onSheetPointerMove,
+      onSheetPointerUp: this.onSheetPointerUp, onSheetPointerCancel: this.onSheetPointerUp,
+      hintOpacity: showHint ? 1 : 0,
+    };
+  }
+}
+</script>
+</body>
+</html>
