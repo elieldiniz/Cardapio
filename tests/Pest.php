@@ -16,7 +16,13 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->beforeEach(fn () => $this->withoutVite())
+    ->beforeEach(function () {
+        $this->withoutVite();
+
+        // Livewire keeps "a component rendered this request" in static state; reset it so
+        // a previous test's component never leaks asset injection into a non-Livewire page.
+        app('livewire')->flushState();
+    })
     ->in('Feature');
 
 /*
