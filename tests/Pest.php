@@ -1,6 +1,8 @@
 <?php
 
+use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 /*
@@ -51,7 +53,20 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Seed every lookup table and the baseline plans (no demo users).
+ */
+function seedReferenceData(): void
 {
-    // ..
+    test()->seed(ReferenceDataSeeder::class);
+}
+
+/**
+ * A real 1×1 PNG upload that does not need the GD extension.
+ */
+function fakeImage(string $name = 'photo.png'): UploadedFile
+{
+    $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+
+    return UploadedFile::fake()->createWithContent($name, $png);
 }

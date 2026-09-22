@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\DishFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,6 +62,22 @@ class Dish extends Model
     public function videoGenerations(): HasMany
     {
         return $this->hasMany(VideoGeneration::class);
+    }
+
+    /**
+     * Dishes the dono has not hidden, inside a visible category (US-2.1, US-2.3).
+     * "Esgotado" dishes stay listed — they are shown flagged as unavailable.
+     */
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query
+            ->whereHas('status', fn (Builder $status) => $status->whereIn('slug', ['ativo', 'esgotado']))
+            ->whereHas('category', fn (Builder $category) => $category->where('is_visible', true));
+    }
+
+    public function isSoldOut(): bool
+    {
+        return $this->status?->slug === 'esgotado';
     }
 
     public function badges(): BelongsToMany

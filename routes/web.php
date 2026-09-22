@@ -35,6 +35,10 @@ Route::post('/sair', LogoutController::class)->middleware('auth')->name('logout'
 
 Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('panel.')->group(function () {
     Route::livewire('/', 'pages::panel.home')->name('home');
+    Route::livewire('/categorias', 'pages::panel.categories')->name('categories');
+    Route::livewire('/pratos', 'pages::panel.dishes')->name('dishes');
+    Route::livewire('/pratos/novo', 'pages::panel.dish-form')->name('dishes.create');
+    Route::livewire('/pratos/{dish}/editar', 'pages::panel.dish-form')->name('dishes.edit');
 });
 
 /*

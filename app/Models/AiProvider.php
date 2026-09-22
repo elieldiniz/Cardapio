@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\IsLookupTable;
 use Database\Factories\AiProviderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,8 @@ class AiProvider extends Model
 {
     /** @use HasFactory<AiProviderFactory> */
     use HasFactory;
+
+    use IsLookupTable;
 
     /**
      * Get the attributes that should be cast.

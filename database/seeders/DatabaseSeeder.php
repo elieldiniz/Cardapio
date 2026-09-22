@@ -15,20 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            RoleSeeder::class,
-            RestaurantStatusSeeder::class,
-            DishStatusSeeder::class,
-            VideoStatusSeeder::class,
-            VideoOriginSeeder::class,
-            GenerationStatusSeeder::class,
-            GenerationLedgerTypeSeeder::class,
-            MetricsLevelSeeder::class,
-            DiscountTypeSeeder::class,
-            BadgeSeeder::class,
-            AdminActionSeeder::class,
-            PlanSeeder::class,
-        ]);
+        $this->call(ReferenceDataSeeder::class);
 
         // User::factory(10)->create();
 

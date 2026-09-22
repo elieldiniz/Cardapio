@@ -27,6 +27,16 @@ class Restaurant extends Model
         return $this->accent_color ?: self::DEFAULT_ACCENT_COLOR;
     }
 
+    /**
+     * Whether the current plan's dish limit still allows another dish (US-5.1).
+     */
+    public function canAddDish(): bool
+    {
+        $limit = $this->plan?->dish_limit;
+
+        return $limit === null || $this->dishes()->count() < $limit;
+    }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
