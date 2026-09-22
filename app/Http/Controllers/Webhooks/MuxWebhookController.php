@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Webhooks;
 
+use App\Actions\Videos\StartOwnVideoUpload;
 use App\Contracts\MuxClient;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
@@ -28,6 +29,7 @@ class MuxWebhookController extends Controller
 
         match ($event['type'] ?? null) {
             'video.asset.ready' => $this->assetReady($event['data'] ?? []),
+            'video.asset.errored' => $this->assetErrored($event['data'] ?? []),
             default => null,
         };
 
@@ -42,6 +44,18 @@ class MuxWebhookController extends Controller
         $video = $this->findVideo($asset);
 
         if ($video === null || $video->status?->slug !== 'processando') {
+            return;
+        }
+
+        // Own uploads are re-checked against the real encoded duration (US-4.2).
+        if ($video->origin?->slug === 'upload' && isset($asset['duration'])
+            && StartOwnVideoUpload::durationProblem((float) $asset['duration']) !== null) {
+            $video->update([
+                'status_id' => VideoStatus::idFor('rejeitado'),
+                'mux_asset_id' => $asset['id'] ?? $video->mux_asset_id,
+                'duration_seconds' => (int) round((float) $asset['duration']),
+            ]);
+
             return;
         }
 
@@ -60,6 +74,18 @@ class MuxWebhookController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $asset
+     */
+    private function assetErrored(array $asset): void
+    {
+        $video = $this->findVideo($asset);
+
+        if ($video !== null && $video->status?->slug === 'processando') {
+            $video->update(['status_id' => VideoStatus::idFor('rejeitado')]);
+        }
+    }
+
+    /**
      * Videos are matched by the passthrough set at creation ("video:{id}"),
      * falling back to the Mux asset id.
      *
@@ -70,11 +96,11 @@ class MuxWebhookController extends Controller
         $passthrough = (string) ($asset['passthrough'] ?? '');
 
         if (preg_match('/^video:(\d+)$/', $passthrough, $matches)) {
-            return Video::with('status')->find((int) $matches[1]);
+            return Video::with(['status', 'origin'])->find((int) $matches[1]);
         }
 
         if (! empty($asset['id'])) {
-            return Video::with('status')->where('mux_asset_id', $asset['id'])->first();
+            return Video::with(['status', 'origin'])->where('mux_asset_id', $asset['id'])->first();
         }
 
         return null;

@@ -2,6 +2,8 @@
 
 use App\Actions\Ai\RequestVideoGeneration;
 use App\Actions\Videos\ApproveVideo;
+use App\Actions\Videos\StartOwnVideoUpload;
+use App\Exceptions\OwnVideoRejectedException;
 use App\Exceptions\InsufficientGenerationBalanceException;
 use App\Exceptions\VideoGenerationUnavailableException;
 use App\Models\Dish;
@@ -156,6 +158,32 @@ new #[Layout('layouts::panel')] class extends Component
         unset($this->generations, $this->available, $this->restaurant);
 
         $this->dispatch('toast', message: 'Geração na fila! Avisaremos quando os vídeos estiverem prontos.');
+    }
+
+    /**
+     * Called by the browser after reading the file's metadata; returns the Mux
+     * direct-upload URL the browser PUTs the file to (US-4.1).
+     *
+     * @return array{ok: bool, error?: string, upload_url?: string, warnings?: array<int, string>}
+     */
+    public function startUpload(float $duration, int $width, int $height, StartOwnVideoUpload $startUpload): array
+    {
+        try {
+            $result = $startUpload->handle($this->dish, $duration, $width, $height);
+        } catch (OwnVideoRejectedException $exception) {
+            return ['ok' => false, 'error' => $exception->getMessage()];
+        }
+
+        unset($this->uploads);
+
+        return ['ok' => true, 'upload_url' => $result['upload_url'], 'warnings' => $result['warnings']];
+    }
+
+    public function uploadFinished(): void
+    {
+        unset($this->uploads, $this->isWorking);
+
+        $this->dispatch('toast', message: 'Vídeo enviado! Ele está sendo processado e avisaremos quando puder aprovar.');
     }
 
     public function approve(int $videoId, ApproveVideo $approveVideo): void
@@ -328,4 +356,131 @@ new #[Layout('layouts::panel')] class extends Component
             </div>
         @endforeach
     </x-ui.card>
+
+    {{-- ===== Vídeo próprio (US-4.1, US-4.2) ===== --}}
+    <x-ui.card title="Enviar vídeo próprio">
+        <div
+            x-data="ownVideoUpload"
+            class="flex flex-col gap-4"
+            data-own-upload
+        >
+            <ul class="flex flex-col gap-1 rounded-xl bg-sand/70 p-3.5 text-[13px] text-ink/70">
+                <li><strong class="text-ink">Vertical</strong> (celular em pé, 9:16)</li>
+                <li><strong class="text-ink">De 5 a 15 segundos</strong> — vídeos fora disso são recusados</li>
+                <li><strong class="text-ink">Prato em destaque</strong>, bem iluminado</li>
+                <li class="text-ink/50">Enviar vídeo próprio não consome gerações.</li>
+            </ul>
+
+            <label class="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink/15 px-4 py-6 text-[13.5px] font-semibold text-ink/60 hover:border-accent hover:text-accent" :class="busy && 'pointer-events-none opacity-60'">
+                <x-ui.icon name="upload" />
+                <span x-text="busy ? 'Enviando… ' + progress + '%' : 'Escolher vídeo (MP4 ou MOV)'"></span>
+                <input type="file" accept="video/*" class="sr-only" x-on:change="pick($event)" :disabled="busy">
+            </label>
+
+            <div x-show="busy" x-cloak class="h-2 overflow-hidden rounded-full bg-ink/10">
+                <div class="h-full bg-accent transition-all" :style="`width: ${progress}%`"></div>
+            </div>
+
+            <template x-if="error">
+                <div class="rounded-xl bg-danger/8 p-3.5 text-[13.5px] font-medium text-danger" role="alert" x-text="error"></div>
+            </template>
+            <template x-for="warning in warnings" :key="warning">
+                <div class="rounded-xl bg-accent/10 p-3.5 text-[13.5px] font-medium text-ink/75" role="status" x-text="warning"></div>
+            </template>
+
+            @if ($this->uploads->isNotEmpty())
+                <div class="flex flex-wrap gap-4 border-t border-ink/[0.06] pt-4">
+                    @foreach ($this->uploads as $video)
+                        @include('pages.panel.partials.video-review', ['video' => $video, 'discarded' => false])
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </x-ui.card>
 </div>
+
+@script
+<script>
+    Alpine.data('ownVideoUpload', () => ({
+        busy: false,
+        progress: 0,
+        error: null,
+        warnings: [],
+
+        async pick(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+
+            if (!file) {
+                return;
+            }
+
+            this.error = null;
+            this.warnings = [];
+
+            let meta;
+
+            try {
+                meta = await this.readMetadata(file);
+            } catch {
+                this.error = 'Não foi possível ler este vídeo. Envie um arquivo MP4 ou MOV.';
+
+                return;
+            }
+
+            const result = await $wire.startUpload(meta.duration, meta.width, meta.height);
+
+            if (!result.ok) {
+                this.error = result.error;
+
+                return;
+            }
+
+            this.warnings = result.warnings;
+            this.busy = true;
+            this.progress = 0;
+
+            try {
+                await this.put(result.upload_url, file);
+                await $wire.uploadFinished();
+            } catch {
+                this.error = 'O envio falhou. Verifique a conexão e tente de novo — os dados do prato continuam salvos.';
+            } finally {
+                this.busy = false;
+            }
+        },
+
+        readMetadata(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const probe = document.createElement('video');
+                probe.preload = 'metadata';
+                probe.onloadedmetadata = () => {
+                    resolve({ duration: probe.duration, width: probe.videoWidth, height: probe.videoHeight });
+                    URL.revokeObjectURL(url);
+                };
+                probe.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('unreadable'));
+                };
+                probe.src = url;
+            });
+        },
+
+        put(url, file) {
+            return new Promise((resolve, reject) => {
+                const request = new XMLHttpRequest();
+                request.open('PUT', url);
+                request.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        this.progress = Math.round((e.loaded / e.total) * 100);
+                    }
+                };
+                request.onload = () => (request.status >= 200 && request.status < 300 ? resolve() : reject());
+                request.onerror = reject;
+                request.send(file);
+            });
+        },
+    }));
+</script>
+@endscript

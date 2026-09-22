@@ -2,9 +2,12 @@
 @php
     $slug = $video->status->slug;
     $isActive = $this->dish->active_video_id === $video->id;
+    $refusedUpload = $video->generation_id === null && $slug === 'rejeitado'
+        && ($video->duration_seconds === null || \App\Actions\Videos\StartOwnVideoUpload::durationProblem($video->duration_seconds) !== null);
     $label = match (true) {
         $isActive => ['Ativo no cardápio', 'bg-success/12 text-success'],
         $slug === 'processando' => ['Processando', 'bg-ink/8 text-ink/60'],
+        $refusedUpload => ['Recusado'.($video->duration_seconds ? ' · '.$video->duration_seconds.'s' : ''), 'bg-danger/12 text-danger'],
         $slug === 'rejeitado' => ['Substituído', 'bg-ink/8 text-ink/50'],
         $discarded && $slug === 'aguardando_aprovacao' => ['Descartada', 'bg-ink/8 text-ink/50'],
         $slug === 'aguardando_aprovacao' => ['Aguardando aprovação', 'bg-accent/12 text-accent'],
