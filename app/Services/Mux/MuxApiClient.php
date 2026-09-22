@@ -7,13 +7,18 @@ use Illuminate\Support\Facades\Http;
 
 class MuxApiClient implements MuxClient
 {
+    /**
+     * MP4 (faststart) renditions the feed plays: 480p first, 720p when the
+     * connection allows (Tech Stack — Vídeo no feed; US-1.2).
+     */
+    public const STATIC_RENDITIONS = [['resolution' => '480p'], ['resolution' => '720p']];
+
     public function __construct(
         private readonly string $tokenId,
         private readonly string $tokenSecret,
         private readonly string $webhookSecret,
         private readonly string $baseUrl = 'https://api.mux.com',
-    ) {
-    }
+    ) {}
 
     public function createAsset(string $inputUrl, array $options = []): array
     {
@@ -21,6 +26,7 @@ class MuxApiClient implements MuxClient
             ->post('/video/v1/assets', array_merge([
                 'input' => [['url' => $inputUrl]],
                 'playback_policy' => ['public'],
+                'static_renditions' => self::STATIC_RENDITIONS,
             ], $options))
             ->throw();
 
@@ -31,10 +37,11 @@ class MuxApiClient implements MuxClient
     {
         $response = $this->client()
             ->post('/video/v1/uploads', array_merge([
-                'new_asset_settings' => [
+                'new_asset_settings' => array_merge([
                     'playback_policy' => ['public'],
-                ],
-            ], $options))
+                    'static_renditions' => self::STATIC_RENDITIONS,
+                ], $options['new_asset_settings'] ?? []),
+            ], array_diff_key($options, ['new_asset_settings' => true])))
             ->throw();
 
         return $response->json('data') ?? [];

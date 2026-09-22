@@ -161,7 +161,10 @@ new #[Layout('layouts::panel')] #[Title('Pratos')] class extends Component
                                 @endforeach
                             </select>
 
-                            <x-ui.button size="sm" variant="secondary" :href="route('panel.dishes.edit', $dish)" wire:navigate class="ml-auto sm:ml-0">Editar</x-ui.button>
+                            <x-ui.button size="sm" variant="secondary" :href="route('panel.dishes.video', $dish)" wire:navigate class="ml-auto sm:ml-0" aria-label="Vídeo de {{ $dish->name }}">
+                                <x-ui.icon name="media" class="size-4" />
+                            </x-ui.button>
+                            <x-ui.button size="sm" variant="secondary" :href="route('panel.dishes.edit', $dish)" wire:navigate>Editar</x-ui.button>
                         </div>
 
                         @error("prices.{$dish->id}")

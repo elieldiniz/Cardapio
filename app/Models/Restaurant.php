@@ -37,6 +37,32 @@ class Restaurant extends Model
         return $limit === null || $this->dishes()->count() < $limit;
     }
 
+    /**
+     * Generations already promised to requests still in the queue — they are
+     * debited on completion, so they are held back from new requests.
+     */
+    public function reservedGenerations(): int
+    {
+        return (int) VideoGeneration::query()
+            ->whereIn('dish_id', $this->dishes()->select('id'))
+            ->whereHas('status', fn ($status) => $status->whereIn('slug', ['fila', 'gerando']))
+            ->sum('variations_requested');
+    }
+
+    /**
+     * Monthly + addon balance minus pending reservations (US-3.4).
+     */
+    public function availableGenerations(): int
+    {
+        $balance = $this->generationBalance;
+
+        if ($balance === null) {
+            return 0;
+        }
+
+        return max(0, $balance->monthly_balance + $balance->addon_balance - $this->reservedGenerations());
+    }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);

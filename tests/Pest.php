@@ -1,8 +1,17 @@
 <?php
 
+use App\Contracts\MuxClient;
+use App\Models\AiPreset;
+use App\Models\AiProvider;
+use App\Models\Dish;
+use App\Models\DishPhoto;
+use App\Models\GenerationBalance;
+use App\Models\User;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Tests\Fakes\FakeMuxClient;
+use Tests\Fakes\FakeVideoGenerationProvider;
 use Tests\TestCase;
 
 /*
@@ -69,4 +78,42 @@ function fakeImage(string $name = 'photo.png'): UploadedFile
     $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
 
     return UploadedFile::fake()->createWithContent($name, $png);
+}
+
+/**
+ * Bind the fake AI provider + fake Mux and create an active preset using it.
+ */
+function fakeVideoPipeline(): FakeMuxClient
+{
+    FakeVideoGenerationProvider::reset();
+    config()->set('ai.providers.fake', FakeVideoGenerationProvider::class);
+
+    $mux = new FakeMuxClient;
+    app()->instance(MuxClient::class, $mux);
+
+    $provider = AiProvider::factory()->create(['slug' => 'fake', 'name' => 'Fake']);
+    AiPreset::factory()->create(['provider_id' => $provider->id]);
+
+    return $mux;
+}
+
+/**
+ * A dono with a restaurant, one category and one dish with photos.
+ *
+ * @return array{0: User, 1: Dish}
+ */
+function ownerWithDish(int $photos = 1, int $monthly = 0, int $addon = 5): array
+{
+    $dono = User::factory()->create();
+    $restaurant = $dono->restaurant;
+
+    GenerationBalance::updateOrCreate(
+        ['restaurant_id' => $restaurant->id],
+        ['monthly_balance' => $monthly, 'addon_balance' => $addon],
+    );
+
+    $dish = Dish::factory()->create(['restaurant_id' => $restaurant->id]);
+    DishPhoto::factory()->count($photos)->sequence(fn ($sequence) => ['display_order' => $sequence->index])->create(['dish_id' => $dish->id]);
+
+    return [$dono, $dish->fresh()];
 }

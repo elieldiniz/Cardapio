@@ -227,7 +227,15 @@ new #[Layout('layouts::panel')] class extends Component
 
 <form wire:submit="save" class="flex flex-col gap-[18px]">
     <x-ui.page-header :title="$dishId ? 'Editar prato' : 'Novo prato'">
-        <x-ui.button variant="secondary" :href="route('panel.dishes')" wire:navigate>Voltar</x-ui.button>
+        <div class="flex gap-2">
+            @if ($dishId)
+                <x-ui.button :href="route('panel.dishes.video', $dishId)" wire:navigate>
+                    <x-ui.icon name="media" class="size-4" />
+                    Vídeo do prato
+                </x-ui.button>
+            @endif
+            <x-ui.button variant="secondary" :href="route('panel.dishes')" wire:navigate>Voltar</x-ui.button>
+        </div>
     </x-ui.page-header>
 
     <x-ui.card title="Dados do prato">

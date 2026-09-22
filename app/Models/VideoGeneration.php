@@ -22,6 +22,24 @@ class VideoGeneration extends Model
         ];
     }
 
+    public const TURN_LIMITED = 'limited';
+
+    public const TURN_WIDE = 'wide';
+
+    /**
+     * 1–2 photos never get a full turn (the AI would invent the back of the
+     * dish); 3–4 angles allow a wider one (US-3.1, US-3.2).
+     */
+    public static function turnFor(int $photoCount): string
+    {
+        return $photoCount >= 3 ? self::TURN_WIDE : self::TURN_LIMITED;
+    }
+
+    public function isFinished(): bool
+    {
+        return in_array($this->status?->slug, ['pronto', 'erro'], true);
+    }
+
     public function dish(): BelongsTo
     {
         return $this->belongsTo(Dish::class);

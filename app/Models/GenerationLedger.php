@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['restaurant_id', 'type_id', 'quantity', 'reference'])]
 class GenerationLedger extends Model
 {
+    protected $table = 'generation_ledger';
+
     const UPDATED_AT = null;
 
     public function restaurant(): BelongsTo
