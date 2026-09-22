@@ -37,7 +37,9 @@ class FakeStripe implements ClientInterface
             str_starts_with($path, '/v1/customers') => ['id' => 'cus_fake', 'object' => 'customer', 'email' => $params['email'] ?? null, 'name' => $params['name'] ?? null],
             $path === '/v1/checkout/sessions' => ['id' => "cs_fake_{$count}", 'object' => 'checkout.session', 'url' => "https://checkout.stripe.test/cs_fake_{$count}", 'mode' => $params['mode'] ?? null],
             $path === '/v1/billing_portal/sessions' => ['id' => 'bps_fake', 'object' => 'billing_portal.session', 'url' => 'https://billing.stripe.test/session'],
-            str_starts_with($path, '/v1/coupons') => array_merge(['id' => $params['id'] ?? 'coupon_fake', 'object' => 'coupon', 'valid' => true], $params ?? []),
+            str_starts_with($path, '/v1/coupons/') && strtoupper($method) === 'DELETE' => ['id' => basename($path), 'object' => 'coupon', 'deleted' => true],
+            $path === '/v1/coupons' => array_merge(['object' => 'coupon', 'valid' => true], $params ?? [], ['id' => 'coupon_fake_'.count($this->requestsTo('/v1/coupons'))]),
+            $path === '/v1/promotion_codes' => ['id' => 'promo_fake', 'object' => 'promotion_code', 'code' => $params['code'] ?? null, 'active' => true],
             default => ['id' => 'obj_fake', 'object' => 'unknown'],
         };
 

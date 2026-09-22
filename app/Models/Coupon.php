@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Billing\CouponSync;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,12 @@ class Coupon extends Model
             'is_active' => 'boolean',
             'expires_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(fn (Coupon $coupon) => app(CouponSync::class)->created($coupon));
+        static::updated(fn (Coupon $coupon) => app(CouponSync::class)->updated($coupon));
     }
 
     public function discountType(): BelongsTo

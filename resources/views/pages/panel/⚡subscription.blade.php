@@ -81,6 +81,8 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
                 'cancel_url' => route('panel.subscription'),
                 'payment_method_types' => ['card'],
                 'locale' => 'pt-BR',
+                // Coupons created by the super admin are redeemable by code (US-7.3).
+                'allow_promotion_codes' => true,
             ]);
 
         return redirect()->away($checkout->asStripeCheckoutSession()->url);
