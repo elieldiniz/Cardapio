@@ -22,6 +22,10 @@ class DishViewController extends Controller
 
     public function store(Request $request, Restaurant $restaurant): Response
     {
+        if ($restaurant->isSuspended()) {
+            return response()->noContent(403);
+        }
+
         // sendBeacon posts text/plain; accept JSON either way.
         $payload = $request->json()->all() ?: (json_decode($request->getContent(), true) ?? []);
 

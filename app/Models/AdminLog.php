@@ -23,6 +23,21 @@ class AdminLog extends Model
         ];
     }
 
+    /**
+     * Append an audit entry for a sensitive super admin action (US-7.2, US-7.5).
+     *
+     * @param  array<string, mixed>|null  $data
+     */
+    public static function record(User $admin, string $actionSlug, ?string $target = null, ?array $data = null): self
+    {
+        return static::create([
+            'user_id' => $admin->id,
+            'action_id' => AdminAction::idFor($actionSlug),
+            'target' => $target,
+            'data' => $data,
+        ]);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

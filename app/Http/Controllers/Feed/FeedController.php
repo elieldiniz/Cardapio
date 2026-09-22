@@ -16,6 +16,10 @@ class FeedController extends Controller
 {
     public function show(Restaurant $restaurant, FeedBuilder $feed): Response
     {
+        if ($restaurant->isSuspended()) {
+            return response()->view('feed.unavailable', ['restaurant' => $restaurant], 403);
+        }
+
         // Price/status edits must show on the very next visit (US-2.3): never cache the HTML.
         return response()
             ->view('feed.show', $feed->page($restaurant))
@@ -24,6 +28,7 @@ class FeedController extends Controller
 
     public function category(Restaurant $restaurant, Category $category, FeedBuilder $feed): JsonResponse
     {
+        abort_if($restaurant->isSuspended(), 403, 'Cardápio indisponível.');
         abort_unless($category->restaurant_id === $restaurant->id && $category->is_visible, 404);
 
         return response()

@@ -15,6 +15,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen" x-data="{ navOpen: false }">
+    @if (\App\Actions\Admin\Impersonation::active())
+        <div class="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-accent px-4 py-2 text-[13px] font-semibold text-white" data-impersonation-banner>
+            <span>Modo suporte: você está vendo o painel como {{ auth()->user()->name }} ({{ $restaurantName }}).</span>
+            <form method="POST" action="{{ route('impersonation.stop') }}">
+                @csrf
+                <button type="submit" class="rounded-md bg-white/20 px-3 py-1 font-bold hover:bg-white/30">Voltar ao admin</button>
+            </form>
+        </div>
+    @endif
+
     @stack('banners')
 
     <div class="flex min-h-screen">

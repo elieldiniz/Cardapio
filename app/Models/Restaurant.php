@@ -31,6 +31,13 @@ class Restaurant extends Model
         return route('feed.show', $this);
     }
 
+    public function isSuspended(): bool
+    {
+        $suspendedId = RestaurantStatus::query()->where('slug', 'suspenso')->value('id');
+
+        return $suspendedId !== null && $this->status_id === $suspendedId;
+    }
+
     public function accentColor(): string
     {
         return $this->accent_color ?: self::DEFAULT_ACCENT_COLOR;

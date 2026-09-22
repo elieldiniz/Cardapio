@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Admin\Impersonation;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Feed\DishViewController;
 use App\Http\Controllers\Feed\FeedController;
@@ -33,6 +34,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/sair', LogoutController::class)->middleware('auth')->name('logout');
+
+Route::post('/impersonacao/encerrar', function (Impersonation $impersonation) {
+    return $impersonation->stop() ? redirect('/admin') : redirect()->route('login');
+})->middleware('auth')->name('impersonation.stop');
 
 /*
 |--------------------------------------------------------------------------
