@@ -24,8 +24,7 @@ class RestaurantFactory extends Factory
         $name = fake()->unique()->company();
 
         return [
-            // Plan model/table arrives in Phase 5; placeholder id until then.
-            'plan_id' => 1,
+            'plan_id' => PlanFactory::freePlanId(),
             'status_id' => RestaurantStatus::query()->firstOrCreate(
                 ['slug' => 'ativo'],
                 ['name' => 'Ativo']
