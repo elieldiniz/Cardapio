@@ -5,6 +5,7 @@ namespace App\Services\Admin;
 use App\Models\Plan;
 use App\Models\Restaurant;
 use App\Models\Subscription;
+use App\Models\VideoGeneration;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -84,6 +85,16 @@ class BusinessMetrics
             ->count();
 
         return round($upgraded / $total * 100, 1);
+    }
+
+    /**
+     * AI spend for the month: the provider cost recorded on each generation (US-7.4, US-7.6).
+     */
+    public function aiCostUsd(?CarbonImmutable $month = null): float
+    {
+        [$from, $to] = $this->monthRange($month);
+
+        return round((float) VideoGeneration::query()->whereBetween('created_at', [$from, $to])->sum('cost_usd'), 4);
     }
 
     /**
