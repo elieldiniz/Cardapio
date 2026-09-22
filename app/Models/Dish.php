@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['restaurant_id', 'category_id', 'status_id', 'name', 'price', 'short_description', 'description', 'display_order'])]
+#[Fillable(['restaurant_id', 'category_id', 'status_id', 'active_video_id', 'name', 'price', 'short_description', 'description', 'display_order'])]
 class Dish extends Model
 {
     /** @use HasFactory<DishFactory> */
@@ -36,6 +36,11 @@ class Dish extends Model
     public function status(): BelongsTo
     {
         return $this->belongsTo(DishStatus::class, 'status_id');
+    }
+
+    public function activeVideo(): BelongsTo
+    {
+        return $this->belongsTo(Video::class, 'active_video_id');
     }
 
     public function variants(): HasMany
