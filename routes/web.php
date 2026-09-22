@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LogoutController;
 use App\Support\Dev\FeedPreview;
 use Illuminate\Support\Facades\Route;
 
@@ -13,11 +14,26 @@ Route::get('/smoke-test/livewire', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Autenticação (US-8.1–US-8.4)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+    Route::livewire('/cadastro', 'pages::auth.register')->name('register');
+    Route::livewire('/entrar', 'pages::auth.login')->name('login');
+    Route::livewire('/esqueci-senha', 'pages::auth.forgot-password')->name('password.request');
+    Route::livewire('/redefinir-senha/{token}', 'pages::auth.reset-password')->name('password.reset');
+});
+
+Route::post('/sair', LogoutController::class)->middleware('auth')->name('logout');
+
+/*
+|--------------------------------------------------------------------------
 | Painel do restaurante (dono)
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'owner'])->prefix('painel')->name('panel.')->group(function () {
+Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('panel.')->group(function () {
     Route::livewire('/', 'pages::panel.home')->name('home');
 });
 

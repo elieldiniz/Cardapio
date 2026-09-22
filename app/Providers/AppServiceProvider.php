@@ -9,6 +9,8 @@ use App\Models\Subscription;
 use App\Models\SubscriptionItem;
 use App\Services\Ai\VideoGenerationProviderResolver;
 use App\Services\Mux\MuxApiClient;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 
@@ -44,5 +46,19 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useCustomerModel(Restaurant::class);
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useSubscriptionItemModel(SubscriptionItem::class);
+
+        ResetPassword::toMailUsing(function ($notifiable, string $token) {
+            $url = route('password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()]);
+            $minutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
+
+            return (new MailMessage)
+                ->subject('Redefinição de senha')
+                ->greeting('Olá!')
+                ->line('Recebemos um pedido para redefinir a senha da sua conta.')
+                ->action('Redefinir senha', $url)
+                ->line("Este link expira em {$minutes} minutos.")
+                ->line('Se você não pediu a redefinição, ignore este e-mail.')
+                ->salutation('Equipe '.config('app.name'));
+        });
     }
 }

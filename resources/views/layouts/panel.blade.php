@@ -29,8 +29,8 @@
 
         <aside
             data-panel-nav
-            class="fixed inset-y-0 left-0 z-40 flex w-[230px] -translate-x-full flex-col gap-[22px] bg-night px-3.5 py-[22px] transition-transform md:static md:translate-x-0"
-            :class="navOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+            class="fixed inset-y-0 left-0 z-40 flex w-[230px] shrink-0 -translate-x-full flex-col gap-[22px] bg-night px-3.5 py-[22px] transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0"
+            :class="{ 'translate-x-0': navOpen }"
         >
             <div class="flex items-center gap-2.5 px-2">
                 @if ($restaurant?->logo_path)
@@ -71,6 +71,14 @@
             <div class="flex-1"></div>
 
             @stack('sidebar-footer')
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="flex w-full items-center gap-[11px] rounded-[9px] px-3 py-2.5 text-left text-[13.5px] font-semibold text-white/65 transition hover:bg-white/5 hover:text-white">
+                    <x-ui.icon name="logout" />
+                    Sair
+                </button>
+            </form>
 
             <div class="px-2 text-[10.5px] text-white/30">Cardápio em Vídeo · v1</div>
         </aside>
