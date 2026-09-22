@@ -17,6 +17,16 @@ class Restaurant extends Model
     /** @use HasFactory<RestaurantFactory> */
     use Billable, HasFactory;
 
+    /**
+     * Accent color used by the panel and the feed until the dono picks one (US-6.1).
+     */
+    public const DEFAULT_ACCENT_COLOR = '#FF6B3D';
+
+    public function accentColor(): string
+    {
+        return $this->accent_color ?: self::DEFAULT_ACCENT_COLOR;
+    }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);

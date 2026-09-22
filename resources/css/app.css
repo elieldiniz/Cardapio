@@ -3,7 +3,30 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * Visual language of the dono panel, taken from
+ * Docs/Desegner/Shared artifact link/Painel do Restaurante.dc.html.
+ * `--accent` is set per restaurant (restaurants.accent_color) on the layout root.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'DM Serif Display', ui-serif, Georgia, serif;
+
+    --color-ink: #1a1815;
+    --color-sand: #ece9e4;
+    --color-night: #161412;
+    --color-accent: var(--accent, #ff6b3d);
+    --color-danger: #b5453a;
+    --color-success: #2e9e6b;
+}
+
+@layer base {
+    body {
+        @apply bg-sand font-sans text-ink antialiased;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
 }
