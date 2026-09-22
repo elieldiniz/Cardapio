@@ -1,0 +1,428 @@
+/*
+ * Client feed — Docs/Desegner/Shared artifact link/Cardápio Fumaça - Feed.dc.html
+ * Plain CSS on purpose: this page is the performance-critical path (US-1.1).
+ */
+:root {
+    --accent: #ff6b3d;
+    --feed-font: 'DM Sans';
+    --bg: #101010;
+    --sheet-bg: #161412;
+    --sold-out: rgba(130, 32, 22, 0.9);
+    --glass: rgba(20, 20, 20, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.25);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: var(--feed-font), 'DM Sans', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.feed-app {
+    position: relative;
+    height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+/* ---- Vertical scroll-snap feed ---- */
+
+.feed {
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-y: contain;
+}
+
+.dish {
+    position: relative;
+    height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+.dish__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--bg);
+}
+
+.dish__shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 170px),
+        linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0) 280px);
+}
+
+.dish--sold-out .dish__shade {
+    background:
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 170px),
+        linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0) 280px),
+        rgba(0, 0, 0, 0.4);
+}
+
+.dish__info {
+    position: absolute;
+    left: 16px;
+    right: 78px;
+    bottom: calc(26px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.dish__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.dish__badges:empty {
+    display: none;
+}
+
+.badge {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--accent);
+    font: 700 10.5px/1.2 'DM Sans', sans-serif;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.badge--sold-out {
+    background: var(--sold-out);
+}
+
+.dish__title,
+.sheet__title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.dish__name {
+    margin: 0;
+    font: 400 22px/1.15 'DM Serif Display', serif;
+}
+
+.dish__price {
+    font: 700 17px 'DM Sans', sans-serif;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+.dish__short {
+    margin: 0;
+    font: 400 14px/1.4 'DM Sans', sans-serif;
+    color: rgba(255, 255, 255, 0.88);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dish__more {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: 700 13px 'DM Sans', sans-serif;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.feed-empty {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---- Fixed header + category bar ---- */
+
+.feed-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: calc(16px + env(safe-area-inset-top)) 16px 0;
+    pointer-events: none;
+}
+
+.feed-header > * {
+    pointer-events: auto;
+}
+
+.feed-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.feed-brand__logo {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 999px;
+    object-fit: cover;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.feed-brand__logo--initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    font: 400 17px 'DM Serif Display', serif;
+}
+
+.feed-brand__name {
+    font: 400 18px 'DM Serif Display', serif;
+}
+
+.feed-categories {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    margin: 0 -16px;
+    padding-inline: 16px;
+}
+
+.feed-category {
+    flex: none;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    font: 600 13px 'DM Sans', sans-serif;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.feed-category[aria-pressed='true'] {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ---- Side actions (sound, detail) ---- */
+
+.feed-actions {
+    position: absolute;
+    right: 14px;
+    bottom: calc(172px + env(safe-area-inset-bottom));
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.feed-action {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    background: var(--glass);
+    cursor: pointer;
+}
+
+.feed-action .icon-unmuted,
+.feed-action[aria-pressed='true'] .icon-muted {
+    display: none;
+}
+
+.feed-action[aria-pressed='true'] .icon-unmuted {
+    display: block;
+}
+
+/* ---- First-use hint ---- */
+
+@keyframes hint-bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(6px);
+    }
+}
+
+.feed-hint {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    font: 600 11.5px 'DM Sans', sans-serif;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.85);
+    transition: opacity 300ms ease;
+}
+
+.feed-hint[hidden] {
+    display: none;
+}
+
+.feed-hint svg {
+    animation: hint-bounce 1.3s ease-in-out infinite;
+}
+
+/* ---- Bottom detail sheet ---- */
+
+.sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9;
+    display: flex;
+    max-height: 70%;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    padding: 14px 22px calc(30px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: var(--sheet-bg);
+    transform: translateY(0);
+    transition: transform 220ms ease;
+    touch-action: pan-y;
+}
+
+.sheet[hidden],
+.sheet-backdrop[hidden] {
+    display: none;
+}
+
+.sheet--dragging {
+    transition: none;
+}
+
+.sheet__handle {
+    width: 40px;
+    height: 4px;
+    flex: none;
+    align-self: center;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.sheet__title {
+    justify-content: space-between;
+}
+
+.sheet__name {
+    margin: 0;
+    font: 400 26px/1.15 'DM Serif Display', serif;
+}
+
+.sheet__price {
+    font: 700 19px 'DM Sans', sans-serif;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+.sheet__description {
+    margin: 0;
+    font: 400 15px/1.55 'DM Sans', sans-serif;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.sheet__variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sheet__variants:empty {
+    display: none;
+}
+
+.sheet__variants li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font: 700 13px 'DM Sans', sans-serif;
+}
+
+.sheet__variants li span + span {
+    font-weight: 600;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---- "feito com" branding (Grátis plan, US-5.1) ---- */
+
+.feed-branding {
+    position: absolute;
+    left: 50%;
+    bottom: calc(6px + env(safe-area-inset-bottom));
+    z-index: 3;
+    transform: translateX(-50%);
+    font: 500 10.5px 'DM Sans', sans-serif;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    white-space: nowrap;
+}

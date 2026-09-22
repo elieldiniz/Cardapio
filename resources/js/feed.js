@@ -1,0 +1,431 @@
+/**
+ * Client feed (US-1.1–US-1.4) — vanilla JS, no framework.
+ *
+ * - CSS scroll-snap pages between dishes; an IntersectionObserver finds the
+ *   dish on screen, plays its video and pauses every other one.
+ * - Only the next 1–2 videos are preloaded; far-away ones release their source.
+ * - Videos start at 480p and use the 720p rendition when the connection allows.
+ * - The category bar swaps the dish set and resets to that category's first dish.
+ * - A bottom sheet shows the full detail; dismissed by swipe down / tap outside.
+ */
+
+const PRELOAD_AHEAD = 2;
+const UNLOAD_DISTANCE = 3;
+const SHEET_CLOSE_THRESHOLD = 140;
+const HINT_KEY = 'feed-hint-seen';
+
+const root = document.querySelector('[data-feed]');
+
+if (root) {
+    initFeed(root);
+}
+
+function initFeed(root) {
+    const list = root.querySelector('[data-feed-list]');
+    const template = document.getElementById('dish-template');
+    const soundToggle = root.querySelector('[data-sound-toggle]');
+    const categoryBar = root.querySelector('[data-category-bar]');
+
+    const state = {
+        muted: true,
+        active: null,
+        firstPlayed: false,
+    };
+
+    // ---- Active dish detection ----
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                    setActive(entry.target);
+                }
+            });
+        },
+        { root: list, threshold: [0.6] },
+    );
+
+    function dishes() {
+        return Array.from(list.querySelectorAll('[data-dish]'));
+    }
+
+    function observeAll() {
+        observer.disconnect();
+        dishes().forEach((dish) => observer.observe(dish));
+    }
+
+    function setActive(dish) {
+        if (state.active === dish) {
+            return;
+        }
+
+        state.active = dish;
+        const all = dishes();
+        const index = all.indexOf(dish);
+
+        all.forEach((other, i) => {
+            const video = other.querySelector('video');
+            const distance = i - index;
+
+            if (other === dish) {
+                ensureSource(other, 'auto');
+                video.muted = state.muted;
+                play(video);
+            } else {
+                video.pause();
+
+                if (distance > 0 && distance <= PRELOAD_AHEAD) {
+                    ensureSource(other, 'auto');
+                } else if (Math.abs(distance) > UNLOAD_DISTANCE) {
+                    releaseSource(other);
+                }
+            }
+        });
+
+        root.dispatchEvent(new CustomEvent('feed:active-dish', { detail: { dish, dishId: dish.dataset.dishId } }));
+    }
+
+    function play(video) {
+        const attempt = video.play();
+
+        if (attempt && typeof attempt.catch === 'function') {
+            attempt.then(() => (state.firstPlayed = true)).catch(() => {});
+        }
+    }
+
+    // ---- Sources & quality (480p → 720p) ----
+
+    function prefersHd() {
+        const connection = navigator.connection;
+
+        if (!connection || connection.saveData) {
+            return false;
+        }
+
+        return connection.effectiveType === '4g' && (connection.downlink ?? 0) >= 5;
+    }
+
+    function sourceFor(dish) {
+        const hd = dish.dataset.videoSrcHd;
+
+        // The very first video always starts at 480p so it plays as fast as possible.
+        return state.firstPlayed && hd && prefersHd() ? hd : dish.dataset.videoSrc;
+    }
+
+    function ensureSource(dish, preload) {
+        const video = dish.querySelector('video');
+
+        if (!video.getAttribute('src')) {
+            const src = sourceFor(dish);
+
+            if (!src) {
+                return;
+            }
+
+            video.preload = preload;
+            video.src = src;
+        } else if (preload === 'auto') {
+            video.preload = 'auto';
+        }
+    }
+
+    function releaseSource(dish) {
+        const video = dish.querySelector('video');
+
+        if (video.getAttribute('src')) {
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+        }
+    }
+
+    // ---- Sound toggle & tap-to-pause ----
+
+    soundToggle?.addEventListener('click', () => {
+        state.muted = !state.muted;
+        soundToggle.setAttribute('aria-pressed', String(!state.muted));
+        soundToggle.setAttribute('aria-label', state.muted ? 'Ativar som' : 'Desativar som');
+
+        const video = state.active?.querySelector('video');
+
+        if (video) {
+            video.muted = state.muted;
+            play(video);
+        }
+    });
+
+    list.addEventListener('click', (event) => {
+        const video = event.target.closest('video');
+
+        if (!video) {
+            return;
+        }
+
+        video.paused ? play(video) : video.pause();
+    });
+
+    // ---- Category bar ----
+
+    function markCategory(button) {
+        categoryBar.querySelectorAll('[data-category]').forEach((other) => {
+            other.setAttribute('aria-pressed', String(other === button));
+        });
+
+        const target = button.offsetLeft - (categoryBar.clientWidth - button.clientWidth) / 2;
+        categoryBar.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }
+
+    categoryBar?.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-category]');
+
+        if (!button || button.getAttribute('aria-pressed') === 'true') {
+            return;
+        }
+
+        markCategory(button);
+
+        const url = button.dataset.categoryUrl;
+
+        if (!url) {
+            return;
+        }
+
+        try {
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const payload = await response.json();
+            renderDishes(payload.dishes ?? []);
+        } catch (error) {
+            console.error('Falha ao trocar de categoria', error);
+        }
+    });
+
+    function renderDishes(items) {
+        dishes().forEach(releaseSource);
+        state.active = null;
+        list.replaceChildren(...items.map(buildDish));
+        list.scrollTo({ top: 0 });
+        observeAll();
+
+        const first = dishes()[0];
+
+        if (first) {
+            setActive(first);
+        }
+
+        precache(items);
+    }
+
+    function buildDish(data) {
+        const fragment = template.content.cloneNode(true);
+        const dish = fragment.querySelector('[data-dish]');
+        const field = (name) => dish.querySelector(`[data-field="${name}"]`);
+
+        dish.dataset.dishId = data.id;
+        dish.dataset.videoSrc = data.video_url ?? '';
+        dish.dataset.videoSrcHd = data.video_url_hd ?? '';
+        dish.classList.toggle('dish--sold-out', Boolean(data.sold_out));
+
+        if (data.cover_url) {
+            field('video').poster = data.cover_url;
+        }
+
+        field('name').textContent = data.name ?? '';
+        field('price').textContent = data.price ?? '';
+        field('short_description').textContent = data.short_description ?? '';
+        field('description').textContent = data.description ?? '';
+
+        const badges = field('badges');
+        badges.replaceChildren(
+            ...(data.badges ?? []).map((label) => badgeElement(label)),
+            ...(data.sold_out ? [badgeElement('Esgotado', 'badge--sold-out')] : []),
+        );
+
+        field('variants').replaceChildren(
+            ...(data.variants ?? []).map((variant) => {
+                const item = document.createElement('li');
+                const name = document.createElement('span');
+                const price = document.createElement('span');
+                name.textContent = variant.name;
+                price.textContent = variant.price;
+                item.append(name, price);
+
+                return item;
+            }),
+        );
+
+        return dish;
+    }
+
+    function badgeElement(label, modifier = '') {
+        const badge = document.createElement('span');
+        badge.className = `badge ${modifier}`.trim();
+        badge.textContent = label;
+
+        return badge;
+    }
+
+    // ---- Detail sheet ----
+
+    const sheet = root.querySelector('[data-sheet]');
+    const backdrop = root.querySelector('[data-sheet-backdrop]');
+    const sheetField = (name) => sheet.querySelector(`[data-sheet-field="${name}"]`);
+
+    function openSheet() {
+        const dish = state.active ?? dishes()[0];
+
+        if (!dish) {
+            return;
+        }
+
+        const field = (name) => dish.querySelector(`[data-field="${name}"]`);
+
+        sheetField('name').textContent = field('name').textContent;
+        sheetField('price').textContent = field('price').textContent;
+        sheetField('badges').innerHTML = field('badges').innerHTML;
+        sheetField('description').textContent = field('description').textContent || field('short_description').textContent;
+        sheetField('variants').innerHTML = field('variants').innerHTML;
+
+        sheet.style.transform = '';
+        sheet.hidden = false;
+        backdrop.hidden = false;
+        sheet.scrollTop = 0;
+    }
+
+    function closeSheet() {
+        sheet.hidden = true;
+        backdrop.hidden = true;
+        sheet.style.transform = '';
+    }
+
+    root.addEventListener('click', (event) => {
+        if (event.target.closest('[data-detail-open]')) {
+            openSheet();
+        }
+    });
+
+    backdrop.addEventListener('click', closeSheet);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !sheet.hidden) {
+            closeSheet();
+        }
+    });
+
+    let dragStart = null;
+    let dragDelta = 0;
+
+    sheet.addEventListener('pointerdown', (event) => {
+        if (sheet.scrollTop > 0 && !event.target.closest('[data-sheet-handle]')) {
+            return;
+        }
+
+        dragStart = event.clientY;
+        dragDelta = 0;
+        sheet.classList.add('sheet--dragging');
+    });
+
+    sheet.addEventListener('pointermove', (event) => {
+        if (dragStart === null) {
+            return;
+        }
+
+        dragDelta = Math.max(0, event.clientY - dragStart);
+        sheet.style.transform = `translateY(${dragDelta}px)`;
+    });
+
+    const endDrag = () => {
+        if (dragStart === null) {
+            return;
+        }
+
+        sheet.classList.remove('sheet--dragging');
+        dragStart = null;
+
+        if (dragDelta > SHEET_CLOSE_THRESHOLD) {
+            closeSheet();
+        } else {
+            sheet.style.transform = '';
+        }
+    };
+
+    sheet.addEventListener('pointerup', endDrag);
+    sheet.addEventListener('pointercancel', endDrag);
+    sheet.addEventListener('pointerleave', endDrag);
+
+    // ---- First-use hint ----
+
+    const hint = root.querySelector('[data-feed-hint]');
+
+    if (hint && dishes().length > 1 && !storageGet(HINT_KEY)) {
+        const dismissHint = () => {
+            hint.hidden = true;
+            storageSet(HINT_KEY, '1');
+        };
+
+        hint.hidden = false;
+        list.addEventListener('scroll', dismissHint, { once: true, passive: true });
+        categoryBar?.addEventListener('click', dismissHint, { once: true });
+    }
+
+    // ---- Service worker: cache covers + first video for repeat visits ----
+
+    function precache(items) {
+        if (!navigator.serviceWorker?.controller) {
+            return;
+        }
+
+        const urls = items.map((item) => item.cover_url).filter(Boolean);
+
+        if (items[0]?.video_url) {
+            urls.push(items[0].video_url);
+        }
+
+        navigator.serviceWorker.controller.postMessage({ type: 'precache', urls });
+    }
+
+    if ('serviceWorker' in navigator && root.dataset.swUrl) {
+        navigator.serviceWorker
+            .register(root.dataset.swUrl, { scope: root.dataset.swScope })
+            .then(() => navigator.serviceWorker.ready)
+            .then(() => precache(currentItems()))
+            .catch(() => {});
+    }
+
+    function currentItems() {
+        return dishes().map((dish) => ({
+            cover_url: dish.querySelector('video').getAttribute('poster'),
+            video_url: dish.dataset.videoSrc,
+        }));
+    }
+
+    // ---- Boot ----
+
+    observeAll();
+
+    const first = dishes()[0];
+
+    if (first) {
+        setActive(first);
+    }
+}
+
+function storageGet(key) {
+    try {
+        return window.localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+}
+
+function storageSet(key, value) {
+    try {
+        window.localStorage.setItem(key, value);
+    } catch {
+        // Private mode / storage disabled — the hint simply shows again.
+    }
+}

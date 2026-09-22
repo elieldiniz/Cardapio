@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Dev\FeedPreview;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,4 +29,8 @@ Route::middleware(['auth', 'owner'])->prefix('painel')->name('panel.')->group(fu
 
 if (app()->environment(['local', 'testing'])) {
     Route::view('/dev/components', 'dev.components')->name('dev.components');
+    Route::get('/dev/feed', fn () => view('feed.show', FeedPreview::page()))->name('dev.feed');
+    Route::get('/dev/feed/categorias/{category}', fn (string $category) => [
+        'dishes' => FeedPreview::dishes($category),
+    ])->name('dev.feed.category');
 }
