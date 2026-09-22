@@ -68,6 +68,14 @@ new #[Layout('layouts::panel')] #[Title('Pratos')] class extends Component
     public function updateStatus(int $dishId, string $slug): void
     {
         $dish = $this->findDish($dishId);
+
+        if ($dish->status->slug === 'oculto' && $slug !== 'oculto' && ! $this->restaurant->canShowAnotherDish()) {
+            $this->dispatch('toast', message: 'O plano '.$this->restaurant->plan->name.' permite '.$this->restaurant->plan->dish_limit.' pratos visíveis. Faça upgrade ou oculte outro prato.', type: 'error');
+            unset($this->dishes);
+
+            return;
+        }
+
         $dish->update(['status_id' => DishStatus::idFor($slug)]);
         unset($this->dishes);
 

@@ -13,6 +13,8 @@ use App\Models\Video;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\Fakes\FakeMuxClient;
 use Tests\Fakes\FakeVideoGenerationProvider;
 use Tests\TestCase;
@@ -136,4 +138,39 @@ function feedDish(Restaurant $restaurant, array $attributes = [], ?Category $cat
     $dish->update(['active_video_id' => $video->id]);
 
     return $dish->fresh(['activeVideo']);
+}
+
+/**
+ * Post a Stripe webhook event to Cashier's endpoint (no signing secret in tests).
+ *
+ * @param  array<string, mixed>  $object
+ */
+function stripeWebhook(string $type, array $object): TestResponse
+{
+    return test()->postJson(route('cashier.webhook'), [
+        'id' => 'evt_'.Str::random(10),
+        'type' => $type,
+        'data' => ['object' => $object],
+    ]);
+}
+
+/**
+ * A customer.subscription.* object for the given plan price.
+ *
+ * @return array<string, mixed>
+ */
+function stripeSubscription(string $customer, string $priceId, string $status = 'active', string $id = 'sub_1', array $extra = []): array
+{
+    return array_merge([
+        'id' => $id,
+        'object' => 'subscription',
+        'customer' => $customer,
+        'status' => $status,
+        'metadata' => ['type' => 'default'],
+        'items' => ['data' => [[
+            'id' => 'si_'.$id,
+            'price' => ['id' => $priceId, 'product' => 'prod_x'],
+            'quantity' => 1,
+        ]]],
+    ], $extra);
 }

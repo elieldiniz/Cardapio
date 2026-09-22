@@ -63,6 +63,30 @@ class Restaurant extends Model
         return max(0, $balance->monthly_balance + $balance->addon_balance - $this->reservedGenerations());
     }
 
+    /**
+     * Visible (non-hidden) dishes still fit the plan's limit — used when a dono
+     * un-hides a dish after a downgrade (US-5.5).
+     */
+    public function canShowAnotherDish(): bool
+    {
+        $limit = $this->plan?->dish_limit;
+
+        return $limit === null || $this->dishes()->whereHas('status', fn ($status) => $status->where('slug', '!=', 'oculto'))->count() < $limit;
+    }
+
+    /**
+     * The dono's e-mail identifies the restaurant as a Stripe customer.
+     */
+    public function stripeEmail(): ?string
+    {
+        return $this->users()->whereHas('role', fn ($role) => $role->where('slug', 'dono'))->orderBy('id')->value('email');
+    }
+
+    public function stripeName(): ?string
+    {
+        return $this->name;
+    }
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);

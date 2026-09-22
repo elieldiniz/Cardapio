@@ -57,6 +57,7 @@ Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('pa
     Route::livewire('/pratos/novo', 'pages::panel.dish-form')->name('dishes.create');
     Route::livewire('/pratos/{dish}/editar', 'pages::panel.dish-form')->name('dishes.edit');
     Route::livewire('/pratos/{dish}/video', 'pages::panel.dish-video')->name('dishes.video');
+    Route::livewire('/assinatura', 'pages::panel.subscription')->name('subscription');
 });
 
 /*

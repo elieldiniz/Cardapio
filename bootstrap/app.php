@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (Request $request) => HomeRedirect::for($request->user()));
 
         // Webhooks are signature-verified; feed view beacons are anonymous and carry no session state.
-        $middleware->validateCsrfTokens(except: ['webhooks/*', 'r/*/visualizacoes']);
+        $middleware->validateCsrfTokens(except: ['webhooks/*', 'stripe/*', 'r/*/visualizacoes']);
 
         $middleware->alias([
             'owner' => EnsureUserIsOwner::class,
