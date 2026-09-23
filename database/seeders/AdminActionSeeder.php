@@ -20,6 +20,8 @@ class AdminActionSeeder extends LookupSeeder
             'conteudo_removido' => 'Conteúdo Removido',
             'plano_atualizado' => 'Plano Atualizado',
             'cupom_criado' => 'Cupom Criado',
+            'conta_restaurada' => 'Conta Restaurada',
+            'conta_excluida_definitivamente' => 'Conta Excluída Definitivamente',
         ];
     }
 }

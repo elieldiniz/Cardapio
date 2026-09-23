@@ -43,6 +43,8 @@ function lookupSeederExpectations(): array
             'conteudo_removido',
             'plano_atualizado',
             'cupom_criado',
+            'conta_restaurada',
+            'conta_excluida_definitivamente',
         ]],
     ];
 }

@@ -8,6 +8,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantStatus;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -24,7 +25,7 @@ class RegisterRestaurantOwner
      */
     public function handle(array $data): User
     {
-        return DB::transaction(function () use ($data) {
+        $user = DB::transaction(function () use ($data) {
             $plan = Plan::query()->where('name', self::FREE_PLAN_NAME)->firstOrFail();
 
             $restaurant = Restaurant::create([
@@ -51,6 +52,11 @@ class RegisterRestaurantOwner
 
             return $user;
         });
+
+        // Sends the "confirme seu e-mail" link (the panel stays locked until it is used).
+        event(new Registered($user));
+
+        return $user;
     }
 
     private function uniqueSlug(string $name): string

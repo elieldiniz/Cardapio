@@ -8,6 +8,7 @@ use App\Http\Controllers\Panel\AppearancePreviewController;
 use App\Http\Controllers\Webhooks\MuxWebhookController;
 use App\Support\FeedSample;
 use App\Support\QrCode;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -35,6 +36,16 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/sair', LogoutController::class)->middleware('auth')->name('logout');
 
+Route::middleware('auth')->group(function () {
+    Route::livewire('/email/verificar', 'pages::auth.verify-email')->name('verification.notice');
+    Route::get('/email/verificar/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        session()->flash('toast', ['message' => 'E-mail confirmado!', 'type' => 'success']);
+
+        return redirect()->route('panel.home');
+    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+});
+
 Route::post('/impersonacao/encerrar', function (Impersonation $impersonation) {
     return $impersonation->stop() ? redirect('/admin') : redirect()->route('login');
 })->middleware('auth')->name('impersonation.stop');
@@ -59,7 +70,7 @@ Route::prefix('r/{restaurant:slug}')->name('feed.')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('panel.')->group(function () {
+Route::middleware(['auth', 'auth.session', 'owner', 'verified.owner'])->prefix('painel')->name('panel.')->group(function () {
     Route::livewire('/', 'pages::panel.home')->name('home');
     Route::livewire('/categorias', 'pages::panel.categories')->name('categories');
     Route::livewire('/pratos', 'pages::panel.dishes')->name('dishes');
@@ -76,6 +87,7 @@ Route::middleware(['auth', 'auth.session', 'owner'])->prefix('painel')->name('pa
         'table' => Str::limit((string) $request->query('mesa'), 10, ''),
     ]))->name('qr-code.print');
     Route::livewire('/visualizacoes', 'pages::panel.views')->name('views');
+    Route::livewire('/conta', 'pages::panel.account')->name('account');
 });
 
 /*

@@ -1,7 +1,6 @@
 <?php
 
 use App\Actions\RegisterRestaurantOwner;
-use App\Support\HomeRedirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
@@ -45,7 +44,7 @@ new #[Layout('layouts::auth')] #[Title('Criar conta')] class extends Component
         Auth::login($user);
         session()->regenerate();
 
-        return $this->redirect(HomeRedirect::for($user));
+        return $this->redirectRoute('verification.notice');
     }
 };
 ?>

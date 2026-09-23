@@ -16,6 +16,8 @@ class ViewRestaurant extends ViewRecord
             RestaurantActions::impersonate(),
             RestaurantActions::suspend(),
             RestaurantActions::reactivate(),
+            RestaurantActions::restore(),
+            RestaurantActions::purge()->after(fn () => $this->redirect(RestaurantResource::getUrl())),
         ];
     }
 }

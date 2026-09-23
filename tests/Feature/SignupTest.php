@@ -19,7 +19,7 @@ test('signing up creates a restaurant on the free plan with five one time genera
         ->set('password', 'segredo123')
         ->call('register')
         ->assertHasNoErrors()
-        ->assertRedirect(route('panel.home'));
+        ->assertRedirect(route('verification.notice'));
 
     $user = User::where('email', 'ana@fumaca.com')->firstOrFail();
     $restaurant = $user->restaurant;

@@ -10,6 +10,7 @@ use App\Models\SubscriptionItem;
 use App\Services\Ai\VideoGenerationProviderResolver;
 use App\Services\Mux\MuxApiClient;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
@@ -46,6 +47,14 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useCustomerModel(Restaurant::class);
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useSubscriptionItemModel(SubscriptionItem::class);
+
+        VerifyEmail::toMailUsing(fn ($notifiable, string $url) => (new MailMessage)
+            ->subject('Confirme seu e-mail')
+            ->greeting('Olá!')
+            ->line('Confirme seu e-mail para liberar o painel do seu restaurante.')
+            ->action('Confirmar e-mail', $url)
+            ->line('Se você não criou uma conta, ignore este e-mail.')
+            ->salutation('Equipe '.config('app.name')));
 
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             $url = route('password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()]);

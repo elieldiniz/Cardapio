@@ -82,6 +82,16 @@
 
             @stack('sidebar-footer')
 
+            <a
+                href="{{ route('panel.account') }}"
+                wire:navigate
+                @if (request()->routeIs('panel.account')) aria-current="page" @endif
+                class="flex items-center gap-[11px] rounded-[9px] px-3 py-2.5 text-[13.5px] font-semibold transition {{ request()->routeIs('panel.account') ? 'bg-accent text-white' : 'text-white/65 hover:bg-white/5 hover:text-white' }}"
+            >
+                <x-ui.icon name="user" />
+                Minha conta
+            </a>
+
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="flex w-full items-center gap-[11px] rounded-[9px] px-3 py-2.5 text-left text-[13.5px] font-semibold text-white/65 transition hover:bg-white/5 hover:text-white">

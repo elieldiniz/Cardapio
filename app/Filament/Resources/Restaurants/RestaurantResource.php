@@ -12,6 +12,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RestaurantResource extends Resource
 {
@@ -33,6 +35,14 @@ class RestaurantResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    /**
+     * Includes restaurants the dono deleted (trash), shown in their own tab.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function infolist(Schema $schema): Schema

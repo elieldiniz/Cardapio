@@ -43,6 +43,12 @@ class RestaurantsTable
                     ->label('Criado em')
                     ->date('d/m/Y')
                     ->sortable(),
+                TextColumn::make('deleted_at')
+                    ->label('Excluído pelo dono')
+                    ->dateTime('d/m/Y H:i')
+                    ->description(fn (Restaurant $record) => $record->deleted_at?->diffForHumans())
+                    ->sortable()
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === 'excluidos'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -59,6 +65,8 @@ class RestaurantsTable
                     RestaurantActions::impersonate(),
                     RestaurantActions::suspend(),
                     RestaurantActions::reactivate(),
+                    RestaurantActions::restore(),
+                    RestaurantActions::purge(),
                 ]),
             ]);
     }

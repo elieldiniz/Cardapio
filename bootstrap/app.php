@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureOwnerEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsOwner;
 use App\Support\HomeRedirect;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'owner' => EnsureUserIsOwner::class,
+            'verified.owner' => EnsureOwnerEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
