@@ -2,16 +2,20 @@
     Client feed (US-1.1–US-1.4). Plain Blade + vanilla JS — deliberately no
     Livewire on this route so scrolling stays fluid on low-end phones.
 
+    The page opens on the grid of every dish; tapping one opens the vertical
+    video feed on it, and "voltar" returns to the grid.
+
     Expects:
-      $restaurant       array{name, slug, logo_url, accent, font, show_branding}
+      $restaurant       array{name, description, slug, logo_url, cover_url, accent, font, show_branding}
       $categories       array<array{id, name, url}>  (url = category-switch endpoint)
       $activeCategoryId int|null
-      $dishes           array<FeedDish>  dishes of the active category, first one embedded for first paint
+      $dishes           array<FeedDish>  dishes of the first category, pre-rendered so opening one needs no request
+      $grid             array<array{id, category_id, name, sold_out, thumb_url}>  every feed-eligible dish
       $trackUrl         string|null      watch-time endpoint (Phase 14.3)
       $preview          bool             appearance live preview inside the panel (Phase 16)
 --}}
 @php
-    $first = $dishes[0] ?? null;
+    $firstThumb = $restaurant['cover_url'] ?? ($grid[0]['thumb_url'] ?? null);
     $preview ??= false;
     $fonts = config('feed.fonts');
     $font = array_key_exists($restaurant['font'] ?? '', $fonts) ? $restaurant['font'] : config('feed.default_font');
@@ -24,13 +28,11 @@
     <meta name="theme-color" content="#101010">
     <title>{{ $restaurant['name'] }} · Cardápio</title>
 
-    {{-- Warm up the video CDN before the first <video> is parsed (US-1.1: video < 2s on 4G). --}}
+    {{-- Warm up the video CDN so a tapped dish starts playing fast (US-1.1: video < 2s on 4G). --}}
     <link rel="preconnect" href="{{ \App\Support\MuxUrls::STREAM_ORIGIN }}" crossorigin>
     <link rel="preconnect" href="{{ \App\Support\MuxUrls::IMAGE_ORIGIN }}" crossorigin>
-    @if ($first)
-        @if ($first['cover_url'])
-            <link rel="preload" as="image" href="{{ $first['cover_url'] }}" fetchpriority="high">
-        @endif
+    @if ($firstThumb)
+        <link rel="preload" as="image" href="{{ $firstThumb }}" fetchpriority="high">
     @endif
 
     @if ($preview)
@@ -50,6 +52,7 @@
     <div
         class="feed-app"
         data-feed
+        data-view="grid"
         @if ($preview)
             data-preview
         @else
@@ -58,24 +61,24 @@
             @if ($trackUrl ?? null) data-track-url="{{ $trackUrl }}" @endif
         @endif
     >
+        @include('feed.partials.grid')
+
         <header class="feed-header">
             <div class="feed-brand">
-                <img class="feed-brand__logo" data-brand-logo src="{{ $restaurant['logo_url'] }}" alt="" width="34" height="34" @unless ($restaurant['logo_url']) hidden @endunless>
-                <span class="feed-brand__logo feed-brand__logo--initial" data-brand-initial @if ($restaurant['logo_url']) hidden @endif>{{ mb_substr($restaurant['name'], 0, 1) }}</span>
+                <button type="button" class="feed-back" data-back-to-grid aria-label="Voltar para o cardápio">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
                 <span class="feed-brand__name">{{ $restaurant['name'] }}</span>
             </div>
 
             @include('feed.partials.category-bar', ['categories' => $categories, 'activeCategoryId' => $activeCategoryId])
         </header>
 
-        <main class="feed" data-feed-list aria-label="Pratos">
-            @forelse ($dishes as $index => $dish)
-                @include('feed.partials.dish', ['dish' => $dish, 'eager' => $index === 0])
-            @empty
-                <section class="feed-empty">
-                    <p>O cardápio ainda está sendo preparado.</p>
-                </section>
-            @endforelse
+        <main class="feed" data-feed-list data-category="{{ $activeCategoryId }}" aria-label="Pratos">
+            {{-- Nothing plays until a dish is tapped in the grid, so no video is fetched eagerly. --}}
+            @foreach ($dishes as $dish)
+                @include('feed.partials.dish', ['dish' => $dish, 'eager' => false])
+            @endforeach
         </main>
 
         <div class="feed-actions">

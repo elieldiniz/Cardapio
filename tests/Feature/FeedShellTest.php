@@ -12,7 +12,7 @@ it('renders the feed shell as plain server-side html without livewire', function
         ->not->toContain('livewire');
 });
 
-it('embeds the first dish server side with an autoplaying muted looping inline video', function () {
+it('embeds the first dish server side with a muted looping inline video', function () {
     $html = $this->get(route('dev.feed'))->getContent();
 
     expect($html)->toContain('Burger Clássico')

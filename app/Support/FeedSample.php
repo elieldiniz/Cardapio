@@ -44,8 +44,10 @@ class FeedSample
         return [
             'restaurant' => [
                 'name' => 'Fumaça',
+                'description' => 'Churrascaria & fumeiro contemporâneo. Carnes defumadas 12h na casa.',
                 'slug' => 'fumaca',
                 'logo_url' => null,
+                'cover_url' => null,
                 'accent' => Restaurant::DEFAULT_ACCENT_COLOR,
                 'font' => null,
                 'show_branding' => true,
@@ -57,6 +59,10 @@ class FeedSample
             ])->values()->all(),
             'activeCategoryId' => $first,
             'dishes' => static::dishes($first),
+            'grid' => collect(array_keys($menu))
+                ->flatMap(fn (string $categoryId) => static::dishes($categoryId))
+                ->map(fn (array $dish) => collect($dish)->only(['id', 'category_id', 'name', 'sold_out', 'thumb_url'])->all())
+                ->all(),
             'trackUrl' => null,
         ];
     }
@@ -69,6 +75,7 @@ class FeedSample
         return collect(static::menu()[$categoryId]['dishes'] ?? [])
             ->map(fn (array $dish, int $index) => [
                 'id' => "{$categoryId}-{$index}",
+                'category_id' => $categoryId,
                 'name' => $dish['name'],
                 'price' => $dish['price'],
                 'short_description' => $dish['short_description'],
@@ -77,6 +84,7 @@ class FeedSample
                 'sold_out' => $dish['sold_out'] ?? false,
                 'variants' => $dish['variants'] ?? [],
                 'cover_url' => null,
+                'thumb_url' => null,
                 'video_url' => null,
                 'video_url_hd' => null,
             ])->all();

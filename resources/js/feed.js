@@ -1,6 +1,9 @@
 /**
  * Client feed (US-1.1–US-1.4) — vanilla JS, no framework.
  *
+ * - The page opens on a grid of every dish (mockup); tapping one opens the
+ *   vertical video feed on that dish, and "voltar" (or the phone's back
+ *   button) returns to the grid.
  * - CSS scroll-snap pages between dishes; an IntersectionObserver finds the
  *   dish on screen, plays its video and pauses every other one.
  * - Only the next 1–2 videos are preloaded; far-away ones release their source.
@@ -28,10 +31,13 @@ function initFeed(root) {
     const soundToggle = root.querySelector('[data-sound-toggle]');
     const categoryBar = root.querySelector('[data-category-bar]');
 
+    const grid = root.querySelector('[data-grid]');
+
     const state = {
         muted: true,
         active: null,
         firstPlayed: false,
+        renderedCategory: list.dataset.category ?? null,
     };
 
     // ---- Active dish detection ----
@@ -39,7 +45,7 @@ function initFeed(root) {
     const observer = new IntersectionObserver(
         (entries) => {
             entries.forEach((entry) => {
-                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                if (root.dataset.view === 'feed' && entry.isIntersecting && entry.intersectionRatio >= 0.6) {
                     setActive(entry.target);
                 }
             });
@@ -177,19 +183,14 @@ function initFeed(root) {
         categoryBar.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
     }
 
-    categoryBar?.addEventListener('click', async (event) => {
-        const button = event.target.closest('[data-category]');
-
-        if (!button || button.getAttribute('aria-pressed') === 'true') {
-            return;
-        }
-
-        markCategory(button);
-
-        const url = button.dataset.categoryUrl;
+    /**
+     * Swap the feed to another category's dishes, via the category-switch endpoint.
+     */
+    async function loadCategory(button) {
+        const url = button?.dataset.categoryUrl;
 
         if (!url) {
-            return;
+            return false;
         }
 
         try {
@@ -201,8 +202,31 @@ function initFeed(root) {
 
             const payload = await response.json();
             renderDishes(payload.dishes ?? []);
+            state.renderedCategory = String(button.dataset.category);
+
+            return true;
         } catch (error) {
             console.error('Falha ao trocar de categoria', error);
+
+            return false;
+        }
+    }
+
+    categoryBar?.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-category]');
+
+        if (!button || button.getAttribute('aria-pressed') === 'true') {
+            return;
+        }
+
+        markCategory(button);
+
+        if (await loadCategory(button)) {
+            const first = dishes()[0];
+
+            if (first) {
+                setActive(first);
+            }
         }
     });
 
@@ -212,13 +236,6 @@ function initFeed(root) {
         list.replaceChildren(...items.map(buildDish));
         list.scrollTo({ top: 0 });
         observeAll();
-
-        const first = dishes()[0];
-
-        if (first) {
-            setActive(first);
-        }
-
         precache(items);
     }
 
@@ -363,16 +380,97 @@ function initFeed(root) {
 
     const hint = root.querySelector('[data-feed-hint]');
 
-    if (hint && dishes().length > 1 && !storageGet(HINT_KEY)) {
+    function maybeShowHint() {
+        if (!hint || !hint.hidden || dishes().length < 2 || storageGet(HINT_KEY)) {
+            return;
+        }
+
         const dismissHint = () => {
             hint.hidden = true;
             storageSet(HINT_KEY, '1');
         };
 
         hint.hidden = false;
-        list.addEventListener('scroll', dismissHint, { once: true, passive: true });
-        categoryBar?.addEventListener('click', dismissHint, { once: true });
+        // The programmatic scroll to the tapped dish must not dismiss it.
+        setTimeout(() => {
+            list.addEventListener('scroll', dismissHint, { once: true, passive: true });
+            categoryBar?.addEventListener('click', dismissHint, { once: true });
+        }, 300);
     }
+
+    // ---- Grid ⇄ feed ----
+
+    function showFeed() {
+        root.dataset.view = 'feed';
+    }
+
+    function showGrid() {
+        dishes().forEach((dish) => dish.querySelector('video').pause());
+        state.active = null;
+        root.dataset.view = 'grid';
+    }
+
+    async function openDish(dishId, categoryId) {
+        const button = categoryBar?.querySelector(`[data-category="${categoryId}"]`);
+
+        if (String(state.renderedCategory) !== String(categoryId)) {
+            await loadCategory(button);
+        }
+
+        if (button) {
+            markCategory(button);
+        }
+
+        showFeed();
+
+        const target = list.querySelector(`[data-dish-id="${dishId}"]`) ?? dishes()[0];
+
+        if (!target) {
+            return;
+        }
+
+        list.scrollTop = target.offsetTop;
+        state.active = null;
+        setActive(target);
+        maybeShowHint();
+
+        if (!root.hasAttribute('data-preview')) {
+            history.pushState({ feed: true }, '');
+        }
+    }
+
+    grid?.addEventListener('click', (event) => {
+        const item = event.target.closest('[data-open-dish]');
+
+        if (item) {
+            openDish(item.dataset.openDish, item.dataset.category);
+
+            return;
+        }
+
+        const filter = event.target.closest('[data-grid-filter]');
+
+        if (!filter) {
+            return;
+        }
+
+        const category = filter.dataset.gridFilter;
+
+        grid.querySelectorAll('[data-grid-filter]').forEach((other) => other.setAttribute('aria-pressed', String(other === filter)));
+        grid.querySelectorAll('[data-grid-item]').forEach((cell) => {
+            cell.hidden = category !== 'all' && cell.dataset.category !== category;
+        });
+    });
+
+    root.querySelector('[data-back-to-grid]')?.addEventListener('click', () => {
+        history.state?.feed ? history.back() : showGrid();
+    });
+
+    window.addEventListener('popstate', () => {
+        if (root.dataset.view === 'feed') {
+            showGrid();
+        }
+    });
 
     // ---- Service worker: cache covers + first video for repeat visits ----
 
@@ -413,7 +511,7 @@ function initFeed(root) {
                 return;
             }
 
-            const { accent, font, logoUrl } = event.data;
+            const { accent, font, logoUrl, coverUrl, description } = event.data;
             const style = document.documentElement.style;
 
             if (accent) {
@@ -432,6 +530,19 @@ function initFeed(root) {
                 logo.hidden = false;
                 initial.hidden = true;
             }
+
+            const cover = root.querySelector('[data-brand-cover]');
+
+            if (cover && coverUrl) {
+                cover.style.backgroundImage = `url('${coverUrl}')`;
+            }
+
+            const about = root.querySelector('[data-brand-description]');
+
+            if (about && typeof description === 'string') {
+                about.textContent = description;
+                about.hidden = description.trim() === '';
+            }
         });
     }
 
@@ -439,15 +550,9 @@ function initFeed(root) {
 
     initTracking(root);
 
-    // ---- Boot ----
+    // ---- Boot: the grid is shown; nothing plays until a dish is tapped ----
 
     observeAll();
-
-    const first = dishes()[0];
-
-    if (first) {
-        setActive(first);
-    }
 }
 
 function storageGet(key) {

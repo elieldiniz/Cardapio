@@ -33,7 +33,7 @@ class FeedBuilder
             ->orderBy('dishes.display_order')
             ->orderBy('dishes.id')
             ->select('dishes.*')
-            ->with(['activeVideo', 'status', 'badges', 'variants']);
+            ->with(['activeVideo', 'status', 'badges', 'variants', 'photos' => fn ($query) => $query->orderBy('display_order')]);
     }
 
     /**
@@ -66,8 +66,28 @@ class FeedBuilder
     }
 
     /**
-     * View data for feed/show.blade.php: the first category's dishes are
-     * rendered server-side so the first cover and video need no JS (US-1.1).
+     * Every feed-eligible dish, in menu order, for the opening grid.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function gridFor(Restaurant $restaurant): array
+    {
+        return $this->eligibleDishes($restaurant)
+            ->get()
+            ->map(fn (Dish $dish) => [
+                'id' => $dish->id,
+                'category_id' => $dish->category_id,
+                'name' => $dish->name,
+                'sold_out' => $dish->isSoldOut(),
+                'thumb_url' => $this->present($dish)['thumb_url'],
+            ])
+            ->all();
+    }
+
+    /**
+     * View data for feed/show.blade.php. The page opens on the grid of every
+     * dish (mockup); the first category's dishes are also rendered so opening
+     * one of them needs no request.
      *
      * @return array<string, mixed>
      */
@@ -81,7 +101,9 @@ class FeedBuilder
             'restaurant' => [
                 'name' => $restaurant->name,
                 'slug' => $restaurant->slug,
+                'description' => $restaurant->description,
                 'logo_url' => $restaurant->logo_path ? Storage::disk('public')->url($restaurant->logo_path) : null,
+                'cover_url' => $restaurant->cover_path ? Storage::disk('public')->url($restaurant->cover_path) : null,
                 'accent' => $restaurant->accentColor(),
                 'font' => $restaurant->font,
                 'show_branding' => ! ($restaurant->plan?->removes_branding ?? false),
@@ -93,6 +115,7 @@ class FeedBuilder
             ])->all(),
             'activeCategoryId' => $first?->id,
             'dishes' => $first ? $this->dishesFor($restaurant, $first) : [],
+            'grid' => $this->gridFor($restaurant),
             'trackUrl' => route('feed.views', $restaurant),
         ];
     }
@@ -107,8 +130,12 @@ class FeedBuilder
         $video = $dish->activeVideo;
         $playbackId = $video?->mux_playback_id;
 
+        $cover = $video?->cover_path ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : null);
+        $photo = $dish->photos->first();
+
         return [
             'id' => $dish->id,
+            'category_id' => $dish->category_id,
             'name' => $dish->name,
             'price' => Money::brl($dish->price),
             'short_description' => $dish->short_description,
@@ -119,7 +146,9 @@ class FeedBuilder
                 'name' => $variant->name,
                 'price' => Money::brl($variant->price),
             ])->all(),
-            'cover_url' => $video?->cover_path ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : null),
+            'cover_url' => $cover,
+            // The grid shows the dish's own photo, falling back to the video cover.
+            'thumb_url' => $photo ? Storage::disk('public')->url($photo->file_path) : $cover,
             'video_url' => $playbackId ? MuxUrls::mp4($playbackId, '480p') : null,
             'video_url_hd' => $playbackId ? MuxUrls::mp4($playbackId, '720p') : null,
         ];

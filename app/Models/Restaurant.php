@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Cashier\Billable;
 
-#[Fillable(['plan_id', 'status_id', 'name', 'slug', 'logo_path', 'accent_color', 'font'])]
+#[Fillable(['plan_id', 'status_id', 'name', 'description', 'slug', 'logo_path', 'cover_path', 'accent_color', 'font'])]
 class Restaurant extends Model
 {
     /** @use HasFactory<RestaurantFactory> */

@@ -24,6 +24,7 @@ class AppearancePreviewController extends Controller
             $page['categories'] = array_map(fn (array $category) => ['url' => null] + $category, $sample['categories']);
             $page['activeCategoryId'] = $sample['activeCategoryId'];
             $page['dishes'] = $sample['dishes'];
+            $page['grid'] = $sample['grid'];
         }
 
         return view('feed.show', ['preview' => true, 'trackUrl' => null] + $page);

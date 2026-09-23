@@ -27,13 +27,16 @@ test('the initial response embeds the first dishs cover and video url', function
     $playback = $first->activeVideo->mux_playback_id;
     $html = $this->get(route('feed.show', $this->restaurant))->getContent();
 
+    // The opening grid shows the cover; the feed markup already carries the video URL,
+    // so a tapped dish starts playing without another request.
     expect($html)
-        ->toContain('src="'.MuxUrls::mp4($playback).'"')
-        ->toContain('poster="'.$first->activeVideo->cover_path.'"')
-        ->toContain('<link rel="preload" as="image" href="'.$first->activeVideo->cover_path.'"');
+        ->toContain('<link rel="preload" as="image" href="'.$first->activeVideo->cover_path.'"')
+        ->toContain('<img class="grid-item__image" src="'.$first->activeVideo->cover_path.'"')
+        ->toContain('data-video-src="'.MuxUrls::mp4($playback).'"')
+        ->toContain('poster="'.$first->activeVideo->cover_path.'"');
 
-    // Only the first video gets an eager src; the rest wait for the observer.
-    expect(substr_count($html, ' autoplay'))->toBe(1);
+    // Nothing autoplays behind the grid.
+    expect(substr_count($html, ' autoplay'))->toBe(0);
 });
 
 test('a dish without an approved active video never appears in the feed', function () {
@@ -69,10 +72,16 @@ it('orders categories and dishes and keeps sold out dishes flagged', function ()
     feedDish($this->restaurant, ['name' => 'B-um', 'display_order' => 1, 'status_id' => DishStatus::idFor('esgotado')], $first);
     feedDish($this->restaurant, ['name' => 'Limonada'], $second);
 
-    $this->get(route('feed.show', $this->restaurant))
-        ->assertSeeInOrder(['Burgers', 'Bebidas'])
-        ->assertSeeInOrder(['Esgotado', 'B-um', 'B-dois'])
-        ->assertDontSee('Limonada');
+    $html = $this->get(route('feed.show', $this->restaurant))->getContent();
+    [$grid, $feed] = explode('data-feed-list', $html, 2);
+
+    // The grid lists every category's dishes in menu order, sold-out ones flagged.
+    expect($grid)->toMatch('/Burgers.*Bebidas/s')
+        ->toMatch('/grid-item__sold-out.*B-um.*B-dois.*Limonada/s');
+
+    // The feed is pre-rendered with the first category only; others load on demand.
+    expect($feed)->toMatch('/Esgotado.*B-um.*B-dois/s')
+        ->not->toContain('Limonada');
 });
 
 it('shows the made-with branding only on plans that keep it', function () {
