@@ -1,58 +1,118 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Degustou Cardápio
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Cardápio digital em vídeo no estilo Reels. O cliente escaneia o QR Code da mesa e rola um feed vertical com um prato por tela, com vídeo em autoplay, mudo e em loop. O dono do restaurante gera o vídeo de cada prato a partir de 1 a 4 fotos (IA com preset fixo e aprovação obrigatória) ou envia um vídeo próprio.
 
-## About Laravel
+O produto é só de visualização: o pedido continua sendo feito com o garçom.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Áreas do sistema
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Área | Rota | Tecnologia | Quem usa |
+| --- | --- | --- | --- |
+| Site / landing | `/`, `/sobre`, `/termos`… | Blade | Público |
+| Feed do cliente | `/r/{slug}` | HTML + JS leve (scroll-snap, IntersectionObserver, service worker) | Cliente na mesa, sem login |
+| Painel do restaurante | `/painel` | Livewire 4, mobile-first | Dono |
+| Painel administrativo | `/admin` | Filament 5 | Super admin |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Funcionalidades principais:** categorias e pratos (preço, selos, variações, esgotado/oculto), geração de vídeo por IA com 2–3 variações, upload de vídeo próprio, QR Code para impressão, aparência do cardápio, métricas de visualização e tempo assistido, assinaturas e pacotes avulsos de gerações via Stripe. No admin: restaurantes, planos, cupons, pacotes, presets e provedores de IA, fila de gerações, moderação, custos e impersonação.
 
-## Learning Laravel
+## Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3+ / **Laravel 13**, Livewire 4, Filament 5, Tailwind CSS 4, Vite
+- **MySQL** e filas no driver `database`
+- **Mux** para hospedagem e streaming dos vídeos
+- **Stripe** via Laravel Cashier (BRL, assinatura + checkout avulso)
+- Provedor de IA plugável via `App\Contracts\VideoGenerationProvider` (`config/ai.php`)
+- Testes com **Pest 4**
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Rodando localmente
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+O projeto roda com **Laravel Sail** (app, worker de fila, MySQL e Mailpit). Use sempre `./vendor/bin/sail`, porque o PHP do host pode não ter as extensões necessárias.
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```sh
+cp .env.example .env
+composer install            # ou via container, se não tiver PHP/Composer no host
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan storage:link
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Criar um super admin para acessar `/admin`:
 
-## Contributing
+```sh
+./vendor/bin/sail artisan app:create-super-admin voce@exemplo.com --name="Seu Nome"
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Serviço | Endereço |
+| --- | --- |
+| Aplicação | http://localhost |
+| Mailpit (e-mails) | http://localhost:8025 |
+| Vite | http://localhost:5173 |
 
-## Code of Conduct
+O container `queue` processa os jobs (geração de vídeo, exclusão de contas). Depois de mudar código usado por jobs, reinicie o worker:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```sh
+./vendor/bin/sail restart queue
+```
 
-## Security Vulnerabilities
+Em ambiente `local`, `/dev/components` e `/dev/feed` mostram os componentes e um feed de exemplo.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Variáveis de ambiente
 
-## License
+Além das variáveis padrão do Laravel:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Variável | Uso |
+| --- | --- |
+| `MUX_TOKEN_ID`, `MUX_TOKEN_SECRET` | API do Mux |
+| `MUX_WEBHOOK_SECRET` | Verificação de assinatura em `POST /webhooks/mux` |
+| `STRIPE_KEY`, `STRIPE_SECRET` | API da Stripe |
+| `STRIPE_WEBHOOK_SECRET` | Verificação de assinatura em `POST /stripe/webhook` (Cashier) |
+| `CASHIER_CURRENCY`, `CASHIER_CURRENCY_LOCALE` | `brl` / `pt_BR` |
+| `AI_VIDEO_PROVIDER` | Slug do provedor de IA em `config/ai.php` (padrão: `null`) |
+| `LANDING_SHOW_PRICES` | Exibe ou oculta os preços na landing |
+| `LANDING_CONTACT_EMAIL`, `LANDING_CONTACT_WHATSAPP`, `LANDING_CONTACT_INSTAGRAM` | Contatos exibidos no site |
+
+Para receber os webhooks da Stripe localmente:
+
+```sh
+stripe listen --forward-to localhost/stripe/webhook
+```
+
+> **Provedor de IA:** por enquanto só existe o `NullVideoGenerationProvider`, que não gera vídeo. Com ele, toda geração termina em `erro` e não consome saldo. Para ligar um provedor real, implemente `VideoGenerationProvider`, registre a classe em `config/ai.php` e ajuste `AI_VIDEO_PROVIDER`.
+
+## Regras de negócio importantes
+
+- **1 geração = 1 clipe.** Pedir 3 variações consome 3 gerações.
+- O saldo é verificado **antes** de enfileirar (descontando as gerações em andamento) e debitado **só quando a geração dá certo**. Erro do provedor não consome saldo, e reprocessar nunca cobra duas vezes.
+- O saldo mensal é **resetado** a cada fatura paga e não acumula. Os pacotes avulsos não expiram e são usados depois do saldo mensal.
+- Nenhum vídeo vai ao ar sem aprovação do dono. Cada prato tem no máximo um vídeo ativo.
+- Planos, preços, limites e pacotes são cadastrados pelo super admin no `/admin`, sem deploy.
+- Toda movimentação de saldo passa pelo `generation_ledger`, com referências idempotentes (`stripe_invoice:…`, `stripe_checkout:…`, `video_generation:…`).
+
+## Estrutura
+
+```
+app/
+  Actions/      regras de negócio (Ai, Billing, Menu, Videos, Admin, Account)
+  Contracts/    MuxClient, VideoGenerationProvider
+  Filament/     painel administrativo
+  Jobs/         GenerateDishVideo, PurgeRestaurant
+  Listeners/    StripeWebhookListener
+  Services/     Mux, IA, Feed, métricas do admin, sincronização de cupons
+resources/views/
+  pages/        páginas Livewire (auth e painel)
+  feed/         feed do cliente
+  marketing/    landing e páginas institucionais
+.spec/init/     descrição do projeto, user stories, schema e fases
+.phases/        prompts das 20 fases de implementação
+Docs/           estudo de custos e precificação, referências de design
+```
+
+## Testes e estilo
+
+```sh
+./vendor/bin/sail artisan test --compact
+./vendor/bin/sail bin pint --dirty
+```
