@@ -36,10 +36,6 @@
 @endphp
 
 <x-layouts.marketing>
-    <style>
-        @media (prefers-reduced-motion: reduce) { .landing-video { display: none; } }
-    </style>
-
     {{-- ===== Hero ===== --}}
     <section class="relative overflow-hidden bg-night text-white">
         <div class="pointer-events-none absolute -top-40 -right-40 size-[520px] rounded-full bg-accent/25 blur-3xl" aria-hidden="true"></div>
@@ -68,7 +64,7 @@
             <div class="flex justify-center" aria-hidden="true">
                 <div class="relative h-[560px] w-[280px] overflow-hidden rounded-[42px] border-[7px] border-black bg-black shadow-2xl shadow-black/60 ring-1 ring-white/10">
                     <img src="{{ $heroDish['image'] }}" alt="" class="absolute inset-0 size-full object-cover" fetchpriority="high">
-                    <video class="landing-video absolute inset-0 size-full object-cover" src="{{ $heroDish['video'] }}" poster="{{ $heroDish['image'] }}" autoplay muted loop playsinline preload="auto" data-hero-video></video>
+                    <video class="absolute inset-0 size-full object-cover" src="{{ $heroDish['video'] }}" poster="{{ $heroDish['image'] }}" autoplay muted loop playsinline preload="auto" data-hero-video></video>
                     <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent"></div>
                     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent"></div>
                     <div class="absolute inset-x-5 bottom-8 flex flex-col gap-2 pr-10">
