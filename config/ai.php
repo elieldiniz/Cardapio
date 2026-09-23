@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\Ai\NullVideoGenerationProvider;
+
 return [
 
     /*
@@ -26,7 +28,7 @@ return [
     */
 
     'providers' => [
-        'null' => \App\Services\Ai\NullVideoGenerationProvider::class,
+        'null' => NullVideoGenerationProvider::class,
     ],
 
 ];

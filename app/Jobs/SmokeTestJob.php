@@ -13,9 +13,7 @@ class SmokeTestJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly string $cacheKey)
-    {
-    }
+    public function __construct(private readonly string $cacheKey) {}
 
     public function handle(): void
     {

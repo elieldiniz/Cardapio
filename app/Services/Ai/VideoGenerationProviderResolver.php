@@ -8,9 +8,7 @@ use Illuminate\Contracts\Container\Container;
 
 class VideoGenerationProviderResolver
 {
-    public function __construct(private readonly Container $container)
-    {
-    }
+    public function __construct(private readonly Container $container) {}
 
     /**
      * Resolve the concrete provider implementation bound to the given config slug.
