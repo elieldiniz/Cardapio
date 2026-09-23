@@ -25,6 +25,7 @@ class ReferenceDataSeeder extends Seeder
             BadgeSeeder::class,
             AdminActionSeeder::class,
             PlanSeeder::class,
+            VideoAddonPackageSeeder::class,
         ]);
     }
 }

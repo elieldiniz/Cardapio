@@ -15,7 +15,7 @@ it('creates and edits addon packages that the subscription screen then offers', 
         ->call('create')
         ->assertHasNoFormErrors();
 
-    $package = VideoAddonPackage::sole();
+    $package = VideoAddonPackage::where('name', 'Pacote 10')->sole();
 
     Livewire::test(EditVideoAddonPackage::class, ['record' => $package->getRouteKey()])
         ->fillForm(['price_cents' => 2500, 'generations_count' => 12])
