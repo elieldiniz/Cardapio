@@ -6,6 +6,8 @@ use App\Http\Controllers\Feed\DishViewController;
 use App\Http\Controllers\Feed\FeedController;
 use App\Http\Controllers\Panel\AppearancePreviewController;
 use App\Http\Controllers\Webhooks\MuxWebhookController;
+use App\Models\Plan;
+use App\Models\VideoAddonPackage;
 use App\Support\FeedSample;
 use App\Support\QrCode;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -13,9 +15,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
+/*
+|--------------------------------------------------------------------------
+| Site público (landing e páginas institucionais)
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('marketing.home', [
+        'plans' => Plan::query()->where('is_active', true)->with('metricsLevel')->orderBy('price_cents')->get(),
+        'packages' => VideoAddonPackage::query()->where('is_active', true)->get(),
+    ]);
+})->name('home');
+
+Route::view('/sobre', 'marketing.about')->name('marketing.about');
+Route::view('/contato', 'marketing.contact')->name('marketing.contact');
+Route::view('/termos', 'marketing.legal.terms')->name('legal.terms');
+Route::view('/privacidade', 'marketing.legal.privacy')->name('legal.privacy');
+Route::view('/reembolso', 'marketing.legal.refund')->name('legal.refund');
+Route::view('/cookies', 'marketing.legal.cookies')->name('legal.cookies');
 
 Route::get('/smoke-test/livewire', function () {
     return view('smoke-test-page');
