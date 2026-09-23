@@ -35,7 +35,7 @@ Cada **geração** = **1 clipe gerado**. Pedir 3 variações consome 3 geraçõe
 
 Na prática:
 - **Armazenamento é quase zero:** um clipe de 10 s é 1/6 de minuto, ou US$ 0,0005/mês. Mil clipes custam cerca de US$ 0,50/mês.
-- **Reprodução:** um restaurante com 1.000 visitas/mês, em que cada cliente assiste ~20 pratos por ~8 s, consome ~2.700 min. Os **100 mil minutos grátis cobrem ~35 restaurantes assim** antes de custar algo.
+- **Reprodução:** um restaurante com 1.000 visitas/mês, em que cada cliente assiste ~20 pratos por ~8 s, consome ~2.700 min. Os **100 mil minutos grátis cobrem ~37 restaurantes assim** antes de custar algo.
 - ⚠️ Variações **não aprovadas** continuam guardadas no Mux. Apagar as descartadas é uma otimização futura.
 
 ### 1.3 Stripe (taxas de pagamento — Brasil)
@@ -114,7 +114,7 @@ Hipóteses: Runway Gen-4 Turbo, clipe de **5 s** (R$ 1,38/geração), imposto de
 
 | Oferta | Preço | Custo das gerações | Stripe | Imposto | **Sobra** |
 |---|---|---|---|---|---|
-| Plano Básico (15/mês) | R$ 30 | R$ 20,63 | R$ 1,80 | R$ 1,80 | **R$ 5,77** |
+| Plano Básico (15/mês) | R$ 30 | R$ 20,63 | R$ 1,80 | R$ 1,80 | **R$ 5,78** |
 | Plano Pro (30/mês) | R$ 60 | R$ 41,25 | R$ 3,20 | R$ 3,60 | **R$ 11,95** |
 | Pacote 20 gerações | R$ 10 | R$ 27,50 | R$ 0,79 | R$ 0,60 | **❌ −R$ 18,89** |
 | Pacote 40 gerações | R$ 20 | R$ 55,00 | R$ 1,19 | R$ 1,20 | **❌ −R$ 37,39** |
