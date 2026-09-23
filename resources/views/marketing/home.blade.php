@@ -4,7 +4,9 @@
     $metricsLabels = ['cardapio_total' => 'Visualizações do cardápio', 'por_prato' => 'Visualizações por prato', 'por_prato_com_tempo_assistido' => 'Visualizações e tempo assistido por prato'];
 
     $heroDish = [
+        // The photo is the video's first frame: this exact photo became this video.
         'image' => asset('images/landing/hero-prato.jpg'),
+        'video' => asset('videos/landing/hero-prato.mp4'),
         'name' => 'Espaguete à Bolonhesa',
         'price' => 'R$ 42,90',
         'desc' => 'Molho de carne cozido lentamente e parmesão ralado na hora.',
@@ -35,13 +37,7 @@
 
 <x-layouts.marketing>
     <style>
-        /* Slow push-in so the still photo reads like the dish video playing in the feed. */
-        @keyframes landing-dish {
-            0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.12) translateY(-2%); }
-        }
-        .landing-dish { animation: landing-dish 9s ease-in-out infinite alternate; }
-        @media (prefers-reduced-motion: reduce) { .landing-dish { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .landing-video { display: none; } }
     </style>
 
     {{-- ===== Hero ===== --}}
@@ -71,7 +67,8 @@
             {{-- Phone mockup of the client feed --}}
             <div class="flex justify-center" aria-hidden="true">
                 <div class="relative h-[560px] w-[280px] overflow-hidden rounded-[42px] border-[7px] border-black bg-black shadow-2xl shadow-black/60 ring-1 ring-white/10">
-                    <img src="{{ $heroDish['image'] }}" alt="" class="landing-dish absolute inset-0 size-full object-cover" fetchpriority="high">
+                    <img src="{{ $heroDish['image'] }}" alt="" class="absolute inset-0 size-full object-cover" fetchpriority="high">
+                    <video class="landing-video absolute inset-0 size-full object-cover" src="{{ $heroDish['video'] }}" poster="{{ $heroDish['image'] }}" autoplay muted loop playsinline preload="auto" data-hero-video></video>
                     <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent"></div>
                     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent"></div>
                     <div class="absolute inset-x-5 bottom-8 flex flex-col gap-2 pr-10">
@@ -119,12 +116,15 @@
                     <div class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
                         <div class="flex h-40 items-center justify-center gap-3 rounded-xl bg-gradient-to-br from-night to-[#3a2416]">
                             @if ($loop->first)
-                                <img src="{{ $heroDish['image'] }}" alt="Foto de um prato de espaguete" class="h-28 w-16 rounded-lg object-cover shadow-lg" loading="lazy">
+                                {{-- The real before/after: the photo sent, and the video it became. --}}
+                                <img src="{{ $heroDish['image'] }}" alt="Foto enviada: prato de espaguete" class="h-32 w-[74px] rounded-lg object-cover shadow-lg" loading="lazy">
+                                <span class="text-white/40">→</span>
+                                <video src="{{ $heroDish['video'] }}" poster="{{ $heroDish['image'] }}" class="h-32 w-[74px] rounded-lg object-cover shadow-lg ring-2 ring-accent" autoplay muted loop playsinline preload="metadata" aria-label="Vídeo gerado a partir da foto"></video>
                             @else
                                 <span class="flex size-14 items-center justify-center rounded-lg bg-white/10 text-white/80"><x-ui.icon name="{{ $loop->last ? 'upload' : 'appearance' }}" class="size-6" /></span>
+                                <span class="text-white/40">→</span>
+                                <span class="flex size-14 items-center justify-center rounded-lg bg-accent text-white"><x-ui.icon name="media" class="size-6" /></span>
                             @endif
-                            <span class="text-white/40">→</span>
-                            <span class="flex size-14 items-center justify-center rounded-lg bg-accent text-white"><x-ui.icon name="media" class="size-6" /></span>
                         </div>
                         <span class="w-fit rounded-full bg-accent/10 px-3 py-1 text-[12px] font-bold text-accent">{{ $tag }}</span>
                         <h3 class="text-[18px] font-bold">{{ $title }}</h3>
