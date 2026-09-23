@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->nullable()->constrained();
-            $table->foreignId('role_id')->constrained();
+            // FK added in 2026_09_22_060002: restaurants/roles are created later.
+            $table->foreignId('restaurant_id')->nullable();
+            $table->foreignId('role_id');
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

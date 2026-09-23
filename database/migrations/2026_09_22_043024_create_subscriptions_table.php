@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             // Renamed from Cashier's default `user_id` stub: the billable here is Restaurant, not User.
-            $table->foreignId('restaurant_id')->constrained();
+            $table->foreignId('restaurant_id'); // FK added in 2026_09_22_060002
             $table->string('type');
             $table->string('stripe_id')->unique();
             $table->string('stripe_status');
