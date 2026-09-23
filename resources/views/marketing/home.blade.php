@@ -3,10 +3,12 @@
 @php
     $metricsLabels = ['cardapio_total' => 'Visualizações do cardápio', 'por_prato' => 'Visualizações por prato', 'por_prato_com_tempo_assistido' => 'Visualizações e tempo assistido por prato'];
 
-    $slides = [
-        ['name' => 'Costela 12h', 'price' => 'R$ 68,90', 'desc' => 'Defumada por 12 horas, finalizada na brasa.', 'badge' => 'Mais pedido', 'from' => '#7a3b1d', 'to' => '#1c0f08'],
-        ['name' => 'Burger da Casa', 'price' => 'R$ 39,90', 'desc' => 'Blend 180g, cheddar e cebola caramelizada.', 'badge' => 'Novo', 'from' => '#a0521f', 'to' => '#2a1408'],
-        ['name' => 'Limonada Suíça', 'price' => 'R$ 12,90', 'desc' => 'Batida na hora, com hortelã fresca.', 'badge' => 'Vegetariano', 'from' => '#5f7d2e', 'to' => '#141d08'],
+    $heroDish = [
+        'image' => asset('images/landing/hero-prato.jpg'),
+        'name' => 'Espaguete à Bolonhesa',
+        'price' => 'R$ 42,90',
+        'desc' => 'Molho de carne cozido lentamente e parmesão ralado na hora.',
+        'badge' => 'Mais pedido',
     ];
 
     $features = [
@@ -33,14 +35,13 @@
 
 <x-layouts.marketing>
     <style>
-        @keyframes landing-feed {
-            0%, 28% { transform: translateY(0); }
-            33%, 61% { transform: translateY(-33.3333%); }
-            66%, 94% { transform: translateY(-66.6666%); }
-            100% { transform: translateY(0); }
+        /* Slow push-in so the still photo reads like the dish video playing in the feed. */
+        @keyframes landing-dish {
+            0% { transform: scale(1) translateY(0); }
+            100% { transform: scale(1.12) translateY(-2%); }
         }
-        .landing-feed { animation: landing-feed 12s cubic-bezier(.7, 0, .3, 1) infinite; }
-        @media (prefers-reduced-motion: reduce) { .landing-feed { animation: none; } }
+        .landing-dish { animation: landing-dish 9s ease-in-out infinite alternate; }
+        @media (prefers-reduced-motion: reduce) { .landing-dish { animation: none; } }
     </style>
 
     {{-- ===== Hero ===== --}}
@@ -70,30 +71,25 @@
             {{-- Phone mockup of the client feed --}}
             <div class="flex justify-center" aria-hidden="true">
                 <div class="relative h-[560px] w-[280px] overflow-hidden rounded-[42px] border-[7px] border-black bg-black shadow-2xl shadow-black/60 ring-1 ring-white/10">
-                    <div class="landing-feed h-[300%]">
-                        @foreach ($slides as $slide)
-                            <div class="relative h-1/3 p-5" style="background: radial-gradient(circle at 55% 38%, {{ $slide['from'] }}, {{ $slide['to'] }} 72%)">
-                                <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 to-transparent"></div>
-                                <div class="absolute top-1/2 left-1/2 size-40 -translate-x-1/2 -translate-y-[70%] rounded-full bg-white/10 blur-2xl"></div>
-                                <div class="absolute inset-x-5 bottom-8 flex flex-col gap-2">
-                                    <span class="w-fit rounded-full bg-accent px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase">{{ $slide['badge'] }}</span>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="font-serif text-[21px]">{{ $slide['name'] }}</span>
-                                        <span class="text-[14px] font-bold text-accent">{{ $slide['price'] }}</span>
-                                    </div>
-                                    <span class="text-[12.5px] leading-snug text-white/85">{{ $slide['desc'] }}</span>
-                                </div>
-                            </div>
-                        @endforeach
+                    <img src="{{ $heroDish['image'] }}" alt="" class="landing-dish absolute inset-0 size-full object-cover" fetchpriority="high">
+                    <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent"></div>
+                    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent"></div>
+                    <div class="absolute inset-x-5 bottom-8 flex flex-col gap-2 pr-10">
+                        <span class="w-fit rounded-full bg-accent px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase">{{ $heroDish['badge'] }}</span>
+                        <div class="flex flex-wrap items-baseline gap-x-2">
+                            <span class="font-serif text-[21px] leading-tight">{{ $heroDish['name'] }}</span>
+                            <span class="text-[14px] font-bold text-accent">{{ $heroDish['price'] }}</span>
+                        </div>
+                        <span class="text-[12.5px] leading-snug text-white/85">{{ $heroDish['desc'] }}</span>
                     </div>
                     <div class="absolute inset-x-4 top-4 flex flex-col gap-2">
                         <div class="flex items-center gap-2">
-                            <span class="flex size-7 items-center justify-center rounded-full bg-accent font-serif text-[13px]">F</span>
-                            <span class="font-serif text-[15px]">Fumaça</span>
+                            <span class="flex size-7 items-center justify-center rounded-full bg-accent font-serif text-[13px]">T</span>
+                            <span class="font-serif text-[15px]">Trattoria</span>
                         </div>
                         <div class="flex gap-1.5 text-[11px] font-semibold">
-                            <span class="rounded-full bg-accent px-2.5 py-1">Pratos</span>
-                            <span class="px-2.5 py-1 text-white/65">Burgers</span>
+                            <span class="rounded-full bg-accent px-2.5 py-1">Massas</span>
+                            <span class="px-2.5 py-1 text-white/65">Carnes</span>
                             <span class="px-2.5 py-1 text-white/65">Bebidas</span>
                         </div>
                     </div>
@@ -122,7 +118,11 @@
                 ] as [$title, $text, $tag])
                     <div class="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
                         <div class="flex h-40 items-center justify-center gap-3 rounded-xl bg-gradient-to-br from-night to-[#3a2416]">
-                            <span class="flex size-14 items-center justify-center rounded-lg bg-white/10 text-white/80"><x-ui.icon name="{{ $loop->last ? 'upload' : 'appearance' }}" class="size-6" /></span>
+                            @if ($loop->first)
+                                <img src="{{ $heroDish['image'] }}" alt="Foto de um prato de espaguete" class="h-28 w-16 rounded-lg object-cover shadow-lg" loading="lazy">
+                            @else
+                                <span class="flex size-14 items-center justify-center rounded-lg bg-white/10 text-white/80"><x-ui.icon name="{{ $loop->last ? 'upload' : 'appearance' }}" class="size-6" /></span>
+                            @endif
                             <span class="text-white/40">→</span>
                             <span class="flex size-14 items-center justify-center rounded-lg bg-accent text-white"><x-ui.icon name="media" class="size-6" /></span>
                         </div>
