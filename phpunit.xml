@@ -30,6 +30,8 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="STRIPE_KEY" value="pk_test_fake"/>
         <env name="STRIPE_SECRET" value="sk_test_fake"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
+        <env name="MUX_WEBHOOK_SECRET" value=""/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

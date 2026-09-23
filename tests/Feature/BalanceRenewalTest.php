@@ -21,7 +21,7 @@ test('invoice paid resets monthly balance to the plans allowance without accumul
 
     $balance = GenerationBalance::where('restaurant_id', $restaurant->id)->first();
 
-    expect($balance->monthly_balance)->toBe(100)
+    expect($balance->monthly_balance)->toBe(30)
         ->and($balance->addon_balance)->toBe(4)
         ->and($balance->renews_at->timestamp)->toBe($periodEnd->timestamp)
         ->and(GenerationLedger::with('type')->sole()->type->slug)->toBe('renovacao');

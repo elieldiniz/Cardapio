@@ -58,11 +58,11 @@ test('addon balance never expires and is spent only after monthly balance is exh
     ]);
 
     $balance = GenerationBalance::where('restaurant_id', $this->restaurant->id)->first();
-    expect($balance->monthly_balance)->toBe(30)->and($balance->addon_balance)->toBe(10);
+    expect($balance->monthly_balance)->toBe(15)->and($balance->addon_balance)->toBe(10);
 
-    // Spending 32: 30 from monthly, only then 2 from addon.
+    // Spending 17: 15 from monthly, only then 2 from addon.
     $generation = VideoGeneration::factory()->ready()->create(['dish_id' => Dish::factory()->create(['restaurant_id' => $this->restaurant->id])->id]);
-    app(DebitGenerationBalance::class)->handle($generation, 32);
+    app(DebitGenerationBalance::class)->handle($generation, 17);
 
     $balance->refresh();
     expect($balance->monthly_balance)->toBe(0)->and($balance->addon_balance)->toBe(8);
@@ -75,7 +75,7 @@ test('addon balance never expires and is spent only after monthly balance is exh
     ]);
 
     $balance->refresh();
-    expect($balance->monthly_balance)->toBe(30)->and($balance->addon_balance)->toBe(8);
+    expect($balance->monthly_balance)->toBe(15)->and($balance->addon_balance)->toBe(8);
 });
 
 it('opens a one-time payment checkout for an addon package', function () {
