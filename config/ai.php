@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Ai\GeminiVeoVideoGenerationProvider;
 use App\Services\Ai\NullVideoGenerationProvider;
 
 return [
@@ -29,6 +30,23 @@ return [
 
     'providers' => [
         'null' => NullVideoGenerationProvider::class,
+        'gemini' => GeminiVeoVideoGenerationProvider::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gemini Veo pricing (USD per generated second)
+    |--------------------------------------------------------------------------
+    |
+    | Used to record each generation's cost. Source: ai.google.dev pricing,
+    | September 2026 (audio included, no free tier).
+    |
+    */
+
+    'gemini_price_per_second' => [
+        'veo-3.1-lite-generate-preview' => ['720p' => 0.05, '1080p' => 0.08],
+        'veo-3.1-fast-generate-preview' => ['720p' => 0.10, '1080p' => 0.12, '4k' => 0.30],
+        'veo-3.1-generate-preview' => ['720p' => 0.40, '1080p' => 0.40, '4k' => 0.60],
     ],
 
 ];

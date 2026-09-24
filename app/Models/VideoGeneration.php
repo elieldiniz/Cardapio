@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['dish_id', 'preset_id', 'provider_id', 'status_id', 'variations_requested', 'cost_usd'])]
+#[Fillable(['dish_id', 'preset_id', 'provider_id', 'status_id', 'variations_requested', 'provider_operations', 'cost_usd'])]
 class VideoGeneration extends Model
 {
     /** @use HasFactory<VideoGenerationFactory> */
@@ -19,6 +19,7 @@ class VideoGeneration extends Model
     {
         return [
             'cost_usd' => 'decimal:4',
+            'provider_operations' => 'array',
         ];
     }
 

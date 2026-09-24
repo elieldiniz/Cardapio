@@ -20,7 +20,8 @@ class ReprocessGeneration
             throw new InvalidArgumentException('Only an errored generation can be reprocessed.');
         }
 
-        $generation->update(['status_id' => GenerationStatus::idFor('fila')]);
+        // Async providers start over: the failed operations are not resumed.
+        $generation->update(['status_id' => GenerationStatus::idFor('fila'), 'provider_operations' => null]);
 
         GenerateDishVideo::dispatch($generation->id);
     }

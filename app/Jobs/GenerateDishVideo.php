@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Actions\Ai\DebitGenerationBalance;
+use App\Contracts\AsyncVideoGenerationProvider;
 use App\Contracts\MuxClient;
 use App\Models\GenerationStatus;
 use App\Models\Video;
@@ -12,6 +13,7 @@ use App\Models\VideoStatus;
 use App\Services\Ai\VideoGenerationProviderResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +25,9 @@ use Throwable;
  * provider snapshot, sends every resulting MP4 to Mux, creates one `videos` row
  * per variation (processando) and debits the balance. Any provider or Mux error
  * marks the generation `erro` and leaves the balance untouched (US-3.4).
+ *
+ * Asynchronous providers (minutes-long operations, e.g. Gemini Veo) are only
+ * submitted here; PollDishVideoGeneration waits for them and finishes the work.
  */
 class GenerateDishVideo implements ShouldQueue
 {
@@ -55,14 +60,25 @@ class GenerateDishVideo implements ShouldQueue
                 ->values()
                 ->all();
 
-            $variations = $resolver->resolve($generation->provider->slug)->generate($photos, [
+            $preset = [
                 'prompt' => $generation->preset->prompt,
                 'camera_movement' => $generation->preset->camera_movement,
                 'duration_seconds' => $generation->preset->duration_seconds,
                 'aspect_ratio' => '9:16',
                 'variations' => $generation->variations_requested,
                 'turn' => VideoGeneration::turnFor(count($photos)),
-            ]);
+            ];
+
+            $provider = $resolver->resolve($generation->provider->slug);
+
+            // Minutes-long vendors: submit now, PollDishVideoGeneration finishes the job.
+            if ($provider instanceof AsyncVideoGenerationProvider) {
+                $this->start($generation, $provider, $photos, $preset);
+
+                return;
+            }
+
+            $variations = $provider->generate($photos, $preset);
 
             $variations = array_values(array_filter($variations, fn ($variation) => ! empty($variation['video_url'])));
 
@@ -96,6 +112,30 @@ class GenerateDishVideo implements ShouldQueue
 
             $debit->handle($generation, count($assets));
         });
+    }
+
+    /**
+     * @param  array<int, string>  $photos
+     * @param  array<string, mixed>  $preset
+     */
+    private function start(VideoGeneration $generation, AsyncVideoGenerationProvider $provider, array $photos, array $preset): void
+    {
+        // Queues deliver at least once: a redelivered job must never pay the vendor twice.
+        $started = Cache::lock("video-generation:{$generation->id}", 120)->get(function () use ($generation, $provider, $photos, $preset) {
+            if (! empty($generation->fresh()->provider_operations)) {
+                return false;
+            }
+
+            $generation->update(['provider_operations' => $provider->start($photos, $preset)]);
+
+            return true;
+        });
+
+        // Dispatched after the lock is released, so the first check can take it.
+        if ($started) {
+            PollDishVideoGeneration::dispatch($generation->id)
+                ->delay(now()->addSeconds(PollDishVideoGeneration::INTERVAL_SECONDS));
+        }
     }
 
     public function failed(?Throwable $exception): void

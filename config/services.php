@@ -35,6 +35,14 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        // veo-3.1-lite-generate-preview is the cheapest; -fast- and -generate- cost more.
+        'video_model' => env('GEMINI_VIDEO_MODEL', 'veo-3.1-lite-generate-preview'),
+        'video_resolution' => env('GEMINI_VIDEO_RESOLUTION', '720p'),
+    ],
+
     'mux' => [
         'token_id' => env('MUX_TOKEN_ID'),
         'token_secret' => env('MUX_TOKEN_SECRET'),
