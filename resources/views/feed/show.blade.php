@@ -13,10 +13,14 @@
       $grid             array<array{id, category_id, name, sold_out, thumb_url}>  every feed-eligible dish
       $trackUrl         string|null      watch-time endpoint (Phase 14.3)
       $preview          bool             appearance live preview inside the panel (Phase 16)
+      $openDishId       int|null         shared link (?prato=): open the feed straight on this dish
+      $meta             array{title, description, image, url}|null  link preview (Open Graph)
 --}}
 @php
     $firstThumb = $restaurant['cover_url'] ?? ($grid[0]['thumb_url'] ?? null);
     $preview ??= false;
+    $openDishId ??= null;
+    $meta ??= null;
     $fonts = config('feed.fonts');
     $font = array_key_exists($restaurant['font'] ?? '', $fonts) ? $restaurant['font'] : config('feed.default_font');
 @endphp
@@ -27,6 +31,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#101010">
     <title>{{ $restaurant['name'] }} · Cardápio</title>
+
+    @if ($meta)
+        {{-- Link preview when the cardápio or a dish is shared on WhatsApp/Instagram. --}}
+        <meta name="description" content="{{ $meta['description'] }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $restaurant['name'] }}">
+        <meta property="og:title" content="{{ $meta['title'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+        <meta property="og:url" content="{{ $meta['url'] }}">
+        @if ($meta['image'])
+            <meta property="og:image" content="{{ $meta['image'] }}">
+            <meta name="twitter:card" content="summary_large_image">
+        @endif
+    @endif
 
     {{-- Warm up the video CDN so a tapped dish starts playing fast (US-1.1: video < 2s on 4G). --}}
     <link rel="preconnect" href="{{ \App\Support\MuxUrls::STREAM_ORIGIN }}" crossorigin>
@@ -53,6 +71,9 @@
         class="feed-app"
         data-feed
         data-view="grid"
+        data-restaurant-name="{{ $restaurant['name'] }}"
+        @if ($restaurant['url'] ?? null) data-share-url="{{ $restaurant['url'] }}" @endif
+        @if ($openDishId) data-open-dish-on-load="{{ $openDishId }}" @endif
         @if ($preview)
             data-preview
         @else
@@ -89,7 +110,14 @@
             <button type="button" class="feed-action" data-detail-open aria-label="Ver detalhes do prato">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11"/><circle cx="12" cy="7.5" r="0.6" fill="#fff" stroke="none"/></svg>
             </button>
+            @if ($restaurant['url'] ?? null)
+                <button type="button" class="feed-action" data-share aria-label="Compartilhar prato">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </button>
+            @endif
         </div>
+
+        <div class="feed-toast" data-feed-toast role="status" aria-live="polite" hidden></div>
 
         <div class="feed-hint" data-feed-hint hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>

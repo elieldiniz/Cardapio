@@ -283,6 +283,26 @@ button {
     display: block;
 }
 
+.feed-toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(120px + env(safe-area-inset-bottom));
+    z-index: 5;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    background: rgba(16, 16, 16, 0.85);
+    color: #fff;
+    font: 500 13px 'DM Sans', sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.feed-toast[hidden] {
+    display: none;
+}
+
 /* ---- First-use hint ---- */
 
 @keyframes hint-bounce {

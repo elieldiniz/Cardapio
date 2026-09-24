@@ -89,21 +89,28 @@ class FeedBuilder
      * dish (mockup); the first category's dishes are also rendered so opening
      * one of them needs no request.
      *
+     * A shared link (`?prato={id}`) opens straight on that dish: its category is
+     * pre-rendered instead of the first one, and the link preview shows the dish.
+     *
      * @return array<string, mixed>
      */
-    public function page(Restaurant $restaurant): array
+    public function page(Restaurant $restaurant, ?int $sharedDishId = null): array
     {
         $restaurant->loadMissing('plan');
         $categories = $this->categories($restaurant);
-        $first = $categories->first();
+        $shared = $sharedDishId ? $this->eligibleDishes($restaurant)->where('dishes.id', $sharedDishId)->first() : null;
+        $first = $shared ? $categories->firstWhere('id', $shared->category_id) : $categories->first();
+        $sharedDish = $shared ? $this->present($shared) : null;
+        $coverUrl = $restaurant->cover_path ? Storage::disk('public')->url($restaurant->cover_path) : null;
 
         return [
             'restaurant' => [
                 'name' => $restaurant->name,
                 'slug' => $restaurant->slug,
+                'url' => $restaurant->feedUrl(),
                 'description' => $restaurant->description,
                 'logo_url' => $restaurant->logo_path ? Storage::disk('public')->url($restaurant->logo_path) : null,
-                'cover_url' => $restaurant->cover_path ? Storage::disk('public')->url($restaurant->cover_path) : null,
+                'cover_url' => $coverUrl,
                 'accent' => $restaurant->accentColor(),
                 'font' => $restaurant->font,
                 'show_branding' => ! ($restaurant->plan?->removes_branding ?? false),
@@ -117,6 +124,20 @@ class FeedBuilder
             'dishes' => $first ? $this->dishesFor($restaurant, $first) : [],
             'grid' => $this->gridFor($restaurant),
             'trackUrl' => route('feed.views', $restaurant),
+            'openDishId' => $sharedDish['id'] ?? null,
+            'meta' => $sharedDish
+                ? [
+                    'title' => "{$sharedDish['name']} · {$restaurant->name}",
+                    'description' => $sharedDish['short_description'] ?: "{$sharedDish['name']} por {$sharedDish['price']} no cardápio do {$restaurant->name}.",
+                    'image' => $sharedDish['cover_url'] ?? $sharedDish['thumb_url'],
+                    'url' => $restaurant->feedUrl().'?prato='.$sharedDish['id'],
+                ]
+                : [
+                    'title' => "{$restaurant->name} · Cardápio",
+                    'description' => $restaurant->description ?: "Veja o cardápio em vídeo do {$restaurant->name}.",
+                    'image' => $coverUrl,
+                    'url' => $restaurant->feedUrl(),
+                ],
         ];
     }
 

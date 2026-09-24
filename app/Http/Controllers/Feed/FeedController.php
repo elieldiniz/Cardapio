@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Restaurant;
 use App\Services\Feed\FeedBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
@@ -14,15 +15,19 @@ use Illuminate\Http\Response;
  */
 class FeedController extends Controller
 {
-    public function show(Restaurant $restaurant, FeedBuilder $feed): Response
+    public function show(Request $request, Restaurant $restaurant, FeedBuilder $feed): Response
     {
         if ($restaurant->isSuspended()) {
             return response()->view('feed.unavailable', ['restaurant' => $restaurant], 403);
         }
 
+        // A shared dish link: /r/{slug}?prato={id}. Anything that isn't an id is ignored.
+        $prato = $request->query('prato');
+        $sharedDishId = is_string($prato) ? filter_var($prato, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : false;
+
         // Price/status edits must show on the very next visit (US-2.3): never cache the HTML.
         return response()
-            ->view('feed.show', $feed->page($restaurant))
+            ->view('feed.show', $feed->page($restaurant, $sharedDishId ?: null))
             ->header('Cache-Control', 'no-cache, private');
     }
 

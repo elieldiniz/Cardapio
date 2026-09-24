@@ -472,6 +472,58 @@ function initFeed(root) {
         }
     });
 
+    // ---- Share the dish on screen: native share sheet, else copy the link ----
+
+    const toast = root.querySelector('[data-feed-toast]');
+    let toastTimer = null;
+
+    function showToast(message) {
+        if (!toast) {
+            return;
+        }
+
+        toast.textContent = message;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => (toast.hidden = true), 2200);
+    }
+
+    async function shareDish() {
+        const dish = state.active ?? dishes()[0];
+        const baseUrl = root.dataset.shareUrl;
+
+        if (!dish || !baseUrl) {
+            return;
+        }
+
+        const name = dish.querySelector('[data-field="name"]').textContent.trim();
+        const restaurant = root.dataset.restaurantName ?? '';
+        const url = `${baseUrl}?prato=${encodeURIComponent(dish.dataset.dishId)}`;
+        const text = `Olha só: ${name}, no cardápio do ${restaurant}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: `${name} · ${restaurant}`, text, url });
+
+                return;
+            } catch (error) {
+                // Closing the share sheet is not an error; anything else falls back to copying.
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+            }
+        }
+
+        try {
+            await navigator.clipboard.writeText(url);
+            showToast('Link copiado');
+        } catch {
+            window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank', 'noopener');
+        }
+    }
+
+    root.querySelector('[data-share]')?.addEventListener('click', shareDish);
+
     // ---- Service worker: cache covers + first video for repeat visits ----
 
     function precache(items) {
@@ -551,8 +603,13 @@ function initFeed(root) {
     initTracking(root);
 
     // ---- Boot: the grid is shown; nothing plays until a dish is tapped ----
+    // A shared link (?prato=) opens the feed straight on that dish; its category is already rendered.
 
     observeAll();
+
+    if (root.dataset.openDishOnLoad) {
+        openDish(root.dataset.openDishOnLoad, list.dataset.category);
+    }
 }
 
 function storageGet(key) {
