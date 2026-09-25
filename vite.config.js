@@ -15,6 +15,12 @@ export default defineConfig({
                 bunny('DM Serif Display', {
                     weights: [400],
                 }),
+                bunny('Imperial Script', {
+                    weights: [400],
+                }),
+                bunny('Carter One', {
+                    weights: [400],
+                }),
             ],
         }),
         tailwindcss(),

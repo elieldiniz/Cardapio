@@ -22,6 +22,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $pageTitle }}</title>
+    @include('partials.favicons')
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta property="og:type" content="website">
@@ -38,9 +39,8 @@
 <body class="bg-white text-ink">
     <header class="sticky top-0 z-40 border-b border-white/5 bg-night/90 backdrop-blur">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-            <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-2.5">
-                <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-serif text-lg text-white">D</span>
-                <span class="truncate font-serif text-[16px] whitespace-nowrap text-white sm:text-[19px]">{{ config('app.name') }}</span>
+            <a href="{{ route('home') }}" class="min-w-0" aria-label="{{ config('app.name') }}">
+                <x-brand.logo name-class="text-[26px] text-white sm:text-[30px]" />
             </a>
 
             <nav class="flex shrink-0 items-center gap-1 text-[13.5px] font-semibold whitespace-nowrap sm:gap-2">
@@ -67,6 +67,10 @@
 
     <footer class="bg-night text-white/80" data-footer>
         <div class="mx-auto max-w-6xl px-4 py-10 text-center sm:px-6">
+            <a href="{{ route('home') }}" class="mb-6 inline-flex" aria-label="{{ config('app.name') }}">
+                <x-brand.logo size="size-10" name-class="text-[30px] text-white" />
+            </a>
+
             <nav class="flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[13.5px]" aria-label="Links institucionais">
                 @foreach ($footerLinks as [$label, $href])
                     <a href="{{ $href }}" class="hover:text-white">{{ $label }}</a>

@@ -41,10 +41,7 @@
         <div class="pointer-events-none absolute -top-40 -right-40 size-[520px] rounded-full bg-accent/25 blur-3xl" aria-hidden="true"></div>
         <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:grid-cols-[1.15fr_0.85fr] md:py-24">
             <div>
-                <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12.5px] font-semibold text-white/80">
-                    <x-ui.icon name="sparkles" class="size-4 text-accent" /> Vídeos criados por IA a partir de uma foto
-                </span>
-                <h1 class="mt-5 font-serif text-[40px] leading-[1.05] sm:text-[54px]">Seu cardápio em vídeo, direto do QR Code da mesa.</h1>
+                <h1 class="font-display text-[38px] leading-[1.1] sm:text-[52px]">Seu cardápio em vídeo, direto do QR Code da mesa.</h1>
                 <p class="mt-5 max-w-xl text-[17px] leading-relaxed text-white/70">O cliente escaneia e vê cada prato “vivo”, rolando como nos Reels. Você só envia a foto: a IA faz o vídeo.</p>
 
                 <ul class="mt-7 flex flex-col gap-3 text-[15px] text-white/85">

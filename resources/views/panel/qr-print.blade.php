@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Display de mesa · {{ $restaurant->name }}</title>
+    @include('partials.favicons')
     @fonts
     <style>
         @page { size: A6; margin: 0; }

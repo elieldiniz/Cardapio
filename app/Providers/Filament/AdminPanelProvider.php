@@ -29,6 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->brandName(config('app.name').' · Admin')
+            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.ico'))
             ->colors([
                 'primary' => Color::hex('#FF6B3D'),
                 'gray' => Color::Stone,

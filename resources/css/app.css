@@ -12,6 +12,10 @@
     --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'DM Serif Display', ui-serif, Georgia, serif;
+    /* The Degusta wordmark next to the symbol. */
+    --font-brand: 'Imperial Script', cursive;
+    /* Landing hero headline. */
+    --font-display: 'Carter One', system-ui, sans-serif;
 
     --color-ink: #1a1815;
     --color-sand: #ece9e4;
