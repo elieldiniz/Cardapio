@@ -84,3 +84,11 @@ it('renames the restaurant without changing its link or qr code', function () {
 
     expect($this->dono->restaurant->fresh())->name->toBe('Fumaça Grill')->slug->toBe($slug);
 });
+
+it('keeps the video-ready e-mail off by default and lets the dono turn it on', function () {
+    expect($this->dono->fresh()->notify_video_ready)->toBeFalse();
+
+    Livewire::test('pages::panel.account')->set('notify_video_ready', true);
+
+    expect($this->dono->fresh()->notify_video_ready)->toBeTrue();
+});

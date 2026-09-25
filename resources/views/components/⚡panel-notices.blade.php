@@ -29,7 +29,9 @@ new class extends Component
             <div class="flex flex-1 flex-col gap-1">
                 <p class="text-[14px] font-bold text-ink">{{ $notice->data['title'] ?? 'Aviso' }}</p>
                 <p class="text-[13px] leading-relaxed text-ink/70">{{ $notice->data['message'] ?? '' }}</p>
-                @if (($route = $notice->data['action_route'] ?? null) && Route::has($route) && ! request()->routeIs($route))
+                @if ($url = $notice->data['action_url'] ?? null)
+                    <a href="{{ $url }}" wire:navigate class="mt-1 w-fit text-[13px] font-bold text-accent hover:underline">Ver detalhes</a>
+                @elseif (($route = $notice->data['action_route'] ?? null) && Route::has($route) && ! request()->routeIs($route))
                     <a href="{{ route($route) }}" wire:navigate class="mt-1 w-fit text-[13px] font-bold text-accent hover:underline">Ver detalhes</a>
                 @endif
             </div>

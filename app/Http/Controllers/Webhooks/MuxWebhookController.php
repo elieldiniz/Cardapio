@@ -11,6 +11,7 @@ use App\Notifications\VideoReadyForReview;
 use App\Support\MuxUrls;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -82,6 +83,9 @@ class MuxWebhookController extends Controller
 
         if ($video !== null && $video->status?->slug === 'processando') {
             $video->update(['status_id' => VideoStatus::idFor('rejeitado')]);
+
+            // The failed clip may have been the one the others were waiting on.
+            $this->notifyOwners($video);
         }
     }
 
@@ -106,12 +110,37 @@ class MuxWebhookController extends Controller
         return null;
     }
 
+    /**
+     * One notice per AI generation, once its last variation is ready. Own
+     * uploads get none: the dono is on the screen watching it process.
+     */
     private function notifyOwners(Video $video): void
     {
+        if ($video->generation_id === null) {
+            return;
+        }
+
+        $siblings = Video::query()->where('generation_id', $video->generation_id)->with('status')->get();
+
+        if ($siblings->contains(fn (Video $sibling) => $sibling->status?->slug === 'processando')) {
+            return;
+        }
+
+        // Two last variations can land at once; only the first webhook notifies.
+        if (! Cache::add("generation-ready-notified:{$video->generation_id}", true, now()->addDay())) {
+            return;
+        }
+
+        $ready = $siblings->where('status.slug', 'aguardando_aprovacao')->count();
+
+        if ($ready === 0) {
+            return;
+        }
+
         $owners = $video->dish->restaurant->users()
             ->whereHas('role', fn ($role) => $role->where('slug', 'dono'))
             ->get();
 
-        Notification::send($owners, new VideoReadyForReview($video));
+        Notification::send($owners, new VideoReadyForReview($video->dish, $ready));
     }
 }

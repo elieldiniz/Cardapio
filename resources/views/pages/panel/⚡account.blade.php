@@ -29,6 +29,9 @@ new #[Layout('layouts::panel')] #[Title('Minha conta')] class extends Component
     // Restaurante
     public string $restaurant_name = '';
 
+    // Notificações
+    public bool $notify_video_ready = false;
+
     // Sessões
     public string $sessions_password = '';
 
@@ -44,6 +47,14 @@ new #[Layout('layouts::panel')] #[Title('Minha conta')] class extends Component
         $this->name = $user->name;
         $this->email = $user->email;
         $this->restaurant_name = $user->restaurant->name;
+        $this->notify_video_ready = $user->notify_video_ready;
+    }
+
+    public function updatedNotifyVideoReady(bool $value): void
+    {
+        auth()->user()->update(['notify_video_ready' => $value]);
+
+        $this->dispatch('toast', message: $value ? 'Você vai receber um e-mail quando os vídeos ficarem prontos.' : 'Aviso por e-mail desligado.');
     }
 
     public function updateProfile()
@@ -266,6 +277,16 @@ new #[Layout('layouts::panel')] #[Title('Minha conta')] class extends Component
                 <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="updateRestaurant">Salvar nome</x-ui.button>
             </div>
         </form>
+    </x-ui.card>
+
+    <x-ui.card title="Notificações">
+        <label class="flex cursor-pointer items-start gap-3">
+            <input type="checkbox" wire:model.live="notify_video_ready" class="mt-0.5 size-4 shrink-0 accent-[var(--color-accent)]" data-notify-video-ready>
+            <span class="flex flex-col gap-0.5">
+                <span class="text-[14px] font-bold text-ink">Me avisar por e-mail quando um vídeo gerado por IA ficar pronto</span>
+                <span class="text-[12.5px] leading-relaxed text-ink/55">Um e-mail por geração, com todas as variações. O aviso aparece no painel de qualquer forma. E-mails de conta e cobrança são sempre enviados.</span>
+            </span>
+        </label>
     </x-ui.card>
 
     <x-ui.card title="Aparelhos conectados">
