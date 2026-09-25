@@ -30,6 +30,14 @@ new #[Layout('layouts::panel')] class extends Component
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
     public array $newPhotos = [];
 
+    /**
+     * One photo per upload: the S3 temporary upload driver (Laravel Cloud)
+     * refuses multi-file uploads, so the browser sends the picked files one by one.
+     *
+     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
+     */
+    public $photoUpload = null;
+
     public bool $showGenerateForm = false;
 
     public function mount(Dish $dish): void
@@ -96,6 +104,18 @@ new #[Layout('layouts::panel')] class extends Component
     {
         return $this->generations->contains(fn ($generation) => ! $generation->isFinished())
             || $this->dish->videos()->whereHas('status', fn ($status) => $status->where('slug', 'processando'))->exists();
+    }
+
+    public function updatedPhotoUpload(): void
+    {
+        $this->validate(['photoUpload' => ['image', 'max:8192']], [
+            'photoUpload.image' => 'Envie apenas imagens.',
+            'photoUpload.max' => 'Cada foto pode ter no máximo 8 MB.',
+        ]);
+
+        $this->newPhotos = [$this->photoUpload];
+        $this->reset('photoUpload');
+        $this->uploadPhotos();
     }
 
     public function uploadPhotos(): void
@@ -276,12 +296,13 @@ new #[Layout('layouts::panel')] class extends Component
                         <label class="flex size-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-[10px] border-2 border-dashed border-ink/15 text-[11.5px] font-semibold text-ink/50 hover:border-accent hover:text-accent">
                             <x-ui.icon name="upload" />
                             Nova foto
-                            <input type="file" wire:model="newPhotos" x-on:livewire-upload-finish="$wire.uploadPhotos()" accept="image/*" multiple class="sr-only">
+                            <x-panel.photo-picker />
                         </label>
                     </div>
-                    <div wire:loading wire:target="newPhotos" class="mt-2 text-[12.5px] text-ink/55">Enviando fotos…</div>
+                    <div wire:loading wire:target="photoUpload" class="mt-2 text-[12.5px] text-ink/55">Enviando fotos…</div>
                     @error('selectedPhotoIds') <p class="mt-2 text-[12px] text-danger">{{ $message }}</p> @enderror
                     @error('newPhotos.*') <p class="mt-2 text-[12px] text-danger">{{ $message }}</p> @enderror
+                    @error('photoUpload') <p class="mt-2 text-[12px] text-danger">{{ $message }}</p> @enderror
                 </div>
 
                 <div>

@@ -41,6 +41,25 @@ new #[Layout('layouts::panel')] class extends Component
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
     public array $newPhotos = [];
 
+    /**
+     * One photo per upload: the S3 temporary upload driver (Laravel Cloud)
+     * refuses multi-file uploads, so the browser sends the picked files one by one.
+     *
+     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
+     */
+    public $photoUpload = null;
+
+    public function updatedPhotoUpload(): void
+    {
+        $this->validate(['photoUpload' => ['image', 'max:'.self::MAX_PHOTO_KB]], [
+            'photoUpload.image' => 'Envie apenas imagens.',
+            'photoUpload.max' => 'Cada foto pode ter no máximo 8 MB.',
+        ]);
+
+        $this->newPhotos[] = $this->photoUpload;
+        $this->reset('photoUpload');
+    }
+
     public function mount(?Dish $dish = null): void
     {
         $restaurant = auth()->user()->restaurant;
@@ -329,12 +348,15 @@ new #[Layout('layouts::panel')] class extends Component
             <label class="flex size-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-[10px] border-2 border-dashed border-ink/15 text-[11.5px] font-semibold text-ink/50 hover:border-accent hover:text-accent">
                 <x-ui.icon name="upload" />
                 Adicionar
-                <input type="file" wire:model="newPhotos" accept="image/*" multiple class="sr-only">
+                <x-panel.photo-picker />
             </label>
         </div>
 
-        <div wire:loading wire:target="newPhotos" class="mt-2 text-[12.5px] text-ink/55">Enviando fotos…</div>
+        <div wire:loading wire:target="photoUpload" class="mt-2 text-[12.5px] text-ink/55">Enviando fotos…</div>
         @error('newPhotos.*')
+            <p class="mt-2 text-[12px] text-danger">{{ $message }}</p>
+        @enderror
+        @error('photoUpload')
             <p class="mt-2 text-[12px] text-danger">{{ $message }}</p>
         @enderror
     </x-ui.card>
