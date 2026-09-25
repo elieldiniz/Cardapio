@@ -38,11 +38,12 @@ class PaymentFailed extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $data = $this->toArray($notifiable);
-
         return (new MailMessage)
-            ->subject($data['title'])
-            ->line($data['message'])
-            ->action('Atualizar cartão', route('panel.subscription'));
+            ->subject('Ação necessária: o pagamento da sua assinatura falhou')
+            ->markdown('mail.payment-failed', [
+                'name' => $notifiable->firstName(),
+                'restaurant' => $notifiable->restaurant?->name,
+                'url' => route('panel.subscription'),
+            ]);
     }
 }

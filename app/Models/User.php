@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'notify_video_ready'])]
 #[Hidden(['password', 'remember_token'])]
@@ -50,6 +51,14 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * First word of the name, for greetings ("Olá, Ana!").
+     */
+    public function firstName(): string
+    {
+        return Str::before(trim($this->name), ' ');
     }
 
     public function isSuperAdmin(): bool

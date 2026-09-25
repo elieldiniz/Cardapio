@@ -61,7 +61,13 @@ class PlanDowngraded extends Notification
     {
         return (new MailMessage)
             ->subject($this->toArray($notifiable)['title'])
-            ->line($this->message())
-            ->action('Ver assinatura', route('panel.subscription'));
+            ->markdown('mail.plan-downgraded', [
+                'name' => $notifiable->firstName(),
+                'restaurant' => $notifiable->restaurant?->name,
+                'forNonPayment' => $this->forNonPayment,
+                'hiddenDishes' => $this->hiddenDishes,
+                'dishLimit' => $this->dishLimit,
+                'url' => route('panel.subscription'),
+            ]);
     }
 }

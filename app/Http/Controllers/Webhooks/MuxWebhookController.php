@@ -131,9 +131,9 @@ class MuxWebhookController extends Controller
             return;
         }
 
-        $ready = $siblings->where('status.slug', 'aguardando_aprovacao')->count();
+        $ready = $siblings->where('status.slug', 'aguardando_aprovacao');
 
-        if ($ready === 0) {
+        if ($ready->isEmpty()) {
             return;
         }
 
@@ -141,6 +141,6 @@ class MuxWebhookController extends Controller
             ->whereHas('role', fn ($role) => $role->where('slug', 'dono'))
             ->get();
 
-        Notification::send($owners, new VideoReadyForReview($video->dish, $ready));
+        Notification::send($owners, new VideoReadyForReview($video->dish, $ready->count()));
     }
 }

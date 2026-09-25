@@ -20,8 +20,8 @@ test('a reset link is emailed for an existing account', function () {
     Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
         $mail = $notification->toMail($user);
 
-        return str_contains($mail->actionUrl, '/redefinir-senha/'.$notification->token)
-            && in_array('Este link expira em 60 minutos.', array_merge($mail->introLines, $mail->outroLines), true);
+        return str_contains($mail->viewData['url'], '/redefinir-senha/'.$notification->token)
+            && str_contains(strip_tags((string) $mail->render()), 'O link expira em 60 minutos');
     });
 
     expect(config('auth.passwords.users.expire'))->toBe(60);

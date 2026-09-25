@@ -48,26 +48,31 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useSubscriptionItemModel(SubscriptionItem::class);
 
-        VerifyEmail::toMailUsing(fn ($notifiable, string $url) => (new MailMessage)
-            ->subject('Confirme seu e-mail')
-            ->greeting('Olá!')
-            ->line('Confirme seu e-mail para liberar o painel do seu restaurante.')
-            ->action('Confirmar e-mail', $url)
-            ->line('Se você não criou uma conta, ignore este e-mail.')
-            ->salutation('Equipe '.config('app.name')));
+        VerifyEmail::toMailUsing(function ($notifiable, string $url) {
+            // A fresh sign-up gets the welcome; an e-mail change gets the short version.
+            $newAccount = $notifiable->created_at?->gt(now()->subHour()) ?? true;
+
+            return (new MailMessage)
+                ->subject($newAccount ? 'Confirme seu e-mail e comece seu cardápio em vídeo' : 'Confirme seu novo e-mail no '.config('app.name'))
+                ->markdown('mail.verify-email', [
+                    'name' => $notifiable->firstName(),
+                    'restaurant' => $notifiable->restaurant?->name,
+                    'url' => $url,
+                    'minutes' => config('auth.verification.expire', 60),
+                    'newAccount' => $newAccount,
+                ]);
+        });
 
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             $url = route('password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()]);
-            $minutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
             return (new MailMessage)
-                ->subject('Redefinição de senha')
-                ->greeting('Olá!')
-                ->line('Recebemos um pedido para redefinir a senha da sua conta.')
-                ->action('Redefinir senha', $url)
-                ->line("Este link expira em {$minutes} minutos.")
-                ->line('Se você não pediu a redefinição, ignore este e-mail.')
-                ->salutation('Equipe '.config('app.name'));
+                ->subject('Crie uma nova senha para o '.config('app.name'))
+                ->markdown('mail.reset-password', [
+                    'name' => $notifiable->firstName(),
+                    'url' => $url,
+                    'minutes' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
+                ]);
         });
     }
 }

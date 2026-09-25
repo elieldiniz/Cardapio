@@ -62,10 +62,11 @@ class VideoReadyForReview extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject($this->title())
-            ->greeting('Olá!')
-            ->line($this->message())
-            ->action('Revisar vídeos', route('panel.dishes.video', $this->dish))
-            ->line('Você recebe este e-mail porque ativou o aviso em Minha conta. Dá para desligar por lá quando quiser.')
-            ->salutation('Equipe '.config('app.name'));
+            ->markdown('mail.video-ready', [
+                'name' => $notifiable->firstName(),
+                'dish' => $this->dish->name,
+                'variations' => $this->variations,
+                'url' => route('panel.dishes.video', $this->dish),
+            ]);
     }
 }
