@@ -1,4 +1,4 @@
-# Degustou Cardápio
+# Degusta
 
 Cardápio digital em vídeo no estilo Reels. O cliente escaneia o QR Code da mesa e rola um feed vertical com um prato por tela, com vídeo em autoplay, mudo e em loop. O dono do restaurante gera o vídeo de cada prato a partir de 1 a 4 fotos (IA com preset fixo e aprovação obrigatória) ou envia um vídeo próprio.
 

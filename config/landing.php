@@ -23,6 +23,6 @@ return [
         'instagram' => env('LANDING_CONTACT_INSTAGRAM'), // handle without @
     ],
 
-    'legal_entity' => env('LANDING_LEGAL_ENTITY', env('APP_NAME', 'Degustou Cardápio')),
+    'legal_entity' => env('LANDING_LEGAL_ENTITY', env('APP_NAME', 'Degusta')),
 
 ];
