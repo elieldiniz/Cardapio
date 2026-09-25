@@ -593,10 +593,14 @@ function initFeed(root) {
 
             if (about && typeof description === 'string') {
                 about.textContent = description;
-                about.hidden = description.trim() === '';
+                root.querySelector('[data-brand-about]').hidden = description.trim() === '';
+                fitDescription(root);
             }
         });
     }
+
+    fitDescription(root);
+    document.fonts?.ready.then(() => fitDescription(root));
 
     // ---- Watch-time tracking (US-1.4 / US-6.3): batched, one report per dish ----
 
@@ -717,4 +721,27 @@ function sessionTokenFor() {
     } catch {
         return String(Date.now()) + Math.random().toString(16).slice(2);
     }
+}
+
+/**
+ * Clamps the restaurant description to two lines, with "ver mais" only when
+ * the text actually overflows.
+ */
+function fitDescription(root) {
+    const about = root.querySelector('[data-brand-about]');
+    const text = about?.querySelector('[data-brand-description]');
+    const toggle = about?.querySelector('[data-description-toggle]');
+
+    if (!about || !text || !toggle) {
+        return;
+    }
+
+    about.classList.remove('is-expanded');
+    toggle.textContent = 'ver mais';
+    toggle.hidden = text.scrollHeight <= text.clientHeight + 1;
+
+    toggle.onclick = () => {
+        const expanded = about.classList.toggle('is-expanded');
+        toggle.textContent = expanded ? 'ver menos' : 'ver mais';
+    };
 }

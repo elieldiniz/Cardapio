@@ -6,13 +6,20 @@
     <header class="grid-hero">
         <div class="grid-hero__cover" data-brand-cover @if ($restaurant['cover_url']) style="background-image: url('{{ $restaurant['cover_url'] }}')" @endif></div>
         <div class="grid-hero__shade" aria-hidden="true"></div>
-        <img class="grid-hero__logo" data-brand-logo src="{{ $restaurant['logo_url'] }}" alt="" width="82" height="82" @unless ($restaurant['logo_url']) hidden @endunless>
-        <span class="grid-hero__logo grid-hero__logo--initial" data-brand-initial @if ($restaurant['logo_url']) hidden @endif>{{ mb_substr($restaurant['name'], 0, 1) }}</span>
     </header>
 
+    {{-- Profile header: logo over the cover, name, accent rule and description. --}}
     <div class="grid-intro">
+        <img class="grid-hero__logo" data-brand-logo src="{{ $restaurant['logo_url'] }}" alt="" width="88" height="88" @unless ($restaurant['logo_url']) hidden @endunless>
+        <span class="grid-hero__logo grid-hero__logo--initial" data-brand-initial @if ($restaurant['logo_url']) hidden @endif>{{ mb_substr($restaurant['name'], 0, 1) }}</span>
+
         <h1 class="grid-intro__name">{{ $restaurant['name'] }}</h1>
-        <p class="grid-intro__description" data-brand-description @unless ($restaurant['description']) hidden @endunless>{{ $restaurant['description'] }}</p>
+        <span class="grid-intro__rule" aria-hidden="true"></span>
+
+        <div class="grid-intro__about" data-brand-about @unless ($restaurant['description']) hidden @endunless>
+            <p class="grid-intro__description" data-brand-description>{{ $restaurant['description'] }}</p>
+            <button type="button" class="grid-intro__more" data-description-toggle hidden>ver mais</button>
+        </div>
     </div>
 
     <div class="grid-divider" aria-hidden="true"></div>

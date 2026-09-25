@@ -489,10 +489,7 @@ button {
 
 .grid-hero {
     position: relative;
-    display: flex;
-    height: calc(130px + env(safe-area-inset-top));
-    align-items: center;
-    justify-content: center;
+    height: calc(150px + env(safe-area-inset-top));
     padding-top: env(safe-area-inset-top);
     overflow: hidden;
 }
@@ -506,16 +503,27 @@ button {
 .grid-hero__shade {
     position: absolute;
     inset: 0;
-    background: linear-gradient(160deg, rgba(36, 31, 26, 0.5), rgba(15, 13, 11, 0.65));
+    background: linear-gradient(180deg, rgba(15, 13, 11, 0.2) 0%, rgba(15, 13, 11, 0.55) 60%, var(--sheet-bg) 100%);
+}
+
+/* Profile header: the logo overlaps the bottom of the cover. */
+.grid-intro {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 22px 16px;
+    text-align: center;
 }
 
 .grid-hero__logo {
-    position: relative;
-    width: 82px;
-    height: 82px;
+    width: 88px;
+    height: 88px;
+    margin-top: -48px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 0 0 3px var(--accent);
+    background: var(--sheet-bg);
+    box-shadow: 0 0 0 3px var(--accent), 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .grid-hero__logo--initial {
@@ -523,25 +531,55 @@ button {
     align-items: center;
     justify-content: center;
     background: var(--accent);
-    font: 400 34px var(--feed-display-font), 'DM Serif Display', serif;
-}
-
-.grid-intro {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 14px 18px 14px;
+    font: 400 36px var(--feed-display-font), 'DM Serif Display', serif;
 }
 
 .grid-intro__name {
-    margin: 0;
-    font: 400 20px/1.2 var(--feed-display-font), 'DM Serif Display', serif;
+    margin: 14px 0 0;
+    font: 400 30px/1.12 var(--feed-display-font), 'DM Serif Display', serif;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+}
+
+.grid-intro__rule {
+    width: 32px;
+    height: 3px;
+    margin-top: 12px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.grid-intro__about {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 340px;
+    margin-top: 12px;
 }
 
 .grid-intro__description {
+    display: -webkit-box;
     margin: 0;
-    font: 400 13px/1.4 'DM Sans', sans-serif;
-    color: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font: 400 14.5px/1.55 'DM Sans', sans-serif;
+    color: rgba(255, 255, 255, 0.78);
+    text-wrap: pretty;
+}
+
+.grid-intro__about.is-expanded .grid-intro__description {
+    display: block;
+}
+
+.grid-intro__more {
+    margin-top: 4px;
+    padding: 2px 6px;
+    border: 0;
+    background: none;
+    font: 700 13px 'DM Sans', sans-serif;
+    color: var(--accent);
+    cursor: pointer;
 }
 
 .grid-divider {
