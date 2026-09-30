@@ -105,6 +105,8 @@ Route::middleware(['auth', 'auth.session', 'owner', 'verified.owner'])->prefix('
         'table' => Str::limit((string) $request->query('mesa'), 10, ''),
     ]))->name('qr-code.print');
     Route::livewire('/visualizacoes', 'pages::panel.views')->name('views');
+    Route::livewire('/suporte', 'pages::panel.support')->name('support');
+    Route::livewire('/suporte/{ticket}', 'pages::panel.support-ticket')->name('support.show');
     Route::livewire('/conta', 'pages::panel.account')->name('account');
 });
 

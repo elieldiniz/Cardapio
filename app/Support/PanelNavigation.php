@@ -23,6 +23,7 @@ class PanelNavigation
             ['label' => 'QR Code', 'route' => 'panel.qr-code', 'icon' => 'qr'],
             ['label' => 'Visualizações', 'route' => 'panel.views', 'icon' => 'views'],
             ['label' => 'Assinatura', 'route' => 'panel.subscription', 'icon' => 'subscription'],
+            ['label' => 'Suporte', 'route' => 'panel.support', 'icon' => 'support'],
         ];
     }
 
