@@ -21,6 +21,13 @@ export default defineConfig({
                 bunny('Carter One', {
                     weights: [400],
                 }),
+                // Public site typography (landing and institutional pages).
+                bunny('Fraunces', {
+                    weights: [400, 600, 700],
+                }),
+                bunny('Plus Jakarta Sans', {
+                    weights: [400, 500, 600, 700],
+                }),
             ],
         }),
         tailwindcss(),

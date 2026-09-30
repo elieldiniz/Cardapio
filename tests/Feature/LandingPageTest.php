@@ -8,17 +8,20 @@ beforeEach(fn () => seedReferenceData());
 it('serves the landing page at the root with a signup call to action', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('Seu cardápio em vídeo, direto do QR Code da mesa.')
+        ->assertSee('Faça o cliente')
+        ->assertSee('desejar o prato')
+        ->assertSee('antes de pedir.')
         ->assertSee(route('register'), false)
         ->assertSee('<meta property="og:title"', false)
-        ->assertSee('Perguntas frequentes');
+        ->assertSee('id="perguntas"', false)
+        ->assertSee('Ficou com alguma');
 });
 
 it('shows the plans from the database so admin edits appear on the landing', function () {
     Plan::where('name', 'Básico')->update(['price_cents' => 4500, 'dish_limit' => 40]);
 
     $this->get('/')
-        ->assertSeeInOrder(['Grátis', 'Básico', 'R$ 45,00', 'Até 40 pratos', 'Pro'])
+        ->assertSeeInOrder(['Grátis', 'Básico', 'R$ 45', 'Até 40 pratos', 'Pro'])
         ->assertSee('Pacotes avulsos a partir de');
 
     config()->set('landing.show_prices', false);

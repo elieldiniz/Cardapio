@@ -36,25 +36,49 @@
     @fonts
     @vite(['resources/css/app.css'])
 </head>
-<body class="bg-white text-ink">
-    <header class="sticky top-0 z-40 border-b border-white/5 bg-night/90 backdrop-blur">
-        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+<body class="site-type bg-white text-ink">
+    <header class="sticky top-0 z-40 border-b border-white/10 bg-night shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)]" data-site-header>
+        {{-- Accent hairline: ties the header to the brand color without a heavy bar. --}}
+        <div class="h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" aria-hidden="true"></div>
+
+        <div class="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
             <a href="{{ route('home') }}" class="min-w-0" aria-label="{{ config('app.name') }}">
-                <x-brand.logo name-class="text-[26px] text-white sm:text-[30px]" />
+                <x-brand.logo size="size-10" name-class="text-[28px] text-white sm:text-[32px]" />
             </a>
 
-            <nav class="flex shrink-0 items-center gap-1 text-[13.5px] font-semibold whitespace-nowrap sm:gap-2">
-                <a href="{{ route('home') }}#como-funciona" class="hidden rounded-lg px-3 py-2 text-white/70 hover:text-white md:inline">Como funciona</a>
-                @if (config('landing.show_prices'))
-                    <a href="{{ route('home') }}#planos" class="hidden rounded-lg px-3 py-2 text-white/70 hover:text-white md:inline">Planos</a>
-                @endif
-                <a href="{{ route('home') }}#perguntas" class="hidden rounded-lg px-3 py-2 text-white/70 hover:text-white md:inline">Dúvidas</a>
+            <nav class="flex shrink-0 items-center gap-1.5 text-[14px] font-semibold whitespace-nowrap sm:gap-2" aria-label="Principal">
+                <div class="hidden items-center gap-1 md:flex">
+                    <a href="{{ route('home') }}#como-funciona" class="px-3.5 py-2 text-white/70 underline-offset-8 transition hover:text-white hover:underline hover:decoration-accent hover:decoration-2">Como funciona</a>
+                    @if (config('landing.show_prices'))
+                        <a href="{{ route('home') }}#planos" class="px-3.5 py-2 text-white/70 underline-offset-8 transition hover:text-white hover:underline hover:decoration-accent hover:decoration-2">Planos</a>
+                    @endif
+                    <a href="{{ route('home') }}#perguntas" class="px-3.5 py-2 text-white/70 underline-offset-8 transition hover:text-white hover:underline hover:decoration-accent hover:decoration-2">Dúvidas</a>
+                </div>
+
                 @auth
-                    <a href="{{ \App\Support\HomeRedirect::for(auth()->user()) }}" class="rounded-[9px] bg-accent px-4 py-2 text-white hover:brightness-95">Ir para o painel</a>
+                    <a href="{{ \App\Support\HomeRedirect::for(auth()->user()) }}" class="rounded-full bg-accent px-5 py-2.5 text-white transition hover:brightness-95">Ir para o painel</a>
                 @else
-                    <a href="{{ route('login') }}" class="rounded-lg px-3 py-2 text-white/80 hover:text-white">Entrar</a>
-                    <a href="{{ route('register') }}" class="rounded-[9px] bg-accent px-3.5 py-2 text-white hover:brightness-95 sm:px-4">Criar conta<span class="hidden sm:inline"> grátis</span></a>
+                    <a href="{{ route('login') }}" class="hidden px-3.5 py-2 text-white/80 underline-offset-8 transition hover:text-white hover:underline hover:decoration-accent hover:decoration-2 sm:inline">Entrar</a>
+                    <a href="{{ route('register') }}" class="rounded-full bg-accent px-4 py-2.5 text-white transition hover:brightness-95 sm:px-5">Criar conta<span class="hidden sm:inline"> grátis</span></a>
                 @endauth
+
+                {{-- Mobile menu: plain <details>, so it works without JavaScript. --}}
+                <details class="group md:hidden" data-mobile-menu>
+                    <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden" aria-label="Abrir menu">
+                        <svg class="size-5 group-open:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+                        <svg class="hidden size-5 group-open:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                    </summary>
+                    <div class="absolute inset-x-3 top-full mt-2 flex flex-col rounded-2xl border border-white/10 bg-night p-2 shadow-2xl sm:inset-x-6">
+                        <a href="{{ route('home') }}#como-funciona" class="rounded-xl px-4 py-3 text-white/80 hover:bg-white/5 hover:text-white">Como funciona</a>
+                        @if (config('landing.show_prices'))
+                            <a href="{{ route('home') }}#planos" class="rounded-xl px-4 py-3 text-white/80 hover:bg-white/5 hover:text-white">Planos</a>
+                        @endif
+                        <a href="{{ route('home') }}#perguntas" class="rounded-xl px-4 py-3 text-white/80 hover:bg-white/5 hover:text-white">Dúvidas</a>
+                        @guest
+                            <a href="{{ route('login') }}" class="rounded-xl px-4 py-3 text-white/80 hover:bg-white/5 hover:text-white sm:hidden">Entrar</a>
+                        @endguest
+                    </div>
+                </details>
             </nav>
         </div>
     </header>
@@ -65,7 +89,7 @@
 
     {{ $slot }}
 
-    <footer class="bg-night text-white/80" data-footer>
+    <footer class="border-t border-white/10 bg-night text-white/80" data-footer>
         <div class="mx-auto max-w-6xl px-4 py-10 text-center sm:px-6">
             <a href="{{ route('home') }}" class="mb-6 inline-flex" aria-label="{{ config('app.name') }}">
                 <x-brand.logo size="size-10" name-class="text-[30px] text-white" />
