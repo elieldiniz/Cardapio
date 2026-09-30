@@ -22,6 +22,9 @@ class AdminActionSeeder extends LookupSeeder
             'cupom_criado' => 'Cupom Criado',
             'conta_restaurada' => 'Conta Restaurada',
             'conta_excluida_definitivamente' => 'Conta Excluída Definitivamente',
+            'chamado_respondido' => 'Chamado Respondido',
+            'chamado_fechado' => 'Chamado Fechado',
+            'chamado_reaberto' => 'Chamado Reaberto',
         ];
     }
 }

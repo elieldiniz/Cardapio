@@ -1,15 +1,20 @@
 <?php
 
 use App\Actions\Support\OpenSupportTicket;
+use App\Enums\TicketCategory;
+use App\Enums\TicketStatus;
 use App\Models\SupportTicket;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
 {
+    use WithPagination;
+
     public bool $showForm = false;
 
     public string $category = 'duvida';
@@ -23,22 +28,22 @@ new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
     {
         return SupportTicket::query()
             ->where('restaurant_id', auth()->user()->restaurant_id)
-            ->orderByRaw('status = ? asc', [SupportTicket::STATUS_CLOSED])
+            ->orderByRaw('status = ? asc', [TicketStatus::Closed->value])
             ->latest('last_message_at')
-            ->get();
+            ->paginate(15);
     }
 
     public function whatsappUrl(): ?string
     {
-        $number = config('landing.contact.whatsapp');
+        $number = preg_replace('/\D+/', '', (string) config('landing.contact.whatsapp'));
 
-        return $number ? 'https://wa.me/'.$number.'?text='.rawurlencode('Olá! Preciso de ajuda com o meu cardápio ('.auth()->user()->restaurant->name.').') : null;
+        return $number !== '' ? 'https://wa.me/'.$number.'?text='.rawurlencode('Olá! Preciso de ajuda com o meu cardápio ('.auth()->user()->restaurant->name.').') : null;
     }
 
     public function open()
     {
         $this->validate([
-            'category' => ['required', Rule::in(array_keys(SupportTicket::CATEGORIES))],
+            'category' => ['required', Rule::enum(TicketCategory::class)],
             'subject' => ['required', 'string', 'max:120'],
             'body' => ['required', 'string', 'min:10', 'max:5000'],
         ], [
@@ -62,16 +67,18 @@ new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
             @if ($url = $this->whatsappUrl())
                 <x-ui.button variant="secondary" :href="$url" target="_blank" rel="noopener" data-support-whatsapp>Falar no WhatsApp</x-ui.button>
             @endif
-            <x-ui.button wire:click="$toggle('showForm')" data-support-new>{{ $showForm ? 'Cancelar' : 'Novo chamado' }}</x-ui.button>
+            @can('create', \App\Models\SupportTicket::class)
+                <x-ui.button wire:click="$toggle('showForm')" data-support-new>{{ $showForm ? 'Cancelar' : 'Novo chamado' }}</x-ui.button>
+            @endcan
         </div>
     </x-ui.page-header>
 
-    @if ($showForm)
+    @if ($showForm && auth()->user()->can('create', \App\Models\SupportTicket::class))
         <x-ui.card title="Novo chamado" data-support-form>
             <form wire:submit="open" class="flex flex-col gap-3.5">
                 <x-ui.field label="Sobre o quê?" for="category">
                     <x-ui.select id="category" wire:model="category">
-                        @foreach (\App\Models\SupportTicket::CATEGORIES as $value => $label)
+                        @foreach (\App\Enums\TicketCategory::options() as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </x-ui.select>
@@ -103,13 +110,13 @@ new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
             >
                 <div class="flex min-w-0 flex-col gap-0.5">
                     <span class="truncate text-[14px] font-bold text-ink">{{ $ticket->subject }}</span>
-                    <span class="text-[12px] text-ink/50">{{ $ticket->categoryLabel() }} · {{ $ticket->last_message_at?->diffForHumans() }}</span>
+                    <span class="text-[12px] text-ink/50">{{ $ticket->category->label() }} · {{ $ticket->last_message_at?->diffForHumans() }}</span>
                 </div>
                 <span class="shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-bold {{ match ($ticket->status) {
-                    \App\Models\SupportTicket::STATUS_ANSWERED => 'bg-success/10 text-success',
-                    \App\Models\SupportTicket::STATUS_CLOSED => 'bg-ink/8 text-ink/50',
+                    \App\Enums\TicketStatus::Answered => 'bg-success/10 text-success',
+                    \App\Enums\TicketStatus::Closed => 'bg-ink/8 text-ink/50',
                     default => 'bg-accent/10 text-accent',
-                } }}">{{ $ticket->statusLabel() }}</span>
+                } }}">{{ $ticket->status->label() }}</span>
             </a>
         @empty
             <x-ui.empty-state
@@ -118,4 +125,6 @@ new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
             />
         @endforelse
     </x-ui.card>
+
+    {{ $this->tickets->links() }}
 </div>

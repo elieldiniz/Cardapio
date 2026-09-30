@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\SupportTickets\Schemas;
 
-use App\Models\SupportTicket;
+use App\Enums\TicketCategory;
+use App\Enums\TicketStatus;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
@@ -19,16 +20,12 @@ class SupportTicketInfolist
                     ->schema([
                         TextEntry::make('restaurant.name')->label('Restaurante'),
                         TextEntry::make('user.email')->label('Dono')->copyable(),
-                        TextEntry::make('category')->label('Categoria')->formatStateUsing(fn (string $state) => SupportTicket::CATEGORIES[$state] ?? $state),
+                        TextEntry::make('category')->label('Categoria')->formatStateUsing(fn (TicketCategory $state) => $state->label()),
                         TextEntry::make('status')
                             ->label('Status')
                             ->badge()
-                            ->formatStateUsing(fn (string $state) => SupportTicket::STATUSES[$state] ?? $state)
-                            ->color(fn (string $state) => match ($state) {
-                                SupportTicket::STATUS_OPEN => 'danger',
-                                SupportTicket::STATUS_ANSWERED => 'success',
-                                default => 'gray',
-                            }),
+                            ->formatStateUsing(fn (TicketStatus $state) => $state->label())
+                            ->color(fn (TicketStatus $state) => $state->color()),
                     ]),
                 Section::make('Conversa')
                     ->schema([

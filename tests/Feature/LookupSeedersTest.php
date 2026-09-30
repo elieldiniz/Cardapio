@@ -45,6 +45,9 @@ function lookupSeederExpectations(): array
             'cupom_criado',
             'conta_restaurada',
             'conta_excluida_definitivamente',
+            'chamado_respondido',
+            'chamado_fechado',
+            'chamado_reaberto',
         ]],
     ];
 }

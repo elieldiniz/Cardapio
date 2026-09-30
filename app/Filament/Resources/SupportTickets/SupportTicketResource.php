@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupportTickets;
 
+use App\Enums\TicketStatus;
 use App\Filament\Resources\SupportTickets\Pages\ListSupportTickets;
 use App\Filament\Resources\SupportTickets\Pages\ViewSupportTicket;
 use App\Filament\Resources\SupportTickets\Schemas\SupportTicketInfolist;
@@ -45,7 +46,7 @@ class SupportTicketResource extends Resource
      */
     public static function getNavigationBadge(): ?string
     {
-        $count = SupportTicket::query()->where('status', SupportTicket::STATUS_OPEN)->count();
+        $count = SupportTicket::query()->where('status', TicketStatus::Open)->count();
 
         return $count > 0 ? (string) $count : null;
     }

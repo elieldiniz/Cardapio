@@ -2,6 +2,7 @@
 
 use App\Actions\Support\ReplyToSupportTicket;
 use App\Models\SupportTicket;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -16,7 +17,7 @@ new #[Layout('layouts::panel')] class extends Component
 
     public function mount(SupportTicket $ticket): void
     {
-        abort_unless($ticket->restaurant_id === auth()->user()->restaurant_id, 404);
+        abort_unless(Gate::allows('view', $ticket), 404);
 
         $this->ticketId = $ticket->id;
 
@@ -55,7 +56,7 @@ new #[Layout('layouts::panel')] class extends Component
 
     public function close(): void
     {
-        app(ReplyToSupportTicket::class)->close($this->ticket);
+        app(ReplyToSupportTicket::class)->close($this->ticket, auth()->user());
 
         unset($this->ticket);
         $this->dispatch('toast', message: 'Chamado fechado.');
@@ -66,10 +67,10 @@ new #[Layout('layouts::panel')] class extends Component
 <div class="flex flex-col gap-[18px]">
     <a href="{{ route('panel.support') }}" wire:navigate class="w-fit text-[13px] font-bold text-accent hover:underline">← Todos os chamados</a>
 
-    <x-ui.page-header :title="$this->ticket->subject" :subtitle="$this->ticket->categoryLabel().' · '.$this->ticket->statusLabel()">
-        @unless ($this->ticket->isClosed())
+    <x-ui.page-header :title="$this->ticket->subject" :subtitle="$this->ticket->category->label().' · '.$this->ticket->status->label()">
+        @if (! $this->ticket->isClosed() && auth()->user()->can('close', $this->ticket))
             <x-ui.button variant="secondary" wire:click="close" wire:confirm="Fechar este chamado?" data-ticket-close>Marcar como resolvido</x-ui.button>
-        @endunless
+        @endif
     </x-ui.page-header>
 
     <div class="flex flex-col gap-3" data-thread>
@@ -83,9 +84,10 @@ new #[Layout('layouts::panel')] class extends Component
         @endforeach
     </div>
 
+    @can('reply', $this->ticket)
     <x-ui.card title="{{ $this->ticket->isClosed() ? 'Reabrir conversa' : 'Responder' }}">
         <form wire:submit="reply" class="flex flex-col gap-3">
-            <x-ui.field label="Mensagem" for="body" error="body" class="sr-only">
+            <x-ui.field label="Mensagem" for="body" error="body">
                 <x-ui.textarea id="body" wire:model="body" rows="4" maxlength="5000" placeholder="Escreva a sua mensagem…" />
             </x-ui.field>
             <div>
@@ -93,4 +95,7 @@ new #[Layout('layouts::panel')] class extends Component
             </div>
         </form>
     </x-ui.card>
+    @else
+        <p class="text-[13px] text-ink/50">Modo suporte: para não falar em nome do dono, respostas ficam desativadas.</p>
+    @endcan
 </div>

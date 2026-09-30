@@ -19,7 +19,7 @@ return [
 
     'contact' => [
         'email' => env('LANDING_CONTACT_EMAIL'),
-        'whatsapp' => env('LANDING_CONTACT_WHATSAPP'), // digits only, with country code, e.g. 5569999999999
+        'whatsapp' => preg_replace('/\D+/', '', (string) env('LANDING_CONTACT_WHATSAPP')) ?: null, // country code + DDD + number, e.g. 5569999999999 (non-digits are ignored)
         'instagram' => env('LANDING_CONTACT_INSTAGRAM'), // handle without @
     ],
 
