@@ -67,6 +67,9 @@
     @vite(['resources/css/feed.css', 'resources/js/feed.js'])
 </head>
 <body>
+    {{-- Ambient backdrop: the cover (or first dish) blurred behind everything, so the page is never flat black. --}}
+    <div class="feed-backdrop" aria-hidden="true" @if ($firstThumb) style="background-image: url('{{ $firstThumb }}')" @endif></div>
+
     <div
         class="feed-app"
         data-feed
