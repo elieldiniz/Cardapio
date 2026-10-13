@@ -14,7 +14,6 @@
         ['Política de Reembolso', route('legal.refund')],
         ['Contato', route('marketing.contact')],
         ['Política de Cookies', route('legal.cookies')],
-        ['Repositório da AC Digital Múltipla', asset('docs/dpn-ac-digital-multipla.pdf'), true],
     ];
 @endphp
 <!DOCTYPE html>
@@ -97,8 +96,8 @@
             </a>
 
             <nav class="flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[13.5px]" aria-label="Links institucionais">
-                @foreach ($footerLinks as [$label, $href, $external])
-                    <a href="{{ $href }}" @if ($external ?? false) target="_blank" rel="noopener" @endif class="hover:text-white">{{ $label }}</a>
+                @foreach ($footerLinks as [$label, $href])
+                    <a href="{{ $href }}" class="hover:text-white">{{ $label }}</a>
                     @unless ($loop->last)
                         <span class="text-white/30" aria-hidden="true">|</span>
                     @endunless
