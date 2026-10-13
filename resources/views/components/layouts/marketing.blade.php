@@ -97,9 +97,8 @@
             </a>
 
             <nav class="flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[13.5px]" aria-label="Links institucionais">
-                @foreach ($footerLinks as $link)
-                    @php [$label, $href] = $link; $external = $link[2] ?? false; @endphp
-                    <a href="{{ $href }}" @if ($external) target="_blank" rel="noopener" @endif class="hover:text-white">{{ $label }}</a>
+                @foreach ($footerLinks as [$label, $href, $external])
+                    <a href="{{ $href }}" @if ($external ?? false) target="_blank" rel="noopener" @endif class="hover:text-white">{{ $label }}</a>
                     @unless ($loop->last)
                         <span class="text-white/30" aria-hidden="true">|</span>
                     @endunless
