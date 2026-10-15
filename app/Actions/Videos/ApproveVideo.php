@@ -11,14 +11,15 @@ use InvalidArgumentException;
 /**
  * The dono's explicit approval (US-3.3): the chosen video becomes the dish's
  * single active video; any previously approved video is demoted, so a dish
- * never has two approved videos at once.
+ * never has two approved videos at once. A video that was replaced can be
+ * brought back the same way, at no generation cost.
  */
 class ApproveVideo
 {
     public function handle(Video $video): Dish
     {
-        if ($video->status?->slug !== 'aguardando_aprovacao') {
-            throw new InvalidArgumentException('Só é possível aprovar um vídeo pronto e aguardando aprovação.');
+        if ($video->status?->slug !== 'aguardando_aprovacao' && ! $video->canBeRestored()) {
+            throw new InvalidArgumentException('Só é possível aprovar um vídeo pronto.');
         }
 
         return DB::transaction(function () use ($video) {
@@ -31,7 +32,7 @@ class ApproveVideo
                 ->whereKeyNot($video->id)
                 ->update(['status_id' => VideoStatus::idFor('rejeitado')]);
 
-            $video->update(['status_id' => $approvedId]);
+            $video->update(['status_id' => $approvedId, 'approved_at' => now()]);
             $dish->update(['active_video_id' => $video->id]);
 
             return $dish;

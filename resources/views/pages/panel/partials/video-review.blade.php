@@ -20,5 +20,10 @@
     <span class="w-fit rounded-full px-2.5 py-0.5 text-[10.5px] font-bold tracking-wide uppercase {{ $label[1] }}">{{ $label[0] }}</span>
     @if ($slug === 'aguardando_aprovacao' && ! $isActive)
         <x-ui.button size="sm" wire:click="approve({{ $video->id }})" wire:confirm="Publicar este vídeo no cardápio? Ele substitui o vídeo atual.">Aprovar</x-ui.button>
+    @elseif (! $isActive && $video->canBeRestored())
+        <x-ui.button size="sm" variant="secondary" wire:click="approve({{ $video->id }})" wire:confirm="Voltar a usar este vídeo no cardápio? Ele substitui o vídeo atual e não consome gerações.">Usar de novo</x-ui.button>
+    @endif
+    @if (! $isActive && $slug !== 'processando')
+        <button type="button" wire:click="deleteVideo({{ $video->id }})" wire:confirm="Excluir este vídeo de vez? Não dá para desfazer." class="w-fit text-[12px] font-semibold text-ink/45 hover:text-danger" data-delete-video>Excluir</button>
     @endif
 </div>

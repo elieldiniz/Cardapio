@@ -1,5 +1,6 @@
 <?php
 
+use App\Contracts\MuxClient;
 use App\Models\Dish;
 use App\Models\User;
 use App\Models\Video;
@@ -113,4 +114,25 @@ it('does not notify about the dono\'s own upload', function () {
     $this->postJson(route('webhooks.mux'), readyEvent(), ['Mux-Signature' => 'valid-signature'])->assertOk();
 
     Notification::assertNothingSent();
+});
+
+it('deletes the Mux asset of an upload refused for its duration', function () {
+    $mux = app(MuxClient::class);
+    $video = Video::factory()->upload()->create(['mux_asset_id' => null]);
+
+    $this->postJson(route('webhooks.mux'), readyEvent(['id' => 'asset-long', 'duration' => 42.0, 'passthrough' => "video:{$video->id}"]), ['Mux-Signature' => 'valid-signature'])->assertOk();
+
+    expect($video->fresh()->status->slug)->toBe('rejeitado')
+        ->and($video->fresh()->mux_asset_id)->toBeNull()
+        ->and($mux->deleted)->toBe(['asset-long']);
+});
+
+it('deletes the Mux asset of a clip that failed to process', function () {
+    $mux = app(MuxClient::class);
+    $video = Video::factory()->create(['mux_asset_id' => 'asset-broken']);
+
+    $this->postJson(route('webhooks.mux'), ['type' => 'video.asset.errored', 'data' => ['id' => 'asset-broken']], ['Mux-Signature' => 'valid-signature'])->assertOk();
+
+    expect($video->fresh()->status->slug)->toBe('rejeitado')
+        ->and($mux->deleted)->toBe(['asset-broken']);
 });

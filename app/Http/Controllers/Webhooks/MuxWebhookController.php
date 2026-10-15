@@ -12,7 +12,9 @@ use App\Support\MuxUrls;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 /**
  * Mux → app webhook (US-3.3). Only signed requests are processed; the
@@ -53,9 +55,12 @@ class MuxWebhookController extends Controller
             && StartOwnVideoUpload::durationProblem((float) $asset['duration']) !== null) {
             $video->update([
                 'status_id' => VideoStatus::idFor('rejeitado'),
-                'mux_asset_id' => $asset['id'] ?? $video->mux_asset_id,
+                'mux_asset_id' => null,
                 'duration_seconds' => (int) round((float) $asset['duration']),
             ]);
+
+            // Never usable: stop paying Mux storage for it.
+            $this->dropAsset($asset['id'] ?? $video->mux_asset_id);
 
             return;
         }
@@ -82,7 +87,9 @@ class MuxWebhookController extends Controller
         $video = $this->findVideo($asset);
 
         if ($video !== null && $video->status?->slug === 'processando') {
-            $video->update(['status_id' => VideoStatus::idFor('rejeitado')]);
+            $assetId = $asset['id'] ?? $video->mux_asset_id;
+            $video->update(['status_id' => VideoStatus::idFor('rejeitado'), 'mux_asset_id' => null]);
+            $this->dropAsset($assetId);
 
             // The failed clip may have been the one the others were waiting on.
             $this->notifyOwners($video);
@@ -142,5 +149,21 @@ class MuxWebhookController extends Controller
             ->get();
 
         Notification::send($owners, new VideoReadyForReview($video->dish, $ready->count()));
+    }
+
+    /**
+     * Deletes a Mux asset that will never be played; a failure is only logged.
+     */
+    private function dropAsset(?string $assetId): void
+    {
+        if (! $assetId) {
+            return;
+        }
+
+        try {
+            app(MuxClient::class)->deleteAsset($assetId);
+        } catch (Throwable $exception) {
+            Log::error('Could not delete an unusable Mux asset', ['asset_id' => $assetId, 'error' => $exception->getMessage()]);
+        }
     }
 }

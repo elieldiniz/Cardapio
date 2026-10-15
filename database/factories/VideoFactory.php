@@ -55,6 +55,7 @@ class VideoFactory extends Factory
     {
         return $this->awaitingApproval()->state(fn (array $attributes) => [
             'status_id' => $this->statusId('aprovado', 'Aprovado'),
+            'approved_at' => now(),
         ]);
     }
 
