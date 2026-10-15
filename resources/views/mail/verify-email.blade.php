@@ -29,7 +29,7 @@ Confirmar meu e-mail
 
 <x-mail::steps :items="[
     'Cadastre seus pratos' => 'Nome, preço e uma boa foto. Nada de gravar vídeo.',
-    'A IA faz o vídeo' => 'Cada foto vira um vídeo curto, e você escolhe a melhor versão.',
+    'Nós fazemos o vídeo' => 'Cada foto vira um vídeo curto e você aprova antes de ir para o cardápio.',
     'Coloque o QR Code na mesa' => 'O cliente escaneia e vê cada prato rolando, como nos Reels.',
 ]" />
 @endif

@@ -1,4 +1,4 @@
-@props(['model' => 'photoUpload'])
+@props(['model' => 'photoUpload', 'multiple' => true])
 {{--
     Lets the dono pick several photos at once but uploads them one at a time
     into a single-file property: Livewire's S3 temporary upload driver (used on
@@ -7,7 +7,7 @@
 <input
     type="file"
     accept="image/*"
-    multiple
+    @if ($multiple) multiple @endif
     class="sr-only"
     x-data="{
         async send(files) {

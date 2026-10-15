@@ -9,6 +9,7 @@ use App\Models\AiPreset;
 use App\Models\Dish;
 use App\Models\GenerationStatus;
 use App\Models\VideoGeneration;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -21,34 +22,46 @@ class RequestVideoGeneration
 {
     public const MIN_PHOTOS = 1;
 
-    public const MAX_PHOTOS = 4;
+    /** The provider animates a single photo, so a request takes exactly one. */
+    public const MAX_PHOTOS = 1;
 
-    public const MIN_VARIATIONS = 2;
+    /** The dono always asks for one video; the action still supports up to MAX_VARIATIONS for internal uses. */
+    public const MIN_VARIATIONS = 1;
 
     public const MAX_VARIATIONS = 3;
 
+    public const PROMPT_MIN = 10;
+
+    public const PROMPT_MAX = 600;
+
     /**
      * @param  array<int, int>  $photoIds  dish_photos ids in angle order.
+     * @param  int|null  $presetId  the style the dono picked (null = the default one).
+     * @param  string|null  $customPrompt  the dono's own description; null/blank = the preset's prompt as registered.
      */
-    public function handle(Dish $dish, array $photoIds, int $variations): VideoGeneration
+    public function handle(Dish $dish, array $photoIds, int $variations = self::MIN_VARIATIONS, ?int $presetId = null, ?string $customPrompt = null): VideoGeneration
     {
         $photoIds = array_values(array_unique(array_map('intval', $photoIds)));
 
         if (count($photoIds) < self::MIN_PHOTOS || count($photoIds) > self::MAX_PHOTOS) {
-            throw new InvalidArgumentException('Escolha de 1 a 4 fotos do prato.');
+            throw new InvalidArgumentException('Escolha 1 foto do prato.');
         }
 
         if ($variations < self::MIN_VARIATIONS || $variations > self::MAX_VARIATIONS) {
-            throw new InvalidArgumentException('Peça de 2 a 3 variações.');
+            throw new InvalidArgumentException('Cada pedido gera de '.self::MIN_VARIATIONS.' a '.self::MAX_VARIATIONS.' vídeos.');
         }
 
         if ($dish->photos()->whereIn('id', $photoIds)->count() !== count($photoIds)) {
             throw new InvalidArgumentException('As fotos precisam ser deste prato.');
         }
 
-        $preset = static::activePreset() ?? throw VideoGenerationUnavailableException::noActivePreset();
+        $preset = $presetId === null
+            ? (static::activePreset() ?? throw VideoGenerationUnavailableException::noActivePreset())
+            : (static::availablePresets()->firstWhere('id', $presetId) ?? throw new InvalidArgumentException('Este estilo não está disponível.'));
 
-        return DB::transaction(function () use ($dish, $photoIds, $variations, $preset) {
+        $customPrompt = static::cleanPrompt($customPrompt);
+
+        return DB::transaction(function () use ($dish, $photoIds, $variations, $preset, $customPrompt) {
             $restaurant = $dish->restaurant()->lockForUpdate()->first();
             $available = $restaurant->availableGenerations();
 
@@ -58,6 +71,7 @@ class RequestVideoGeneration
 
             $generation = $dish->videoGenerations()->create([
                 'preset_id' => $preset->id,
+                'custom_prompt' => $customPrompt,
                 // Snapshot of the provider actually used, independent of later preset edits.
                 'provider_id' => $preset->provider_id,
                 'status_id' => GenerationStatus::idFor('fila'),
@@ -78,7 +92,41 @@ class RequestVideoGeneration
     }
 
     /**
-     * The fixed preset every generation uses: the active preset whose provider is active.
+     * The styles the dono can pick from: every active preset whose provider is active, oldest first.
+     *
+     * @return Collection<int, AiPreset>
+     */
+    public static function availablePresets(): Collection
+    {
+        return AiPreset::query()
+            ->where('is_active', true)
+            ->whereHas('provider', fn ($provider) => $provider->where('is_active', true))
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Whitespace-normalised custom prompt, or null when blank. Throws when it is too short or too long.
+     */
+    public static function cleanPrompt(?string $prompt): ?string
+    {
+        $prompt = trim((string) preg_replace('/\s+/u', ' ', (string) $prompt));
+
+        if ($prompt === '') {
+            return null;
+        }
+
+        $length = mb_strlen($prompt);
+
+        if ($length < self::PROMPT_MIN || $length > self::PROMPT_MAX) {
+            throw new InvalidArgumentException('Descreva o vídeo com '.self::PROMPT_MIN.' a '.self::PROMPT_MAX.' caracteres.');
+        }
+
+        return $prompt;
+    }
+
+    /**
+     * The default preset: the first available one.
      */
     public static function activePreset(): ?AiPreset
     {

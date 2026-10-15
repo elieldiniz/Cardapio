@@ -4,7 +4,6 @@ use App\Models\Badge;
 use App\Models\Category;
 use App\Models\Dish;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -39,8 +38,7 @@ test('a newly created dish has no active video until one is approved', function 
         ->and($dish->status->slug)->toBe('ativo');
 });
 
-it('saves optional descriptions badges variants and photos', function () {
-    Storage::fake('public');
+it('saves optional descriptions badges and variants', function () {
     $novo = Badge::where('slug', 'novo')->firstOrFail();
 
     Livewire::test('pages::panel.dish-form')
@@ -53,18 +51,13 @@ it('saves optional descriptions badges variants and photos', function () {
         ->call('addVariant')
         ->set('variants.0.name', 'G')
         ->set('variants.0.price', '14,90')
-        ->set('newPhotos', [fakeImage('frente.png'), fakeImage('lado.png')])
         ->call('save')
         ->assertHasNoErrors();
 
-    $dish = Dish::with(['badges', 'variants', 'photos'])->firstOrFail();
+    $dish = Dish::with(['badges', 'variants'])->firstOrFail();
 
     expect($dish->badges->pluck('slug')->all())->toBe(['novo'])
-        ->and($dish->variants->first()->only('name', 'price'))->toBe(['name' => 'G', 'price' => '14.90'])
-        ->and($dish->photos)->toHaveCount(2)
-        ->and($dish->photos->sortBy('display_order')->pluck('display_order')->all())->toBe([1, 2]);
-
-    Storage::disk('public')->assertExists($dish->photos->first()->file_path);
+        ->and($dish->variants->first()->only('name', 'price'))->toBe(['name' => 'G', 'price' => '14.90']);
 });
 
 it('edits an existing dish without touching its active video', function () {

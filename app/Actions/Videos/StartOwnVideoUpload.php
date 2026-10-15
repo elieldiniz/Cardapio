@@ -46,7 +46,7 @@ class StartOwnVideoUpload
     /**
      * @return array{video: Video, upload_url: string, warnings: array<int, string>}
      */
-    public function handle(Dish $dish, float $durationSeconds, int $width, int $height): array
+    public function handle(Dish $dish, float $durationSeconds, int $width, int $height, ?string $coverPhotoPath = null): array
     {
         if ($problem = static::durationProblem($durationSeconds)) {
             throw new OwnVideoRejectedException($problem);
@@ -62,6 +62,7 @@ class StartOwnVideoUpload
             'generation_id' => null,
             'status_id' => VideoStatus::idFor('processando'),
             'duration_seconds' => (int) round($durationSeconds),
+            'cover_photo_path' => $coverPhotoPath,
         ]);
 
         $upload = app(MuxClient::class)->createDirectUpload([

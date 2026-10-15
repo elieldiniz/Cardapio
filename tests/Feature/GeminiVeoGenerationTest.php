@@ -223,7 +223,9 @@ test('an async generation is submitted, polled until done, uploaded to Mux and o
         ->and($generation->videos->pluck('origin.slug')->unique()->all())->toBe(['ia'])
         ->and(collect($this->mux->uploads)->pluck('new_asset_settings.passthrough')->all())
         ->toBe($generation->videos->map(fn ($video) => "video:{$video->id}")->all())
-        ->and(GenerationBalance::where('restaurant_id', $dish->restaurant_id)->value('addon_balance'))->toBe(3);
+        ->and(GenerationBalance::where('restaurant_id', $dish->restaurant_id)->value('addon_balance'))->toBe(3)
+        // The photo the clips were made from is each video's cover (a copy, kept even if the original goes away).
+        ->and($generation->videos->every(fn ($video) => $video->cover_photo_path !== null && Storage::disk('public')->exists($video->cover_photo_path)))->toBeTrue();
 
     Http::assertSent(fn (Request $request) => $request->method() === 'PUT' && str_starts_with($request->url(), 'https://storage.mux.test/') && $request->body() === 'fake-mp4-bytes');
 });

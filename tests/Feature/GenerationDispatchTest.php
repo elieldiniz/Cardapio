@@ -46,18 +46,16 @@ test('a provider error marks the generation as erro and does not debit the balan
         ->and($this->mux->assets)->toBeEmpty();
 });
 
-it('never asks for a full turn with a single photo and allows a wide turn with 3 or more angles', function () {
+it('never asks for a full turn with the single photo it animates', function () {
     [, $single] = ownerWithDish(photos: 1, addon: 10);
-    [, $multi] = ownerWithDish(photos: 3, addon: 10);
 
     app(RequestVideoGeneration::class)->handle($single, $single->photos->pluck('id')->all(), 2);
-    app(RequestVideoGeneration::class)->handle($multi, $multi->photos->pluck('id')->all(), 2);
 
-    [$singleCall, $multiCall] = FakeVideoGenerationProvider::$calls;
+    [$call] = FakeVideoGenerationProvider::$calls;
 
-    expect($singleCall['preset']['turn'])->toBe(VideoGeneration::TURN_LIMITED)
-        ->and($singleCall['photos'])->toHaveCount(1)
-        ->and($multiCall['preset']['turn'])->toBe(VideoGeneration::TURN_WIDE)
-        ->and($multiCall['photos'])->toHaveCount(3)
-        ->and($multiCall['preset']['aspect_ratio'])->toBe('9:16');
+    expect($call['preset']['turn'])->toBe(VideoGeneration::TURN_LIMITED)
+        ->and($call['photos'])->toHaveCount(1)
+        ->and($call['preset']['aspect_ratio'])->toBe('9:16')
+        // The turn rule itself is unchanged: only 3+ photos would ask for a wide turn.
+        ->and(VideoGeneration::turnFor(3))->toBe(VideoGeneration::TURN_WIDE);
 });

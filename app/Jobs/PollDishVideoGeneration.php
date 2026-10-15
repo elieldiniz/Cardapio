@@ -111,11 +111,16 @@ class PollDishVideoGeneration implements ShouldQueue
     private function ingest(VideoGeneration $generation, array $clips, MuxClient $mux, DebitGenerationBalance $debit): void
     {
         /** @var Collection<int, Video> $videos */
+        // The photo the video was made from is its cover, saved as a copy so it survives changes to the original.
+        $generation->loadMissing(['photos.dishPhoto', 'dish']);
+        $coverPhoto = $generation->photos->sortBy('angle_order')->first()?->dishPhoto?->file_path;
+
         $videos = DB::transaction(fn () => collect($clips)->map(fn () => Video::create([
             'dish_id' => $generation->dish_id,
             'origin_id' => VideoOrigin::idFor('ia'),
             'generation_id' => $generation->id,
             'status_id' => VideoStatus::idFor('processando'),
+            'cover_photo_path' => Video::storeCoverCopy($coverPhoto, (int) $generation->dish?->restaurant_id),
         ])));
 
         try {

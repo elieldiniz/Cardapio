@@ -186,9 +186,9 @@ class GeminiVeoVideoGenerationProvider implements AsyncVideoGenerationProvider
 
         return trim(implode(' ', array_filter([
             (string) ($preset['prompt'] ?? ''),
-            'Camera movement: '.($preset['camera_movement'] ?? 'slow orbit with a gentle push-in').'.',
+            ($movement = $preset['camera_movement'] ?? 'slow orbit with a gentle push-in') === '' ? null : 'Camera movement: '.$movement.'.',
             $turn,
-            'Keep the dish exactly as in the photo: same ingredients, plating and colors. Vertical 9:16 food video, no people, no hands, no text, no logos.',
+            'Keep the dish exactly as in the photo: same ingredients, plating and colors. Do not add anything that is not in the photo (no steam, smoke, sparks, extra food or objects). Vertical 9:16 food video, no people, no hands, no text, no logos.',
         ])));
     }
 

@@ -23,7 +23,7 @@ class VideosTable
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['dish.restaurant', 'status', 'origin']))
             ->columns([
-                ImageColumn::make('cover_path')->label('Capa')->imageHeight(72),
+                ImageColumn::make('cover_path')->label('Capa')->state(fn (Video $record) => $record->coverUrl())->imageHeight(72),
                 TextColumn::make('dish.name')->label('Prato')->searchable()
                     ->description(fn (Video $record) => $record->dish?->active_video_id === $record->id ? 'Ativo no cardápio' : null),
                 TextColumn::make('dish.restaurant.name')->label('Restaurante'),

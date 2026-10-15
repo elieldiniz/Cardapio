@@ -45,7 +45,7 @@ class GenerateDishVideo implements ShouldQueue
 
     public function handle(VideoGenerationProviderResolver $resolver, MuxClient $mux, DebitGenerationBalance $debit): void
     {
-        $generation = VideoGeneration::with(['preset', 'provider', 'photos.dishPhoto', 'status'])->find($this->generationId);
+        $generation = VideoGeneration::with(['preset', 'provider', 'photos.dishPhoto', 'status', 'dish'])->find($this->generationId);
 
         if ($generation === null || $generation->status->slug === 'pronto') {
             return;
@@ -61,8 +61,9 @@ class GenerateDishVideo implements ShouldQueue
                 ->all();
 
             $preset = [
-                'prompt' => $generation->preset->prompt,
-                'camera_movement' => $generation->preset->camera_movement,
+                // The dono's own text replaces the preset's prompt and camera note (the text describes the movement).
+                'prompt' => $generation->custom_prompt ?? $generation->preset->prompt,
+                'camera_movement' => $generation->custom_prompt === null ? $generation->preset->camera_movement : '',
                 'duration_seconds' => $generation->preset->duration_seconds,
                 'aspect_ratio' => '9:16',
                 'variations' => $generation->variations_requested,
@@ -94,7 +95,10 @@ class GenerateDishVideo implements ShouldQueue
             return;
         }
 
-        DB::transaction(function () use ($generation, $variations, $assets, $debit) {
+        // The photo the video was made from is its cover, saved as a copy so it survives changes to the original.
+        $coverPhoto = $generation->photos->sortBy('angle_order')->first()?->dishPhoto?->file_path;
+
+        DB::transaction(function () use ($generation, $variations, $assets, $debit, $coverPhoto) {
             foreach ($assets as $asset) {
                 Video::create([
                     'dish_id' => $generation->dish_id,
@@ -102,6 +106,7 @@ class GenerateDishVideo implements ShouldQueue
                     'generation_id' => $generation->id,
                     'status_id' => VideoStatus::idFor('processando'),
                     'mux_asset_id' => $asset['id'] ?? null,
+                    'cover_photo_path' => Video::storeCoverCopy($coverPhoto, (int) $generation->dish?->restaurant_id),
                 ]);
             }
 

@@ -2,7 +2,7 @@
     <video
         class="aspect-[9/16] w-[150px] rounded-xl bg-night object-cover"
         src="{{ \App\Support\MuxUrls::mp4($video->mux_playback_id) }}"
-        @if ($video->cover_path) poster="{{ $video->cover_path }}" @endif
+        @if ($video->coverUrl()) poster="{{ $video->coverUrl() }}" @endif
         controls
         muted
         loop

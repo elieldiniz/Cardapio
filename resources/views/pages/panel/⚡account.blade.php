@@ -284,7 +284,7 @@ new #[Layout('layouts::panel')] #[Title('Minha conta')] class extends Component
             <input type="checkbox" wire:model.live="notify_video_ready" class="mt-0.5 size-4 shrink-0 accent-[var(--color-accent)]" data-notify-video-ready>
             <span class="flex flex-col gap-0.5">
                 <span class="text-[14px] font-bold text-ink">Me avisar por e-mail quando um vídeo gerado por IA ficar pronto</span>
-                <span class="text-[12.5px] leading-relaxed text-ink/55">Um e-mail por geração, com todas as variações. O aviso aparece no painel de qualquer forma. E-mails de conta e cobrança são sempre enviados.</span>
+                <span class="text-[12.5px] leading-relaxed text-ink/55">Um e-mail a cada vídeo pronto. O aviso aparece no painel de qualquer forma. E-mails de conta e cobrança são sempre enviados.</span>
             </span>
         </label>
     </x-ui.card>

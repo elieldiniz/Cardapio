@@ -15,6 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Livewire\Livewire;
 use Tests\Fakes\FakeMuxClient;
 use Tests\Fakes\FakeVideoGenerationProvider;
 use Tests\TestCase;
@@ -173,4 +174,14 @@ function stripeSubscription(string $customer, string $priceId, string $status = 
             'quantity' => 1,
         ]]],
     ], $extra);
+}
+
+/**
+ * The dish video screen after the dono uploaded and chose the dish's first photo
+ * (the photo slot always opens empty).
+ */
+function videoScreenWithPhoto(Dish $dish)
+{
+    return Livewire::test('pages::panel.dish-video', ['dish' => $dish])
+        ->set('selectedPhotoIds', $dish->photos->sortBy('display_order')->take(1)->pluck('id')->all());
 }

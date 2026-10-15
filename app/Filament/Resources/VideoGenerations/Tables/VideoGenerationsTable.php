@@ -34,6 +34,7 @@ class VideoGenerationsTable
                 TextColumn::make('variations_requested')->label('Variações')->description(fn (VideoGeneration $record) => $record->videos_count.' vídeos · '.$record->photos_count.' fotos'),
                 TextColumn::make('provider.name')->label('Provedor'),
                 TextColumn::make('preset.name')->label('Preset'),
+                TextColumn::make('custom_prompt')->label('Texto do dono')->limit(50)->tooltip(fn (VideoGeneration $record) => $record->custom_prompt)->placeholder('—')->toggleable(),
                 TextColumn::make('cost_usd')->label('Custo (US$)')->money('USD')->placeholder('—')->sortable(),
                 TextColumn::make('created_at')->label('Pedido em')->dateTime('d/m/Y H:i')->sortable(),
             ])

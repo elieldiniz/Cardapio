@@ -151,7 +151,7 @@ class FeedBuilder
         $video = $dish->activeVideo;
         $playbackId = $video?->mux_playback_id;
 
-        $cover = $video?->cover_path ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : null);
+        $cover = $video?->coverUrl() ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : null);
         $photo = $dish->photos->first();
 
         return [
@@ -168,8 +168,10 @@ class FeedBuilder
                 'price' => Money::brl($variant->price),
             ])->all(),
             'cover_url' => $cover,
-            // The grid shows the dish's own photo, falling back to the video cover.
-            'thumb_url' => $photo ? Storage::disk('public')->url($photo->file_path) : $cover,
+            // The grid shows the cover the dono chose for the video; older dishes fall back to their own photo, then to a frame of the video.
+            'thumb_url' => $video?->cover_photo_path
+                ? Storage::disk('public')->url($video->cover_photo_path)
+                : ($photo ? Storage::disk('public')->url($photo->file_path) : $cover),
             'video_url' => $playbackId ? MuxUrls::mp4($playbackId, '480p') : null,
             'video_url_hd' => $playbackId ? MuxUrls::mp4($playbackId, '720p') : null,
         ];
