@@ -52,7 +52,7 @@ new #[Layout('layouts::auth')] #[Title('Criar conta')] class extends Component
 <form wire:submit="register" class="flex flex-col gap-4" novalidate>
     <div>
         <h1 class="font-serif text-[26px] text-ink">Criar conta</h1>
-        <p class="mt-1 text-[13.5px] text-ink/55">Comece grátis, com 5 vídeos por IA para experimentar.</p>
+        <p class="mt-1 text-[13.5px] text-ink/55">Comece grátis, com {{ \App\Models\Plan::query()->where('price_cents', 0)->value('initial_generations') ?? 0 }} vídeos para experimentar.</p>
     </div>
 
     <x-ui.field label="Seu nome" for="name" error="name">

@@ -11,7 +11,7 @@ beforeEach(function () {
     $this->seed([RoleSeeder::class, RestaurantStatusSeeder::class, MetricsLevelSeeder::class, PlanSeeder::class]);
 });
 
-test('signing up creates a restaurant on the free plan with five one time generations', function () {
+test('signing up creates a restaurant on the free plan with three one time generations', function () {
     Livewire::test('pages::auth.register')
         ->set('name', 'Ana Souza')
         ->set('restaurant_name', 'Fumaça')
@@ -29,7 +29,7 @@ test('signing up creates a restaurant on the free plan with five one time genera
         ->and($restaurant->slug)->toBe('fumaca')
         ->and($restaurant->status->slug)->toBe('ativo')
         ->and($restaurant->plan->name)->toBe('Grátis')
-        ->and($restaurant->generationBalance->addon_balance)->toBe(5)
+        ->and($restaurant->generationBalance->addon_balance)->toBe(3)
         ->and($restaurant->generationBalance->monthly_balance)->toBe(0);
 
     $this->assertAuthenticatedAs($user);

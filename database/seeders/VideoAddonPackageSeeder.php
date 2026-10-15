@@ -17,8 +17,9 @@ class VideoAddonPackageSeeder extends Seeder
     public function run(): void
     {
         $packages = [
-            ['name' => '20 gerações', 'generations_count' => 20, 'price_cents' => 1000],
-            ['name' => '40 gerações', 'generations_count' => 40, 'price_cents' => 2000],
+            // At least R$ 3,90 per generation: below that an add-on pack loses money (see Docs/custos-e-precificacao.md).
+            ['name' => '10 gerações', 'generations_count' => 10, 'price_cents' => 3900],
+            ['name' => '25 gerações', 'generations_count' => 25, 'price_cents' => 8900],
         ];
 
         foreach ($packages as $package) {

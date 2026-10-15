@@ -46,7 +46,8 @@ test('a confirmed addon purchase credits addon balance and logs a compra entry',
 });
 
 test('addon balance never expires and is spent only after monthly balance is exhausted', function () {
-    Plan::where('name', 'Básico')->update(['stripe_price_id' => 'price_basico']);
+    // This test is about plans that still carry a monthly allowance.
+    Plan::where('name', 'Básico')->update(['stripe_price_id' => 'price_basico', 'monthly_generations' => 15]);
 
     stripeWebhook('checkout.session.completed', addonCheckoutCompleted('cs_1', $this->package->id));
 

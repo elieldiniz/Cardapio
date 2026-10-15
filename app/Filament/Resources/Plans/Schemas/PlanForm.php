@@ -27,9 +27,11 @@ class PlanForm
                     ->schema([
                         TextInput::make('monthly_generations')->label('Gerações por mês')->helperText('Renova a cada fatura paga; não acumula.')->numeric()->integer()->minValue(0)->required(),
                         TextInput::make('initial_generations')->label('Gerações iniciais (uma vez)')->helperText('Concedidas no cadastro, não renovam.')->numeric()->integer()->minValue(0)->required(),
+                        TextInput::make('first_subscription_bonus')->label('Brinde ao assinar (uma vez)')->helperText('Gerações dadas na primeira assinatura paga do restaurante, uma única vez. Não expiram.')->numeric()->integer()->minValue(0)->required(),
                         TextInput::make('dish_limit')->label('Limite de pratos')->helperText('Vazio = ilimitado.')->numeric()->integer()->minValue(1)->nullable(),
                         Select::make('metrics_level_id')->label('Nível de métricas')->relationship('metricsLevel', 'name')->required(),
                         Toggle::make('removes_branding')->label('Remove a marca "feito com"')->inline(false),
+                        Toggle::make('qr_customization')->label('Personalização do QR Code e do display')->helperText('Estilo do QR, logo no centro, modelos e textos do display. Todos os planos escolhem a cor do QR.')->inline(false),
                     ]),
             ]);
     }

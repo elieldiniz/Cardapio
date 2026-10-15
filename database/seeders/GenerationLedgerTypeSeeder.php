@@ -18,6 +18,7 @@ class GenerationLedgerTypeSeeder extends LookupSeeder
             'compra' => 'Compra',
             'uso' => 'Uso',
             'estorno' => 'Estorno',
+            'bonus' => 'Brinde',
         ];
     }
 }

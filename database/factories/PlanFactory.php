@@ -26,6 +26,8 @@ class PlanFactory extends Factory
             'stripe_price_id' => 'price_'.fake()->unique()->bothify('????????'),
             'monthly_generations' => 30,
             'initial_generations' => 0,
+            'first_subscription_bonus' => 0,
+            'qr_customization' => false,
             'dish_limit' => 60,
             'removes_branding' => true,
             'metrics_level_id' => $this->metricsLevelId('por_prato', 'Por prato'),

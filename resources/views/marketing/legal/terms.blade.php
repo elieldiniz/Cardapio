@@ -15,7 +15,7 @@
     <ul>
         <li>O plano Grátis tem limites de pratos e uma quantidade única de gerações de vídeo por IA.</li>
         <li>Os planos pagos são cobrados mensalmente no cartão de crédito, pela Stripe, e renovam automaticamente até o cancelamento.</li>
-        <li>Cada vídeo gerado por IA consome uma geração. As gerações do plano renovam a cada ciclo e não se acumulam. Gerações de pacotes avulsos não expiram e são usadas depois das do plano. Gerações que falharem por erro do provedor de IA não são descontadas.</li>
+        <li>Cada vídeo gerado por IA consome uma geração. As gerações incluídas no plano, quando houver, renovam a cada ciclo e não se acumulam. As gerações de degustação, o brinde da primeira assinatura (concedido uma única vez por restaurante) e as de pacotes avulsos não expiram e são usadas depois das do plano. Gerações que falharem por erro do provedor de IA não são descontadas.</li>
         <li>Preços, limites e recursos podem mudar; mudanças de preço serão comunicadas com antecedência e valem a partir do ciclo seguinte.</li>
         <li>Se o pagamento falhar e não for regularizado, a conta volta ao plano Grátis e os pratos acima do limite ficam ocultos até a regularização.</li>
     </ul>

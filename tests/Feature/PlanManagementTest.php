@@ -45,6 +45,7 @@ it('creates a plan with limits features and a stripe price', function () {
             'stripe_price_id' => 'price_premium',
             'monthly_generations' => 200,
             'initial_generations' => 0,
+            'first_subscription_bonus' => 20,
             'dish_limit' => null,
             'removes_branding' => true,
             'metrics_level_id' => MetricsLevel::idFor('por_prato_com_tempo_assistido'),
@@ -55,6 +56,7 @@ it('creates a plan with limits features and a stripe price', function () {
 
     expect(Plan::where('name', 'Premium')->first())
         ->price_cents->toBe(19900)
+        ->first_subscription_bonus->toBe(20)
         ->dish_limit->toBeNull()
         ->removes_branding->toBeTrue();
 

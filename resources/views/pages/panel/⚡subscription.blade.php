@@ -146,7 +146,7 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
         <ul class="grid gap-2 text-[13.5px] text-ink/70 sm:grid-cols-2">
             <li><strong class="text-ink">{{ $plan->price_cents ? Money::brlFromCents($plan->price_cents).'/mês' : 'Grátis' }}</strong></li>
             <li>Pratos: <strong class="text-ink">{{ $this->restaurant->dishes()->count() }} de {{ $plan->dish_limit ?? 'ilimitados' }}</strong></li>
-            <li>Gerações por mês: <strong class="text-ink">{{ $plan->monthly_generations }}</strong>@if ($plan->initial_generations) · {{ $plan->initial_generations }} de degustação (uma vez)@endif</li>
+            <li>Gerações: <strong class="text-ink">{{ $plan->monthly_generations > 0 ? $plan->monthly_generations.' por mês' : 'em pacotes avulsos' }}</strong>@if ($plan->initial_generations) · {{ $plan->initial_generations }} de degustação (uma vez)@endif</li>
             <li>Métricas: <strong class="text-ink">{{ $metricsLabels[$plan->metricsLevel?->slug] ?? '—' }}</strong></li>
             <li>Marca "feito com": <strong class="text-ink">{{ $plan->removes_branding ? 'removida' : 'exibida' }}</strong></li>
             @if ($balance?->renews_at)
@@ -175,7 +175,11 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
                         </div>
                         <ul class="flex flex-col gap-1 text-[13px] text-ink/65">
                             <li>{{ $option->dish_limit ? 'Até '.$option->dish_limit.' pratos' : 'Pratos ilimitados' }}</li>
-                            <li>{{ $option->monthly_generations }} gerações de vídeo por mês</li>
+                            @if ($option->monthly_generations > 0)
+                                <li>{{ $option->monthly_generations }} gerações de vídeo por mês</li>
+                            @elseif ($option->first_subscription_bonus > 0)
+                                <li>+{{ $option->first_subscription_bonus }} gerações de brinde na 1ª assinatura</li>
+                            @endif
                             <li>Métricas: {{ $metricsLabels[$option->metricsLevel?->slug] ?? '—' }}</li>
                             @if ($option->removes_branding)
                                 <li>Sem a marca "feito com"</li>

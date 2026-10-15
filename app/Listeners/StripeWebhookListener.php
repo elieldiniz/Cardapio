@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Actions\Billing\ApplyPlan;
 use App\Actions\Billing\CreditAddonPurchase;
+use App\Actions\Billing\GrantFirstSubscriptionBonus;
 use App\Actions\Billing\RenewMonthlyBalance;
 use App\Models\Plan;
 use App\Models\Restaurant;
@@ -26,6 +27,7 @@ class StripeWebhookListener
         private readonly ApplyPlan $applyPlan,
         private readonly RenewMonthlyBalance $renewMonthlyBalance,
         private readonly CreditAddonPurchase $creditAddonPurchase,
+        private readonly GrantFirstSubscriptionBonus $grantFirstSubscriptionBonus,
     ) {}
 
     /**
@@ -94,6 +96,11 @@ class StripeWebhookListener
             (string) $invoice['id'],
             $periodEnd ? Carbon::createFromTimestamp($periodEnd) : null,
         );
+
+        // Welcome bonus: only on the first paid invoice of a subscription (a free or fully discounted one does not count).
+        if (($invoice['billing_reason'] ?? null) === 'subscription_create' && (int) ($invoice['amount_paid'] ?? 0) > 0) {
+            $this->grantFirstSubscriptionBonus->handle($restaurant->fresh());
+        }
     }
 
     /**

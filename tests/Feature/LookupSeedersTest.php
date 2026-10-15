@@ -32,7 +32,7 @@ function lookupSeederExpectations(): array
         VideoStatus::class => [VideoStatusSeeder::class, ['processando', 'aguardando_aprovacao', 'aprovado', 'rejeitado']],
         VideoOrigin::class => [VideoOriginSeeder::class, ['ia', 'upload']],
         GenerationStatus::class => [GenerationStatusSeeder::class, ['fila', 'gerando', 'pronto', 'erro']],
-        GenerationLedgerType::class => [GenerationLedgerTypeSeeder::class, ['renovacao', 'compra', 'uso', 'estorno']],
+        GenerationLedgerType::class => [GenerationLedgerTypeSeeder::class, ['renovacao', 'compra', 'uso', 'estorno', 'bonus']],
         MetricsLevel::class => [MetricsLevelSeeder::class, ['cardapio_total', 'por_prato', 'por_prato_com_tempo_assistido']],
         DiscountType::class => [DiscountTypeSeeder::class, ['percentual', 'valor_fixo']],
         Badge::class => [BadgeSeeder::class, ['novo', 'mais_pedido', 'vegetariano']],

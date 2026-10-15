@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'price_cents', 'stripe_price_id', 'monthly_generations', 'initial_generations', 'dish_limit', 'removes_branding', 'metrics_level_id', 'is_active'])]
+#[Fillable(['name', 'price_cents', 'stripe_price_id', 'monthly_generations', 'initial_generations', 'first_subscription_bonus', 'dish_limit', 'removes_branding', 'qr_customization', 'metrics_level_id', 'is_active'])]
 class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
@@ -19,6 +19,7 @@ class Plan extends Model
     {
         return [
             'removes_branding' => 'boolean',
+            'qr_customization' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

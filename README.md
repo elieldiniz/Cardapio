@@ -86,7 +86,8 @@ stripe listen --forward-to localhost/stripe/webhook
 
 - **1 geração = 1 clipe.** Pedir 3 variações consome 3 gerações.
 - O saldo é verificado **antes** de enfileirar (descontando as gerações em andamento) e debitado **só quando a geração dá certo**. Erro do provedor não consome saldo, e reprocessar nunca cobra duas vezes.
-- O saldo mensal é **resetado** a cada fatura paga e não acumula. Os pacotes avulsos não expiram e são usados depois do saldo mensal.
+- **Modelo de gerações (adotado em 15/10/2026):** os planos pagos não incluem gerações por mês. A IA é vendida em **pacotes avulsos** (não expiram). O Grátis ganha gerações de degustação **uma vez** no cadastro (`initial_generations`) e cada plano pago dá um **brinde uma única vez** por restaurante na primeira fatura paga (`first_subscription_bonus`, registrado no ledger como `bonus`).
+- Se um plano ainda tiver `monthly_generations > 0`, o saldo mensal é **resetado** a cada fatura paga e não acumula. Pacotes, degustação e brinde não expiram e são usados depois do saldo mensal.
 - Nenhum vídeo vai ao ar sem aprovação do dono. Cada prato tem no máximo um vídeo ativo.
 - Planos, preços, limites e pacotes são cadastrados pelo super admin no `/admin`, sem deploy.
 - Toda movimentação de saldo passa pelo `generation_ledger`, com referências idempotentes (`stripe_invoice:…`, `stripe_checkout:…`, `video_generation:…`).

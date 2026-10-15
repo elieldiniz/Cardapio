@@ -1,7 +1,10 @@
 {{-- Landing page at "/" — the product's front door and the target of the "feito com" link. --}}
 @use('App\Support\Money')
 @php
-    $metricsLabels = ['cardapio_total' => 'Veja quantas pessoas abrem o cardápio', 'por_prato' => 'Veja quais pratos chamam mais atenção', 'por_prato_com_tempo_assistido' => 'Veja o que chama atenção e por quanto tempo é assistido'];
+    // The Grátis trial amount comes from the plan, so the copy follows the admin.
+    $freeGenerations = (int) ($plans->firstWhere('price_cents', 0)?->initial_generations ?? 0);
+
+    $metricsLabels = ['cardapio_total' => 'Veja quantas pessoas abrem o cardápio', 'por_prato' => 'Veja quais pratos chamam mais atenção', 'por_prato_com_tempo_assistido' => 'Veja por quanto tempo cada prato é assistido'];
 
     // "R$ 30,00" reads heavier than "R$ 30": drop the cents when they are zero.
     $brl = fn (int $cents) => \Illuminate\Support\Str::replaceEnd(',00', '', Money::brlFromCents($cents));
@@ -18,9 +21,9 @@
 
     $faq = [
         ['O cliente precisa baixar algum aplicativo?', 'Não. Ele aponta a câmera do celular para o QR Code da mesa e o cardápio abre direto no navegador, sem cadastro.'],
-        ['Como o vídeo do prato é criado?', 'Você envia 1 foto (ou 3 a 4 fotos de ângulos diferentes, para um resultado melhor). Nós criamos clipes curtos e verticais do prato, sempre no mesmo estilo. Você escolhe a versão que mais gostar e só ela vai para o cardápio.'],
-        ['O que é uma “geração”?', 'Cada vídeo criado a partir das suas fotos consome 1 geração. Pedir 2 versões do mesmo prato consome 2 gerações. Se algo falhar, a geração não é descontada.'],
-        ['E se acabarem as gerações do mês?', 'Você pode comprar um pacote avulso de gerações, que não expira, ou mudar de plano. Enviar vídeo próprio nunca consome gerações.'],
+        ['Como o vídeo do prato é criado?', 'Você envia 1 foto do prato, escolhe um estilo (ou descreve do seu jeito) e nós criamos um clipe curto e vertical. Você confere o resultado e só vai para o cardápio o que você aprovar.'],
+        ['O que é uma “geração”?', 'Cada vídeo criado a partir da sua foto consome 1 geração. Você ganha gerações grátis ao se cadastrar e um brinde ao assinar pela primeira vez; depois, compra pacotes avulsos, que não expiram. Se algo falhar, a geração não é descontada. Não gostou do resultado? É só gerar de novo, o que consome mais 1 geração.'],
+        ['E se as minhas gerações acabarem?', 'Você compra um pacote avulso de gerações, que não expira, quando precisar. Enviar vídeo próprio nunca consome gerações.'],
         ['Dá para fazer pedido pelo cardápio?', 'Não. O cardápio é para ver os pratos em vídeo; o pedido continua sendo feito com o garçom, como o cliente já está acostumado.'],
         ['Posso cancelar quando quiser?', 'Sim. A assinatura é mensal e você cancela pelo próprio painel. O cardápio continua no ar no plano Grátis.'],
         ['Quais formas de pagamento são aceitas?', 'Cartão de crédito, com pagamento processado com segurança pela Stripe.'],
@@ -52,7 +55,7 @@
                     <a href="{{ route('register') }}" class="rounded-[10px] bg-accent px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-95">Criar conta grátis</a>
                     <a href="#como-funciona" class="rounded-[10px] border border-white/20 px-6 py-3.5 text-[15px] font-bold text-white transition hover:bg-white/5">Ver como funciona</a>
                 </div>
-                <p class="hero-rise mt-4 text-[13px] text-white/55" style="--d: 0.6s">Plano grátis com 5 vídeos por IA para experimentar. Sem cartão de crédito.</p>
+                <p class="hero-rise mt-4 text-[13px] text-white/55" style="--d: 0.6s">Plano grátis com {{ $freeGenerations }} vídeos para experimentar. Sem cartão de crédito.</p>
 
                 <ul class="hero-rise mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[13.5px] text-white/80" style="--d: 0.75s">
                     <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Sem app para o cliente</li>
@@ -101,7 +104,7 @@
         <div class="mx-auto max-w-6xl px-4 sm:px-6">
             <div class="mx-auto max-w-2xl text-center">
                 <h2 class="font-serif text-[34px] leading-tight text-balance sm:text-[44px]">A foto que você já tem vira um vídeo que <span class="text-accent">dá água na boca</span></h2>
-                <p class="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-pretty text-ink/65">Sem câmera, sem edição e sem equipe. Você envia a foto, escolhe a melhor versão, e só vai ao ar o que você aprovar.</p>
+                <p class="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-pretty text-ink/65">Sem câmera, sem edição e sem equipe. Você envia a foto, confere o resultado, e só vai ao ar o que você aprovar.</p>
             </div>
 
             {{-- Featured: 1 foto → vídeo, with the real before/after. --}}
@@ -127,7 +130,7 @@
                         <p class="mt-4 text-[16px] leading-relaxed text-white/70">Envie a foto do prato e a IA cria um clipe curto, com aproximação suave e movimento de câmera, sempre no mesmo estilo em todo o cardápio.</p>
 
                         <ol class="mt-6 flex flex-col gap-3 text-[15px] text-white/85">
-                            @foreach (['Envie a foto do prato', 'A IA gera as variações em minutos', 'Você escolhe a melhor e aprova'] as $step)
+                            @foreach (['Envie a foto do prato', 'Escolha um estilo e criamos o vídeo em minutos', 'Você confere e aprova'] as $step)
                                 <li class="flex items-center gap-3">
                                     <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-bold text-white">{{ $loop->iteration }}</span>
                                     {{ $step }}
@@ -145,7 +148,7 @@
                 <p class="text-center text-[12.5px] font-bold tracking-widest text-ink/45 uppercase">E também</p>
                 <ul class="mt-4 grid gap-3 md:grid-cols-2" data-more-options>
                     @foreach ([
-                        ['appearance', '3 a 4 ângulos', 'Com fotos de lados diferentes, o prato gira de verdade na tela. É o resultado mais impressionante.'],
+                        ['sparkles', 'Escolha o estilo do vídeo', 'Use um estilo pronto ou descreva do seu jeito como a câmera deve se mover.'],
                         ['upload', 'Seu próprio vídeo', 'Já gravou? Envie direto do celular. Vertical, de 5 a 15 segundos, sem gastar gerações.'],
                     ] as [$icon, $title, $text])
                         <li class="flex items-start gap-4 rounded-2xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
@@ -175,7 +178,7 @@
 
                 @foreach ([
                     ['Cadastre seus pratos', 'Nome, preço e fotos, direto do celular. Leva poucos minutos.'],
-                    ['Transformamos a foto em vídeo', 'Você escolhe a melhor versão e só vai ao ar o que você aprovar.'],
+                    ['Transformamos a foto em vídeo', 'Você confere o resultado e só vai ao ar o que você aprovar.'],
                     ['Coloque o QR Code na mesa', 'O cliente escaneia e vê os pratos em vídeo na hora, sem baixar nada.'],
                 ] as [$title, $text])
                     <li class="reveal-up relative flex flex-col items-center gap-5 text-center" style="--i: {{ $loop->index }}">
@@ -321,7 +324,7 @@
 
                 {{-- Supporting features --}}
                 @foreach ([
-                    ['check', 'Nada vai ao ar sem você aprovar', 'Você revisa as versões e escolhe a que representa o prato de verdade.'],
+                    ['check', 'Nada vai ao ar sem você aprovar', 'Você confere o vídeo e só publica se ele representar o prato de verdade.'],
                     ['qr', 'QR Code que nunca muda', 'Imprima uma vez e edite pratos, categorias e aparência quando quiser.'],
                     ['home', 'Sem app para o cliente', 'O cliente aponta a câmera e o cardápio abre no navegador, em segundos.'],
                 ] as $i => [$icon, $title, $text])
@@ -366,7 +369,6 @@
                                 <p class="mt-5">
                                     @if ($plan->price_cents > 0)
                                         <span class="text-[44px] leading-none font-bold">{{ $brl($plan->price_cents) }}</span><span class="text-[15px] {{ $featured ? 'text-white/60' : 'text-ink/50' }}">/mês</span>
-                                        <span class="mt-2 block text-[13px] {{ $featured ? 'text-accent' : 'text-ink/50' }}">cerca de {{ $brl((int) round($plan->price_cents / 30)) }} por dia</span>
                                     @else
                                         <span class="text-[44px] leading-none font-bold">R$ 0</span><span class="text-[15px] text-ink/50"> para sempre</span>
                                         <span class="mt-2 block text-[13px] text-ink/50">sem cartão de crédito</span>
@@ -374,26 +376,54 @@
                                 </p>
                             </div>
 
+                            @php
+                                // Every card lists everything the plan gives, so each one can be read on its own.
+                                $check = $featured ? 'text-accent' : 'text-success';
+                                $lines = [[$plan->dish_limit ? 'Até '.$plan->dish_limit.' pratos' : 'Pratos ilimitados', true]];
+
+                                if ($plan->monthly_generations > 0) {
+                                    $lines[] = [$plan->monthly_generations.' vídeos do prato por mês', true];
+                                } elseif ($plan->first_subscription_bonus > 0) {
+                                    $lines[] = ['+'.$plan->first_subscription_bonus.' vídeos de brinde ao assinar', true];
+                                } elseif ($plan->initial_generations > 0) {
+                                    $lines[] = [$plan->initial_generations.' vídeos para experimentar', true];
+                                } else {
+                                    $lines[] = ['Vídeos em pacotes avulsos', true];
+                                }
+
+                                array_push($lines,
+                                    ['Envie seus próprios vídeos, sem limite', false],
+                                    ['QR Code que nunca muda, com display de mesa para imprimir', false],
+                                );
+
+                                if ($plan->qr_customization) {
+                                    $lines[] = ['Personalize o QR Code e o display: estilo, logo, modelos e textos', false];
+                                }
+
+                                array_push($lines,
+                                    ['Logo, capa, cor e fonte do seu restaurante', false],
+                                    ['Preço e “esgotado” atualizados na hora', false],
+                                    [$metricsLabels[$plan->metricsLevel?->slug] ?? 'Métricas do cardápio', false],
+                                );
+
+                                if ($plan->removes_branding) {
+                                    $lines[] = ['Cardápio sem a marca '.config('app.name'), false];
+                                }
+
+                                if ($packages->isNotEmpty()) {
+                                    $lines[] = ['Compre mais vídeos quando quiser, em pacotes sem validade', false];
+                                }
+
+                                $lines[] = ['Suporte pelo painel', false];
+                            @endphp
+
                             <ul class="flex flex-1 flex-col gap-3 text-[15px] {{ $featured ? 'text-white/85' : 'text-ink/75' }}">
-                                <li class="flex gap-3"><x-ui.icon name="check" class="mt-0.5 size-[18px] {{ $featured ? 'text-accent' : 'text-success' }}" /><strong class="{{ $featured ? 'text-white' : 'text-ink' }}">{{ $plan->dish_limit ? 'Até '.$plan->dish_limit.' pratos' : 'Pratos ilimitados' }}</strong></li>
-                                <li class="flex gap-3"><x-ui.icon name="check" class="mt-0.5 size-[18px] {{ $featured ? 'text-accent' : 'text-success' }}" />
-                                    <strong class="{{ $featured ? 'text-white' : 'text-ink' }}">
-                                        @if ($plan->monthly_generations > 0)
-                                            {{ $plan->monthly_generations }} vídeos do prato por mês
-                                        @else
-                                            {{ $plan->initial_generations }} vídeos para experimentar
-                                        @endif
-                                    </strong>
-                                </li>
-                                <li class="flex gap-3"><x-ui.icon name="check" class="mt-0.5 size-[18px] {{ $featured ? 'text-accent' : 'text-success' }}" />Envie seus próprios vídeos, sem limite</li>
-                                <li class="flex gap-3"><x-ui.icon name="check" class="mt-0.5 size-[18px] {{ $featured ? 'text-accent' : 'text-success' }}" />{{ $metricsLabels[$plan->metricsLevel?->slug] ?? 'Métricas do cardápio' }}</li>
-                                <li class="flex gap-3">
-                                    @if ($plan->removes_branding)
-                                        <x-ui.icon name="check" class="mt-0.5 size-[18px] {{ $featured ? 'text-accent' : 'text-success' }}" />Cardápio sem a marca {{ config('app.name') }}
-                                    @else
-                                        <x-ui.icon name="close" class="mt-0.5 size-[18px] text-ink/30" /><span class="text-ink/50">Exibe “feito com {{ config('app.name') }}”</span>
-                                    @endif
-                                </li>
+                                @foreach ($lines as [$text, $strong])
+                                    <li class="flex gap-3"><x-ui.icon name="check" class="mt-0.5 size-[18px] shrink-0 {{ $check }}" />@if ($strong)<strong class="{{ $featured ? 'text-white' : 'text-ink' }}">{{ $text }}</strong>@else<span>{{ $text }}</span>@endif</li>
+                                @endforeach
+                                @unless ($plan->removes_branding)
+                                    <li class="flex gap-3"><x-ui.icon name="close" class="mt-0.5 size-[18px] shrink-0 text-ink/30" /><span class="text-ink/50">Exibe “feito com {{ config('app.name') }}”</span></li>
+                                @endunless
                             </ul>
 
                             <div>

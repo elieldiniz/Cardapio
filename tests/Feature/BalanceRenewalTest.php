@@ -7,7 +7,7 @@ use App\Models\Restaurant;
 
 test('invoice paid resets monthly balance to the plans allowance without accumulating prior leftover', function () {
     seedReferenceData();
-    Plan::where('name', 'Pro')->update(['stripe_price_id' => 'price_pro']);
+    Plan::where('name', 'Pro')->update(['stripe_price_id' => 'price_pro', 'monthly_generations' => 30]);
     $restaurant = Restaurant::factory()->create(['stripe_id' => 'cus_123', 'plan_id' => Plan::where('name', 'Pro')->value('id')]);
     GenerationBalance::create(['restaurant_id' => $restaurant->id, 'monthly_balance' => 37, 'addon_balance' => 4]);
 

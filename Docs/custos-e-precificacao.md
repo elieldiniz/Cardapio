@@ -163,3 +163,26 @@ Com clipe de **10 s** o custo das gerações dobra, e **os planos Básico e Pro 
 - Kling API (agregadores de preço) — https://costgoat.com/pricing/kling · https://kling.ai/dev/pricing
 - DigitalOcean — https://www.digitalocean.com/pricing/droplets
 - Hetzner — https://www.hetzner.com/cloud/
+
+---
+
+## 6. Modelo adotado em 15/10/2026
+
+Revisão do estudo acima, com o Google Veo 3.1 Lite (US$ 0,05/s, clipe de 6 s ≈ **R$ 1,51 por geração**, dólar a R$ 5,03; a fatura do Google pode vir ~17% acima da tabela).
+
+**Ideia:** a IA deixa de estar dentro das assinaturas e passa a ser vendida em pacotes. O que dá prejuízo é o brinde para quem nunca assina; a assinatura em si sobra de 80% a 85% a partir do 2º mês.
+
+| | Grátis | Básico | Pro |
+|---|---|---|---|
+| Preço | R$ 0 | R$ 39,90 | R$ 79,90 |
+| Pratos | 15 | 30 | ilimitados |
+| Gerações | 3, uma vez, no cadastro | +6, uma vez, na 1ª assinatura paga | +12, uma vez, na 1ª assinatura paga |
+| Sobra no 1º mês | custo de R$ 4,53 | R$ 23 (58%) | R$ 50 (62%) |
+| Sobra do 2º mês em diante | | R$ 32 (81%) | R$ 68 (85%) |
+
+Pacotes avulsos (nunca abaixo de R$ 3,90 por geração): **10 por R$ 39** e **25 por R$ 89** (sobra de 47% a 50%).
+
+Hipóteses da conta: imposto 6%, Mux R$ 3 por restaurante, Stripe 4,69% + R$ 0,39 por assinatura, 100 cadastros/mês, cancelamento 6%/mês, 20% dos assinantes comprando 1 pacote de 10 por mês, R$ 150 de custo fixo (exemplo). Com 5% dos cadastros virando assinante, o maior buraco acumulado é ~R$ 740 e o lucro mensal fica positivo a partir do 4º mês.
+
+O que vigiar: a conversão Grátis → pago, o custo real por geração (`/admin → Custos x receita`) e abuso do brinde (ele vale uma vez por restaurante e só após a primeira fatura paga). Se a conversão ficar abaixo de ~3%, reduzir o Grátis para 2 gerações ou liberar parte dele só após o 3º prato.
+
