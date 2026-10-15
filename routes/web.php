@@ -5,15 +5,13 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Feed\DishViewController;
 use App\Http\Controllers\Feed\FeedController;
 use App\Http\Controllers\Panel\AppearancePreviewController;
+use App\Http\Controllers\Panel\QrCodeController;
 use App\Http\Controllers\Webhooks\MuxWebhookController;
 use App\Models\Plan;
 use App\Models\VideoAddonPackage;
 use App\Support\FeedSample;
-use App\Support\QrCode;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,11 +97,8 @@ Route::middleware(['auth', 'auth.session', 'owner', 'verified.owner'])->prefix('
     Route::livewire('/aparencia', 'pages::panel.appearance')->name('appearance');
     Route::get('/aparencia/previa', AppearancePreviewController::class)->name('appearance.preview');
     Route::livewire('/qr-code', 'pages::panel.qr-code')->name('qr-code');
-    Route::get('/qr-code/imprimir', fn (Request $request) => view('panel.qr-print', [
-        'restaurant' => $request->user()->restaurant,
-        'svg' => QrCode::svg($request->user()->restaurant->feedUrl()),
-        'table' => Str::limit((string) $request->query('mesa'), 10, ''),
-    ]))->name('qr-code.print');
+    Route::get('/qr-code/imprimir', [QrCodeController::class, 'print'])->name('qr-code.print');
+    Route::get('/qr-code/svg', [QrCodeController::class, 'svg'])->name('qr-code.svg');
     Route::livewire('/visualizacoes', 'pages::panel.views')->name('views');
     Route::livewire('/suporte', 'pages::panel.support')->name('support');
     Route::livewire('/suporte/{ticket}', 'pages::panel.support-ticket')->name('support.show');

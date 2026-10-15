@@ -1,4 +1,4 @@
-{{-- Printable table display (US-6.2): A6 card with logo, name, QR and optional table number. --}}
+{{-- Printable table display (US-6.2): A6 card with the dono's chosen model, colors and texts. --}}
 <!DOCTYPE html>
 <html lang="pt-BR" style="--accent: {{ $restaurant->accentColor() }}">
 <head>
@@ -7,33 +7,19 @@
     <title>Display de mesa · {{ $restaurant->name }}</title>
     @include('partials.favicons')
     @fonts
+    @if (($font = $settings['display_font']) && ($slug = config('feed.fonts')[$font] ?? null))
+        <link rel="stylesheet" href="https://fonts.bunny.net/css?family={{ $slug }}&display=swap">
+    @endif
     <style>
         @page { size: A6; margin: 0; }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'DM Sans', system-ui, sans-serif; color: #1a1815; background: #ece9e4; }
-        .card { width: 105mm; height: 148mm; margin: 12px auto; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5mm; padding: 10mm; text-align: center; border-top: 6mm solid var(--accent); }
-        .logo { width: 20mm; height: 20mm; border-radius: 50%; object-fit: cover; }
-        .name { font: 400 22pt/1.1 'DM Serif Display', serif; margin: 0; }
-        .qr { width: 58mm; height: 58mm; }
-        .qr svg { width: 100%; height: 100%; }
-        .cta { font-weight: 700; font-size: 11pt; margin: 0; }
-        .sub { font-size: 9pt; color: rgba(20, 18, 16, .6); margin: 0; }
-        .table { font-weight: 700; font-size: 12pt; color: var(--accent); }
-        @media print { body { background: #fff; } .card { margin: 0; } }
+        body { margin: 0; background: #ece9e4; }
+        .td { margin: 12px auto; }
+        @media print { body { background: #fff; } .td { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style>
+    @include('panel.partials.table-display-css')
 </head>
 <body onload="window.print()">
-    <div class="card">
-        @if ($restaurant->logo_path)
-            <img class="logo" src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($restaurant->logo_path) }}" alt="">
-        @endif
-        <h1 class="name">{{ $restaurant->name }}</h1>
-        <div class="qr" data-qr>{!! $svg !!}</div>
-        <p class="cta">Aponte a câmera e veja o cardápio em vídeo</p>
-        <p class="sub">Sem app, sem cadastro. Peça ao garçom.</p>
-        @if ($table)
-            <span class="table">Mesa {{ $table }}</span>
-        @endif
-    </div>
+    @include('panel.partials.table-display', ['restaurant' => $restaurant, 'svg' => $svg, 'settings' => $settings, 'table' => $table])
 </body>
 </html>

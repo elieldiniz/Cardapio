@@ -12,11 +12,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Cashier\Billable;
 
-#[Fillable(['plan_id', 'status_id', 'name', 'description', 'slug', 'logo_path', 'cover_path', 'accent_color', 'font'])]
+#[Fillable(['plan_id', 'status_id', 'name', 'description', 'slug', 'logo_path', 'cover_path', 'accent_color', 'font', 'qr_settings'])]
 class Restaurant extends Model
 {
     /** @use HasFactory<RestaurantFactory> */
     use Billable, HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'qr_settings' => 'array',
+        ];
+    }
 
     /**
      * Accent color used by the panel and the feed until the dono picks one (US-6.1).

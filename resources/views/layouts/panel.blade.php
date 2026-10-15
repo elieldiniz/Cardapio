@@ -113,7 +113,7 @@
                 <span class="truncate font-serif text-[17px] text-white">{{ $restaurantName }}</span>
             </header>
 
-            <main class="w-full max-w-[980px] flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-11 lg:py-9">
+            <main class="w-full {{ ($wide ?? false) ? 'max-w-none' : 'max-w-[980px]' }} flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-11 lg:py-9">
                 @auth
                     <livewire:panel-notices class="mb-5" />
                 @endauth
