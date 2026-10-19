@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Restaurant;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Sample cardápio from the "Cardápio Fumaça - Feed" mockup. Used by the dev
@@ -55,7 +56,7 @@ class FeedSample
             'categories' => collect($menu)->map(fn (array $category, string $id) => [
                 'id' => $id,
                 'name' => $category['name'],
-                'url' => route('dev.feed.category', $id),
+                'url' => Route::has('dev.feed.category') ? route('dev.feed.category', $id) : null,
             ])->values()->all(),
             'activeCategoryId' => $first,
             'dishes' => static::dishes($first),
