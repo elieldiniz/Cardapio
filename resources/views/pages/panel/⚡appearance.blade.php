@@ -201,7 +201,7 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
             <iframe
                 x-ref="preview"
                 x-on:load="send()"
-                src="{{ route('panel.appearance.preview') }}"
+                x-init="fetch('{{ route('panel.appearance.preview', [], false) }}', { credentials: 'same-origin' }).then((response) => response.text()).then((html) => { $refs.preview.srcdoc = html })"
                 title="Prévia do cardápio"
                 class="h-[560px] w-[290px] rounded-[28px] border-4 border-black bg-black"
                 data-appearance-preview
