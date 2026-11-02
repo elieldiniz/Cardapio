@@ -8,4 +8,7 @@
     <div class="dish__badges" data-sheet-field="badges"></div>
     <p class="sheet__description" data-sheet-field="description"></p>
     <ul class="sheet__variants" data-sheet-field="variants"></ul>
+    @if ($ordering ?? false)
+        <button type="button" class="sheet__add" data-sheet-add hidden>Adicionar ao pedido</button>
+    @endif
 </section>

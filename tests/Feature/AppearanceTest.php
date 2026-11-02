@@ -51,3 +51,27 @@ it('renders the real feed shell as a live preview without tracking', function ()
 
     Livewire::test('pages::panel.appearance')->assertSeeHtml('data-appearance-preview');
 });
+
+it('defaults to the glass style and applies the chosen style to the feed and the tracking page', function () {
+    feedDish($this->restaurant);
+
+    expect($this->restaurant->menuStyle())->toBe('vidro');
+    $this->get(route('feed.show', $this->restaurant))->assertSee('data-menu-style="vidro"', false);
+
+    Livewire::test('pages::panel.appearance')->assertSet('menu_style', 'vidro')->set('menu_style', 'rustico')->call('save')->assertHasNoErrors();
+
+    expect($this->restaurant->fresh()->menu_style)->toBe('rustico');
+    $this->get(route('feed.show', $this->restaurant->fresh()))->assertSee('data-menu-style="rustico"', false);
+});
+
+it('rejects an unknown menu style and falls back to glass for a stored one nobody knows', function () {
+    Livewire::test('pages::panel.appearance')->set('menu_style', 'neon')->call('save')->assertHasErrors('menu_style');
+
+    $this->restaurant->forceFill(['menu_style' => 'neon'])->save();
+
+    expect($this->restaurant->fresh()->menuStyle())->toBe('vidro');
+});
+
+it('offers the three styles and sends the choice to the live preview', function () {
+    Livewire::test('pages::panel.appearance')->assertSeeHtml('data-menu-style="vidro"')->assertSeeHtml('data-menu-style="claro"')->assertSeeHtml('data-menu-style="rustico"')->assertSeeHtml('menuStyle: $wire.menu_style');
+});

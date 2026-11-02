@@ -62,3 +62,27 @@ it('creates a plan with limits features and a stripe price', function () {
 
     Livewire::test(ListPlans::class)->assertSee('Premium')->assertSee('R$ 199,00');
 });
+
+it('shows the order features of a plan with their defaults and saves a switch turned off', function () {
+    $pro = Plan::where('name', 'Pro')->firstOrFail();
+
+    Livewire::test(EditPlan::class, ['record' => $pro->getRouteKey()])
+        ->assertFormSet(['features.orders' => true, 'features.loyalty' => true, 'features.couriers' => true])
+        ->fillForm(['features.couriers' => false, 'features.loyalty' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $pro = $pro->fresh();
+
+    expect($pro->hasFeature('couriers'))->toBeFalse()->and($pro->hasFeature('loyalty'))->toBeFalse()->and($pro->hasFeature('orders'))->toBeTrue();
+});
+
+it('locks the owner panel screen when the admin turns a plan feature off', function () {
+    $plan = Plan::where('name', 'Básico')->firstOrFail();
+    $plan->update(['features' => ['couriers' => false, 'promo_codes' => true]]);
+    $owner = User::factory()->create();
+    $owner->restaurant->update(['plan_id' => $plan->id]);
+
+    $this->actingAs($owner)->get(route('panel.couriers'))->assertRedirect(route('panel.locked', 'couriers'));
+    $this->actingAs($owner)->get(route('panel.promo-codes'))->assertOk();
+});

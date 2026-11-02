@@ -25,6 +25,7 @@ class RestaurantFactory extends Factory
 
         return [
             'plan_id' => PlanFactory::freePlanId(),
+            'trial_ends_at' => now()->addDays(14),
             'status_id' => RestaurantStatus::query()->firstOrCreate(
                 ['slug' => 'ativo'],
                 ['name' => 'Ativo']

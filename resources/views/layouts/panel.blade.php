@@ -2,7 +2,11 @@
     $restaurant = auth()->user()?->restaurant;
     $restaurantName = $restaurant?->name ?? config('app.name');
     $accent = $restaurant?->accentColor() ?? \App\Models\Restaurant::DEFAULT_ACCENT_COLOR;
-    $navItems = \App\Support\PanelNavigation::items();
+    $navGroups = \App\Support\PanelNavigation::groups();
+    // The bottom bar of phones (≤ 640 px): the four screens used all day, plus "Mais" for the rest.
+    $quickItems = collect($navGroups)->flatMap(fn ($group) => $group['items'])
+        ->filter(fn ($item) => in_array($item['route'], ['panel.home', 'panel.orders', 'panel.pdv', 'panel.dishes', 'panel.cash'], true))
+        ->take(4)->values();
 @endphp
 <!DOCTYPE html>
 <html lang="pt-BR" style="--accent: {{ $accent }}">
@@ -12,10 +16,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ isset($title) ? $title.' · ' : '' }}{{ $restaurantName }} · Painel</title>
     @include('partials.favicons')
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#101010">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen" x-data="{ navOpen: false }">
+<body class="min-h-screen pb-[calc(64px+env(safe-area-inset-bottom))] sm:pb-0" x-data="{ navOpen: false }">
     @if (\App\Actions\Admin\Impersonation::active())
         <div class="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-3 bg-accent px-4 py-2 text-[13px] font-semibold text-white" data-impersonation-banner>
             <span>Modo suporte: você está vendo o painel como {{ auth()->user()->name }} ({{ $restaurantName }}).</span>
@@ -55,27 +63,37 @@
                 </div>
             </div>
 
-            <nav class="flex flex-col gap-[3px]" aria-label="Painel">
-                @foreach ($navItems as $item)
-                    @if ($item['url'])
-                        <a
-                            href="{{ $item['url'] }}"
-                            wire:navigate
-                            @if ($item['active']) aria-current="page" @endif
-                            class="flex items-center gap-[11px] rounded-[9px] px-3 py-2.5 text-[13.5px] font-semibold transition {{ $item['active'] ? 'bg-accent text-white' : 'text-white/65 hover:bg-white/5 hover:text-white' }}"
-                        >
-                            <x-ui.icon :name="$item['icon']" />
-                            {{ $item['label'] }}
-                        </a>
-                    @else
-                        <span
-                            aria-disabled="true"
-                            class="flex cursor-default items-center gap-[11px] rounded-[9px] px-3 py-2.5 text-[13.5px] font-semibold text-white/25"
-                        >
-                            <x-ui.icon :name="$item['icon']" />
-                            {{ $item['label'] }}
-                        </span>
-                    @endif
+            <nav class="flex min-h-0 flex-col gap-4 overflow-y-auto" aria-label="Painel">
+                @foreach ($navGroups as $group)
+                    <div class="flex flex-col gap-[3px]" data-nav-group>
+                        <span class="px-3 pb-1 text-[10.5px] font-bold uppercase tracking-wider text-white/30">{{ $group['label'] }}</span>
+                        @foreach ($group['items'] as $item)
+                            <a
+                                href="{{ $item['url'] }}"
+                                wire:navigate
+                                @if ($item['active']) aria-current="page" @endif
+                                class="flex items-center gap-[11px] rounded-[9px] px-3 py-2 text-[13.5px] font-semibold transition {{ $item['active'] ? 'bg-accent text-white' : 'text-white/65 hover:bg-white/5 hover:text-white' }}"
+                            >
+                                <x-ui.icon :name="$item['icon']" />
+                                {{ $item['label'] }}
+                                @if ($item['locked'] ?? false)
+                                    <span class="ml-auto text-[11px]" title="Não incluído no seu plano" data-nav-lock>🔒</span>
+                                @endif
+                                @if ($item['route'] === 'panel.orders')
+                                    <span
+                                        x-data="{ count: {{ (int) $item['badge'] }} }"
+                                        x-on:orders-count.window="count = $event.detail.count"
+                                        x-show="count > 0"
+                                        x-text="count"
+                                        data-nav-badge="orders"
+                                        title="Pedidos novos"
+                                        class="ml-auto min-w-[20px] rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-extrabold text-accent {{ (int) $item['badge'] > 0 ? '' : 'hidden' }}"
+                                        @if ((int) $item['badge'] === 0) x-cloak @endif
+                                    >{{ (int) $item['badge'] }}</span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
                 @endforeach
             </nav>
 
@@ -115,6 +133,8 @@
 
             <main class="w-full {{ ($wide ?? false) ? 'max-w-none' : 'max-w-[980px]' }} flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-11 lg:py-9">
                 @auth
+                    <x-trial-banner class="mb-5" />
+                    <x-store-status-banner class="mb-5" />
                     <livewire:panel-notices class="mb-5" />
                 @endauth
 
@@ -122,6 +142,28 @@
             </main>
         </div>
     </div>
+
+    {{-- Phones: quick bar with "Mais" opening the full menu (RF-24). --}}
+    @auth
+        <nav class="fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-white/10 bg-night pb-[env(safe-area-inset-bottom)] sm:hidden" aria-label="Atalhos" data-bottom-bar>
+            @foreach ($quickItems as $item)
+                <a href="{{ $item['url'] }}" wire:navigate @if ($item['active']) aria-current="page" @endif class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10.5px] font-semibold {{ $item['active'] ? 'text-accent' : 'text-white/65' }}">
+                    <x-ui.icon :name="$item['icon']" class="size-5" />
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
+            <button type="button" x-on:click="navOpen = true" class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10.5px] font-semibold text-white/65" data-more-menu>
+                <x-ui.icon name="menu" class="size-5" />
+                Mais
+            </button>
+        </nav>
+    @endauth
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('/panel-sw.js', { scope: '/painel/' }).catch(() => {}));
+        }
+    </script>
 
     <x-ui.toast />
 </body>

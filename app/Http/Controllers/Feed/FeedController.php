@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Restaurant;
 use App\Services\Feed\FeedBuilder;
+use App\Support\BusinessHours;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -35,6 +36,7 @@ class FeedController extends Controller
     {
         abort_if($restaurant->isSuspended(), 403, 'Cardápio indisponível.');
         abort_unless($category->restaurant_id === $restaurant->id && $category->is_visible, 404);
+        abort_unless($category->isShownAt(BusinessHours::localNow($restaurant)), 404);
 
         return response()
             ->json(['category_id' => $category->id, 'dishes' => $feed->dishesFor($restaurant, $category)])

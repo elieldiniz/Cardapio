@@ -185,3 +185,24 @@ function videoScreenWithPhoto(Dish $dish)
     return Livewire::test('pages::panel.dish-video', ['dish' => $dish])
         ->set('selectedPhotoIds', $dish->photos->sortBy('display_order')->take(1)->pluck('id')->all());
 }
+
+/**
+ * The cart catalog embedded in the feed page (RF-04, RF-06b), decoded from the HTML.
+ *
+ * @return array<string, mixed>
+ */
+function orderConfigOf($response): array
+{
+    preg_match('/<script type="application\/json" data-order-config>(.*?)<\/script>/s', $response->getContent(), $matches);
+
+    return json_decode(html_entity_decode($matches[1] ?? '{}'), true) ?? [];
+}
+
+/**
+ * Ends the free plan's 14-day trial, so the plan's own feature switches apply.
+ */
+function endTrial(Restaurant $restaurant): void
+{
+    $restaurant->update(['trial_ends_at' => now()->subDay()]);
+    $restaurant->unsetRelation('plan');
+}

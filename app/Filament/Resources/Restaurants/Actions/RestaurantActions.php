@@ -31,6 +31,23 @@ class RestaurantActions
             });
     }
 
+    /** Gives a free-plan restaurant 7 more days of the full trial (from today, or from its end if later). */
+    public static function extendTrial(): Action
+    {
+        return Action::make('extendTrial')
+            ->label('Estender teste (+7 dias)')
+            ->icon(Heroicon::OutlinedClock)
+            ->color('gray')
+            ->visible(fn (Restaurant $record) => ! $record->trashed() && $record->plan?->price_cents === 0)
+            ->requiresConfirmation()
+            ->modalDescription('O restaurante volta a ter todos os recursos liberados por mais 7 dias.')
+            ->action(function (Restaurant $record) {
+                $from = $record->trial_ends_at?->isFuture() ? $record->trial_ends_at : now();
+                $record->update(['trial_ends_at' => $from->copy()->addDays(7)]);
+                Notification::make()->title('Teste estendido até '.$record->trial_ends_at->format('d/m/Y'))->success()->send();
+            });
+    }
+
     public static function reactivate(): Action
     {
         return Action::make('reactivate')

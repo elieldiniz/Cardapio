@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Plans\Tables;
 
+use App\Filament\Resources\Plans\Schemas\PlanForm;
+use App\Models\Plan;
 use App\Support\Money;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -23,6 +25,11 @@ class PlansTable
                 TextColumn::make('metricsLevel.name')->label('Métricas'),
                 IconColumn::make('removes_branding')->label('Sem marca')->boolean(),
                 IconColumn::make('qr_customization')->label('QR personalizado')->boolean(),
+                ...collect(PlanForm::FEATURES)->map(fn (array $feature, string $key) => IconColumn::make("feature_{$key}")
+                    ->label($feature[0])
+                    ->boolean()
+                    ->getStateUsing(fn (Plan $plan) => $plan->hasFeature($key))
+                    ->toggleable(isToggledHiddenByDefault: true))->values()->all(),
                 TextColumn::make('stripe_price_id')->label('Stripe')->placeholder('—')->copyable(),
                 IconColumn::make('is_active')->label('Ativo')->boolean(),
                 TextColumn::make('restaurants_count')->counts('restaurants')->label('Restaurantes'),

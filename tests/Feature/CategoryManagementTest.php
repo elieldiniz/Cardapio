@@ -72,3 +72,44 @@ it('never lets a dono manage another restaurants categories', function () {
 
     expect($foreign->fresh()->is_visible)->toBeTrue();
 });
+
+it('saves an icon and an own time window, and reopens with them', function () {
+    $category = Category::factory()->create(['restaurant_id' => $this->restaurant->id, 'name' => 'Almoço']);
+
+    Livewire::test('pages::panel.categories')
+        ->call('editDetails', $category->id)
+        ->set('icon', '🍛')
+        ->set('shows_from', '11:00')
+        ->set('shows_until', '15:00')
+        ->call('saveDetails')
+        ->assertHasNoErrors();
+
+    expect($category->fresh())->icon->toBe('🍛')->and(substr($category->fresh()->shows_from, 0, 5))->toBe('11:00');
+
+    Livewire::test('pages::panel.categories')
+        ->call('editDetails', $category->id)
+        ->assertSet('icon', '🍛')
+        ->assertSet('shows_from', '11:00')
+        ->assertSet('shows_until', '15:00')
+        ->assertSee('11:00–15:00');
+});
+
+it('requires both ends of the window or neither', function () {
+    $category = Category::factory()->create(['restaurant_id' => $this->restaurant->id]);
+
+    Livewire::test('pages::panel.categories')
+        ->call('editDetails', $category->id)
+        ->set('shows_from', '11:00')
+        ->call('saveDetails')
+        ->assertHasErrors('shows_from');
+
+    expect($category->fresh()->shows_from)->toBeNull();
+});
+
+it('does not edit the details of another store category', function () {
+    $other = Category::factory()->create();
+
+    Livewire::test('pages::panel.categories')
+        ->call('editDetails', $other->id)
+        ->assertNotFound();
+});

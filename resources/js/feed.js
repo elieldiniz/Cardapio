@@ -249,12 +249,26 @@ function initFeed(root) {
         dish.dataset.videoSrcHd = data.video_url_hd ?? '';
         dish.classList.toggle('dish--sold-out', Boolean(data.sold_out));
 
+        const add = dish.querySelector('[data-add-to-cart]');
+
+        if (add) {
+            add.hidden = Boolean(data.sold_out);
+        }
+
         if (data.cover_url) {
             field('video').poster = data.cover_url;
         }
 
         field('name').textContent = data.name ?? '';
         field('price').textContent = data.price ?? '';
+
+        const oldPrice = field('old_price');
+
+        if (oldPrice) {
+            oldPrice.textContent = data.old_price ?? '';
+            oldPrice.hidden = !data.old_price;
+        }
+
         field('short_description').textContent = data.short_description ?? '';
         field('description').textContent = data.description ?? '';
 
@@ -313,6 +327,9 @@ function initFeed(root) {
         sheet.hidden = false;
         backdrop.hidden = false;
         sheet.scrollTop = 0;
+
+        // The ordering module (if the store takes orders) shows "Adicionar ao pedido" for this dish.
+        root.dispatchEvent(new CustomEvent('feed:sheet-open', { detail: { dishId: dish.dataset.dishId } }));
     }
 
     function closeSheet() {
@@ -458,9 +475,12 @@ function initFeed(root) {
 
         grid.querySelectorAll('[data-grid-filter]').forEach((other) => other.setAttribute('aria-pressed', String(other === filter)));
         grid.querySelectorAll('[data-grid-item]').forEach((cell) => {
-            cell.hidden = category !== 'all' && cell.dataset.category !== category;
+            cell.hidden = category !== 'all' && (category === 'offers' ? cell.dataset.sale !== '1' : cell.dataset.category !== category);
         });
     });
+
+    // "Ver ofertas" on the promotional banner = the Ofertas filter of the grid (RF-16).
+    grid?.querySelector('[data-show-offers]')?.addEventListener('click', () => grid.querySelector('[data-grid-filter="offers"]')?.click());
 
     root.querySelector('[data-back-to-grid]')?.addEventListener('click', () => {
         history.state?.feed ? history.back() : showGrid();
@@ -563,7 +583,7 @@ function initFeed(root) {
                 return;
             }
 
-            const { accent, font, logoUrl, coverUrl, description } = event.data;
+            const { accent, font, logoUrl, coverUrl, description, menuStyle } = event.data;
             const style = document.documentElement.style;
 
             if (accent) {
@@ -572,6 +592,10 @@ function initFeed(root) {
 
             if (font) {
                 style.setProperty('--feed-display-font', `'${font}'`);
+            }
+
+            if (menuStyle) {
+                document.documentElement.dataset.menuStyle = menuStyle;
             }
 
             const logo = root.querySelector('[data-brand-logo]');
@@ -611,8 +635,29 @@ function initFeed(root) {
 
     observeAll();
 
+    loadOrdering(root);
+
     if (root.dataset.openDishOnLoad) {
         openDish(root.dataset.openDishOnLoad, list.dataset.category);
+    }
+}
+
+/**
+ * The ordering flow (cart, checkout) is a separate chunk loaded when the browser is idle,
+ * so the video feed's first paint and scrolling never wait for it (RNF-06). Stores that
+ * take no orders, and the appearance preview, never load it.
+ */
+function loadOrdering(root) {
+    if (root.hasAttribute('data-preview') || !document.querySelector('[data-order-config]')) {
+        return;
+    }
+
+    const load = () => import('./cart.js').then((module) => module.initCart(root));
+
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(load, { timeout: 2500 });
+    } else {
+        setTimeout(load, 1200);
     }
 }
 

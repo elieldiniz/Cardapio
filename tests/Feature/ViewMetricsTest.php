@@ -24,11 +24,12 @@ beforeEach(function () {
 });
 
 test('a free plan restaurant only sees the cardapio total metric', function () {
+    endTrial($this->restaurant);
     expect($this->restaurant->plan->metricsLevel->slug)->toBe('cardapio_total');
 
     Livewire::test('pages::panel.views')
         ->assertSeeHtml('data-metrics-level="cardapio_total"')
-        ->assertSeeInOrder(['Visualizações de pratos', '3', 'Visitas ao cardápio', '2'])
+        ->assertSeeInOrder(['Visualizações de produtos', '3', 'Visitas ao cardápio', '2'])
         ->assertDontSeeHtml('data-per-dish')
         ->assertDontSee('Burger Clássico')
         ->assertDontSee('Tempo médio');

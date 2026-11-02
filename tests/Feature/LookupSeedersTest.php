@@ -2,22 +2,28 @@
 
 use App\Models\AdminAction;
 use App\Models\Badge;
+use App\Models\CashMovementType;
 use App\Models\DiscountType;
 use App\Models\DishStatus;
 use App\Models\GenerationLedgerType;
 use App\Models\GenerationStatus;
 use App\Models\MetricsLevel;
+use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\RestaurantStatus;
 use App\Models\Role;
 use App\Models\VideoOrigin;
 use App\Models\VideoStatus;
 use Database\Seeders\AdminActionSeeder;
 use Database\Seeders\BadgeSeeder;
+use Database\Seeders\CashMovementTypeSeeder;
 use Database\Seeders\DiscountTypeSeeder;
 use Database\Seeders\DishStatusSeeder;
 use Database\Seeders\GenerationLedgerTypeSeeder;
 use Database\Seeders\GenerationStatusSeeder;
 use Database\Seeders\MetricsLevelSeeder;
+use Database\Seeders\OrderStatusSeeder;
+use Database\Seeders\PaymentMethodSeeder;
 use Database\Seeders\RestaurantStatusSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\VideoOriginSeeder;
@@ -36,6 +42,9 @@ function lookupSeederExpectations(): array
         MetricsLevel::class => [MetricsLevelSeeder::class, ['cardapio_total', 'por_prato', 'por_prato_com_tempo_assistido']],
         DiscountType::class => [DiscountTypeSeeder::class, ['percentual', 'valor_fixo']],
         Badge::class => [BadgeSeeder::class, ['novo', 'mais_pedido', 'vegetariano']],
+        OrderStatus::class => [OrderStatusSeeder::class, ['novo', 'em_preparo', 'em_rota', 'finalizado', 'recusado', 'cancelado']],
+        PaymentMethod::class => [PaymentMethodSeeder::class, ['pix', 'dinheiro', 'debito', 'credito', 'cartao', 'fiado']],
+        CashMovementType::class => [CashMovementTypeSeeder::class, ['venda', 'recebimento_fiado', 'despesa', 'retirada', 'reforco', 'estorno']],
         AdminAction::class => [AdminActionSeeder::class, [
             'restaurante_suspenso',
             'restaurante_reativado',
@@ -68,4 +77,12 @@ it('re running every seeder does not create duplicate rows', function () {
 
         expect($modelClass::count())->toBe(count($expectedSlugs));
     }
+});
+
+it('resolves order statuses and payment methods by slug after the reference seed', function () {
+    seedReferenceData();
+
+    expect(OrderStatus::idFor('novo'))->toBeInt()
+        ->and(PaymentMethod::idFor('pix'))->toBeInt()
+        ->and(PaymentMethod::idFor('fiado'))->toBeInt();
 });

@@ -85,11 +85,11 @@ new #[Layout('layouts::panel')] #[Title('Suporte')] class extends Component
                 </x-ui.field>
 
                 <x-ui.field label="Assunto" for="subject" error="subject">
-                    <x-ui.input id="subject" wire:model="subject" maxlength="120" placeholder="Ex.: O vídeo do prato não aparece" />
+                    <x-ui.input id="subject" wire:model="subject" maxlength="120" placeholder="Ex.: O vídeo do produto não aparece" />
                 </x-ui.field>
 
                 <x-ui.field label="Mensagem" for="body" error="body">
-                    <x-ui.textarea id="body" wire:model="body" rows="5" maxlength="5000" placeholder="Explique com detalhes. Se puder, diga o nome do prato ou a tela onde aconteceu." />
+                    <x-ui.textarea id="body" wire:model="body" rows="5" maxlength="5000" placeholder="Explique com detalhes. Se puder, diga o nome do produto ou a tela onde aconteceu." />
                 </x-ui.field>
 
                 <div>

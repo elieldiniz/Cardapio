@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './emoji.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -10,7 +11,7 @@
  */
 @theme {
     --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+        'Segoe UI Symbol', 'Noto Color Emoji', 'Noto Emoji';
     --font-serif: 'DM Serif Display', ui-serif, Georgia, serif;
     /* The Degusta wordmark next to the symbol. */
     --font-brand: 'Imperial Script', cursive;
@@ -33,7 +34,7 @@
      */
     .site-type {
         --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-            'Segoe UI Symbol', 'Noto Color Emoji';
+            'Segoe UI Symbol', 'Noto Color Emoji', 'Noto Emoji';
         --font-serif: 'Fraunces', ui-serif, Georgia, serif;
         --font-display: 'Fraunces', ui-serif, Georgia, serif;
         font-family: var(--font-sans);

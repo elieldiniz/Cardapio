@@ -45,9 +45,15 @@
         <div class="dish__title">
             <h2 class="dish__name" data-field="name">{{ $dish['name'] ?? '' }}</h2>
             <span class="dish__price" data-field="price">{{ $dish['price'] ?? '' }}</span>
+            <s class="dish__old-price" data-field="old_price" @unless ($dish['old_price'] ?? null) hidden @endunless>{{ $dish['old_price'] ?? '' }}</s>
         </div>
         <p class="dish__short" data-field="short_description">{{ $dish['short_description'] ?? '' }}</p>
-        <button type="button" class="dish__more" data-detail-open>mais</button>
+        <div class="dish__actions">
+            <button type="button" class="dish__more" data-detail-open>mais</button>
+            @if ($ordering ?? false)
+                <button type="button" class="dish__add" data-add-to-cart @if ($soldOut) hidden @endif>+ Adicionar</button>
+            @endif
+        </div>
     </div>
 
     {{-- Full detail, copied into the bottom sheet when opened (US-1.4). --}}

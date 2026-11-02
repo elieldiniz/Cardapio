@@ -23,6 +23,14 @@ return [
         'instagram' => env('LANDING_CONTACT_INSTAGRAM'), // handle without @
     ],
 
+    /*
+    | Commission calculator (RF-24b): typical delivery-app commissions, in percent, and the sales
+    | amount shown before the visitor types their own.
+    */
+    'commission_rates' => [12, 20, 27],
+
+    'commission_default_sales' => 10000,
+
     'legal_entity' => env('LANDING_LEGAL_ENTITY', env('APP_NAME', 'Degusta')),
 
 ];

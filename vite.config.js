@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/feed.css', 'resources/js/feed.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/feed.css', 'resources/js/feed.js', 'resources/js/track.js', 'resources/js/ticket-print.js'],
             refresh: true,
             fonts: [
                 bunny('DM Sans', {
