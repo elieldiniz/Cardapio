@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Ai\GeminiOmniVideoGenerationProvider;
 use App\Services\Ai\GeminiVeoVideoGenerationProvider;
 use App\Services\Ai\NullVideoGenerationProvider;
 
@@ -30,7 +31,9 @@ return [
 
     'providers' => [
         'null' => NullVideoGenerationProvider::class,
-        'gemini' => GeminiVeoVideoGenerationProvider::class,
+        // Google shut the Veo 3.1 preview down on 22 Oct 2026, so the gemini slug now runs Omni Flash.
+        'gemini' => GeminiOmniVideoGenerationProvider::class,
+        'gemini-veo' => GeminiVeoVideoGenerationProvider::class,
     ],
 
     /*
@@ -42,6 +45,9 @@ return [
     | September 2026 (audio included, no free tier).
     |
     */
+
+    // Gemini Omni Flash bills tokens (ai.google.dev pricing, standard tier, Nov 2026): video output and input.
+    'gemini_omni_price_per_million_tokens' => ['video_output' => 17.50, 'input' => 1.50],
 
     'gemini_price_per_second' => [
         'veo-3.1-lite-generate-preview' => ['720p' => 0.05, '1080p' => 0.08],

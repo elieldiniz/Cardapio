@@ -39,6 +39,8 @@ return [
         'key' => env('GEMINI_API_KEY'),
         'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
         // veo-3.1-lite-generate-preview is the cheapest; -fast- and -generate- cost more.
+        // The Veo 3.1 preview models were shut down by Google on 22 Oct 2026; Omni Flash replaced them.
+        'omni_model' => env('GEMINI_OMNI_MODEL', 'gemini-omni-1.1-flash'),
         'video_model' => env('GEMINI_VIDEO_MODEL', 'veo-3.1-lite-generate-preview'),
         'video_resolution' => env('GEMINI_VIDEO_RESOLUTION', '720p'),
     ],

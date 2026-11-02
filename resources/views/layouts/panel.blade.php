@@ -133,6 +133,7 @@
 
             <main class="w-full {{ ($wide ?? false) ? 'max-w-none' : 'max-w-[980px]' }} flex-1 px-4 py-6 sm:px-8 sm:py-8 lg:px-11 lg:py-9">
                 @auth
+                    <x-orders-setup-banner class="mb-5" />
                     <x-trial-banner class="mb-5" />
                     <x-store-status-banner class="mb-5" />
                     <livewire:panel-notices class="mb-5" />
