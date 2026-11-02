@@ -14,6 +14,7 @@ class ViewRestaurant extends ViewRecord
     {
         return [
             RestaurantActions::impersonate(),
+            RestaurantActions::extendTrial(),
             RestaurantActions::suspend(),
             RestaurantActions::reactivate(),
             RestaurantActions::restore(),

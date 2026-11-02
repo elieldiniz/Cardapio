@@ -21,7 +21,7 @@ class RegisterRestaurantOwner
     public const FREE_PLAN_NAME = 'Grátis';
 
     /**
-     * @param  array{name: string, restaurant_name: string, email: string, password: string}  $data
+     * @param  array{name: string, restaurant_name: string, email: string, password: string, business_type?: ?string}  $data
      */
     public function handle(array $data): User
     {
@@ -33,7 +33,11 @@ class RegisterRestaurantOwner
                 'status_id' => RestaurantStatus::query()->where('slug', 'ativo')->value('id'),
                 'name' => $data['restaurant_name'],
                 'slug' => $this->uniqueSlug($data['restaurant_name']),
+                'business_type' => $this->businessType($data['business_type'] ?? null),
+                'trial_ends_at' => now()->addDays((int) config('plan_features.trial_days', 14)),
             ]);
+
+            $this->seedCategories($restaurant);
 
             $user = new User([
                 'name' => $data['name'],
@@ -57,6 +61,31 @@ class RegisterRestaurantOwner
         event(new Registered($user));
 
         return $user;
+    }
+
+    /**
+     * Only a configured business type is stored; anything else means "none chosen" (RF-02c).
+     */
+    private function businessType(?string $type): ?string
+    {
+        return $type !== null && array_key_exists($type, config('business_types', [])) ? $type : null;
+    }
+
+    /**
+     * A chosen business type gives the new restaurant its starter categories, inside the
+     * signup transaction (RF-02c). Without a type no category is created.
+     */
+    private function seedCategories(Restaurant $restaurant): void
+    {
+        $categories = config("business_types.{$restaurant->business_type}.categories", []);
+
+        foreach ($categories as $index => $category) {
+            $restaurant->categories()->create([
+                'name' => $category['name'],
+                'icon' => $category['icon'] ?? null,
+                'display_order' => $index + 1,
+            ]);
+        }
     }
 
     private function uniqueSlug(string $name): string

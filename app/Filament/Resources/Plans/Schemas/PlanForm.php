@@ -33,6 +33,25 @@ class PlanForm
                         Toggle::make('removes_branding')->label('Remove a marca "feito com"')->inline(false),
                         Toggle::make('qr_customization')->label('Personalização do QR Code e do display')->helperText('Estilo do QR, logo no centro, modelos e textos do display. Todos os planos escolhem a cor do QR.')->inline(false),
                     ]),
+                Section::make('Funcionalidades de pedidos')
+                    ->description('O que este plano libera no painel. Desligar esconde a tela e bloqueia o acesso; os dados já criados continuam guardados.')
+                    ->columns(2)
+                    ->schema(collect(self::FEATURES)->map(fn (array $feature, string $key) => Toggle::make("features.{$key}")
+                        ->label($feature[0])
+                        ->helperText($feature[1])
+                        ->inline(false)
+                        ->afterStateHydrated(fn (Toggle $component, $state) => $component->state($state ?? (bool) config("plan_features.defaults.{$key}", false))))
+                        ->values()->all()),
             ]);
     }
+
+    /** Switches stored in `plans.features`: key => [label, help]. */
+    public const FEATURES = [
+        'orders' => ['Receber pedidos pelo cardápio', 'Carrinho, checkout, gestor de pedidos e acompanhamento do cliente.'],
+        'cash' => ['Caixa, fiado e relatório', 'Abertura e fechamento do caixa, fiado e relatório de vendas.'],
+        'pdv' => ['PDV balcão', 'Venda rápida no balcão.'],
+        'promo_codes' => ['Cupons de desconto', 'Códigos de desconto e links com cupom.'],
+        'loyalty' => ['Cartão fidelidade', 'Selos por pedido e prêmio ao completar.'],
+        'couriers' => ['Motoboys', 'Cadastro, link do entregador e acerto no caixa.'],
+    ];
 }

@@ -27,6 +27,12 @@ class RestaurantsTable
                     ->label('Plano')
                     ->badge()
                     ->sortable(),
+                TextColumn::make('trial_ends_at')
+                    ->label('Teste até')
+                    ->date('d/m/Y')
+                    ->placeholder('—')
+                    ->description(fn (Restaurant $record) => $record->onTrial() ? 'em teste' : ($record->trialEnded() ? 'terminou' : null))
+                    ->sortable(),
                 TextColumn::make('status.name')
                     ->label('Status')
                     ->badge()
@@ -63,6 +69,7 @@ class RestaurantsTable
                 ViewAction::make(),
                 ActionGroup::make([
                     RestaurantActions::impersonate(),
+                    RestaurantActions::extendTrial(),
                     RestaurantActions::suspend(),
                     RestaurantActions::reactivate(),
                     RestaurantActions::restore(),
