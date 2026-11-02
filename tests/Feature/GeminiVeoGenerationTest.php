@@ -185,7 +185,7 @@ test('an async generation is submitted, polled until done, uploaded to Mux and o
     Queue::fake();
     fakeVeo(done: false);
 
-    $provider = AiProvider::factory()->create(['slug' => 'gemini', 'name' => 'Gemini Veo']);
+    $provider = AiProvider::factory()->create(['slug' => 'gemini-veo', 'name' => 'Gemini Veo']);
     AiPreset::factory()->create(['provider_id' => $provider->id, 'duration_seconds' => 5]);
     [, $dish] = ownerWithDish(photos: 1, addon: 5);
     Storage::disk('public')->put($dish->photos->first()->file_path, fakeImage()->getContent());
@@ -234,7 +234,7 @@ test('a Mux upload failure marks the async generation as erro without debiting',
     Queue::fake();
     fakeVeo(muxStatus: 500);
 
-    $provider = AiProvider::factory()->create(['slug' => 'gemini', 'name' => 'Gemini Veo']);
+    $provider = AiProvider::factory()->create(['slug' => 'gemini-veo', 'name' => 'Gemini Veo']);
     AiPreset::factory()->create(['provider_id' => $provider->id]);
     [, $dish] = ownerWithDish(photos: 1, addon: 5);
     Storage::disk('public')->put($dish->photos->first()->file_path, fakeImage()->getContent());

@@ -205,6 +205,8 @@ export function initCart(root) {
         const items = store.items.filter(isOrderable);
         const count = items.reduce((sum, item) => sum + (dishOf(item.dishId)?.sale_type === 'kg' ? 1 : item.qty), 0);
 
+        // The feed lifts what lives at the bottom of the screen while the cart bar is there (see feed.css).
+        root.dataset.cart = store.items.length > 0 ? 'on' : 'off';
         bar.hidden = store.items.length === 0 || !sheet.hidden;
         bar.querySelector('[data-cart-count]').textContent = `${Math.round(count)} ${Math.round(count) === 1 ? 'item' : 'itens'}`;
         bar.querySelector('[data-cart-total]').textContent = brl(subtotalCents());
