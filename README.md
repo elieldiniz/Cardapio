@@ -2,13 +2,15 @@
 
 Cardápio digital em vídeo no estilo Reels. O cliente escaneia o QR Code da mesa e rola um feed vertical com um prato por tela, com vídeo em autoplay, mudo e em loop. O dono do restaurante gera o vídeo de cada prato a partir de 1 a 4 fotos (IA com preset fixo e aprovação obrigatória) ou envia um vídeo próprio.
 
-O produto é só de visualização: o pedido continua sendo feito com o garçom.
+Além de mostrar o cardápio, o Degusta recebe o pedido: o cliente monta o carrinho no próprio cardápio (com complementos, pizza por sabores e produtos por kg), escolhe retirada ou entrega e envia o pedido para o WhatsApp da loja. O dono acompanha tudo no gestor de pedidos, controla o caixa (com fiado e relatório), vende no balcão (PDV), cria cupons e cartão fidelidade e acerta com os motoboys. Não há pagamento online: o Pix é direto para a chave da loja e o dono confere.
 
 ## Áreas do sistema
 
 | Área | Rota | Tecnologia | Quem usa |
 | --- | --- | --- | --- |
 | Site / landing | `/`, `/sobre`, `/termos`… | Blade | Público |
+| Pedido e acompanhamento | `/r/{slug}/pedidos`, `/p/{token}` | JS puro (carrinho/checkout carregados sob demanda) | Cliente, sem login |
+| Link do entregador | `/entregador/{token}` | Blade | Motoboy, só com o link |
 | Feed do cliente | `/r/{slug}` | HTML + JS leve (scroll-snap, IntersectionObserver, service worker) | Cliente na mesa, sem login |
 | Painel do restaurante | `/painel` | Livewire 4, mobile-first | Dono |
 | Painel administrativo | `/admin` | Filament 5 | Super admin |
