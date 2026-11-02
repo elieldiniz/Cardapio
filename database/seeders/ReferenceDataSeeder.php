@@ -24,6 +24,9 @@ class ReferenceDataSeeder extends Seeder
             DiscountTypeSeeder::class,
             BadgeSeeder::class,
             AdminActionSeeder::class,
+            OrderStatusSeeder::class,
+            PaymentMethodSeeder::class,
+            CashMovementTypeSeeder::class,
             PlanSeeder::class,
             VideoAddonPackageSeeder::class,
         ]);

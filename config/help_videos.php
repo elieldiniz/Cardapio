@@ -1,0 +1,22 @@
+<?php
+
+/*
+ * Central de ajuda em vídeo (RF-24). Cada vídeo tem `url` (YouTube, Vimeo ou arquivo); enquanto estiver
+ * nulo, a tela mostra "Vídeo em breve". `tags` alimentam a busca. Para adicionar um vídeo, basta um item novo.
+ */
+return [
+    'support_whatsapp' => env('SUPPORT_WHATSAPP'),
+
+    'videos' => [
+        ['title' => 'Primeiros passos no painel', 'description' => 'Do cadastro ao primeiro pedido em poucos minutos.', 'tags' => ['início', 'começar', 'cadastro', 'guia'], 'url' => null],
+        ['title' => 'Como gerar o vídeo de um produto', 'description' => 'Envie a foto, escolha o estilo e aprove o vídeo.', 'tags' => ['vídeo', 'foto', 'produto', 'gerar', 'estilo'], 'url' => null],
+        ['title' => 'Cadastrar produtos, complementos e pizzas', 'description' => 'Preço, promoção, adicionais, tamanhos e sabores.', 'tags' => ['produto', 'complemento', 'pizza', 'preço', 'promoção', 'kg'], 'url' => null],
+        ['title' => 'Configurar horário, Pix e entrega', 'description' => 'Aberto/fechado automático, chave Pix e taxa de entrega.', 'tags' => ['horário', 'pix', 'entrega', 'taxa', 'bairro', 'distância', 'configurações'], 'url' => null],
+        ['title' => 'Receber e acompanhar pedidos', 'description' => 'Aceitar, preparar, mandar para entrega e finalizar.', 'tags' => ['pedido', 'pedidos', 'gestor', 'aceitar', 'status', 'whatsapp'], 'url' => null],
+        ['title' => 'Abrir e fechar o caixa', 'description' => 'Troco inicial, sangria, reforço e fechamento.', 'tags' => ['caixa', 'sangria', 'reforço', 'fechamento', 'dinheiro'], 'url' => null],
+        ['title' => 'Vender no balcão (PDV) e fiado', 'description' => 'Venda rápida, pagamento dividido e cobrança de fiado.', 'tags' => ['pdv', 'balcão', 'fiado', 'venda', 'pagamento'], 'url' => null],
+        ['title' => 'Cupons e cartão fidelidade', 'description' => 'Crie códigos de desconto e programa de selos.', 'tags' => ['cupom', 'desconto', 'fidelidade', 'selo', 'clientes'], 'url' => null],
+        ['title' => 'Motoboys e comanda de impressão', 'description' => 'Link do entregador, acerto e impressão 58/80 mm.', 'tags' => ['motoboy', 'entregador', 'comanda', 'impressora', 'acerto'], 'url' => null],
+        ['title' => 'QR Code e divulgação', 'description' => 'Display de mesa e links por canal para medir vendas.', 'tags' => ['qr', 'divulgação', 'instagram', 'campanha', 'origem'], 'url' => null],
+    ],
+];

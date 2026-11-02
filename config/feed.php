@@ -20,6 +20,16 @@ return [
 
     'default_font' => 'DM Serif Display',
 
+    /*
+    | Visual styles of the cardápio's surfaces (grid, sheets, cart, checkout and tracking page).
+    | The vertical video feed itself stays dark in every style.
+    */
+    'styles' => [
+        'vidro' => ['label' => 'Vidro', 'hint' => 'Escuro com vidro fosco (o clássico).'],
+        'claro' => ['label' => 'Claro', 'hint' => 'Fundo claro e limpo, bom para cardápios coloridos.'],
+        'rustico' => ['label' => 'Rústico', 'hint' => 'Tons de papel e madeira, com cara de casa de bairro.'],
+    ],
+
     'fonts' => [
         'DM Serif Display' => null, // bundled with the app
         'Playfair Display' => 'playfair-display:400,700',
