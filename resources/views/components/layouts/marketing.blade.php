@@ -1,11 +1,11 @@
 {{-- Public marketing pages: landing, Sobre, Contato and the legal pages. --}}
 @props([
     'title' => null,
-    'description' => 'Cardápio em vídeo pelo QR Code da mesa. Transforme a foto do prato em vídeo com IA, sem app para o cliente. Comece grátis.',
+    'description' => 'Cardápio em vídeo com pedidos pelo QR Code. O cliente pede pelo celular, você recebe no WhatsApp e controla entrega e caixa. Teste 14 dias grátis, sem cartão.',
 ])
 
 @php
-    $pageTitle = $title ? $title.' · '.config('app.name') : config('app.name').' — Cardápio em vídeo pelo QR Code';
+    $pageTitle = $title ? $title.' · '.config('app.name') : config('app.name').' — Cardápio em vídeo com pedidos pelo QR Code';
     $contact = config('landing.contact');
     $footerLinks = [
         ['Sobre', route('marketing.about')],

@@ -1,4 +1,21 @@
 <x-marketing.legal-page title="Política de Privacidade">
+    @if ($store)
+        <section data-store-privacy class="rounded-xl border border-ink/10 bg-sand/60 p-5">
+            <h2 class="!mt-0">Seu pedido em {{ $store->name }}</h2>
+            <p><strong>{{ $store->name }}</strong> é quem decide o que fazer com os dados do seu pedido; o {{ config('app.name') }} apenas fornece a ferramenta.</p>
+            <ul>
+                <li><strong>O que a loja recebe:</strong> seu nome, WhatsApp, o endereço de entrega (quando você pede entrega), as observações e os itens do pedido.</li>
+                <li><strong>Por quanto tempo:</strong> o <strong>endereço e as observações são apagados em até 30 dias</strong> depois que o pedido termina. Nome e WhatsApp ficam com a loja para agilizar seus próximos pedidos, por até 2 anos sem novos pedidos.</li>
+                <li><strong>Seu direito de apagar:</strong> você pode pedir à loja, pelo WhatsApp,
+                    @if ($storeWhatsapp)
+                        <a href="https://api.whatsapp.com/send?phone={{ $storeWhatsapp }}&text={{ rawurlencode('Olá! Quero apagar meus dados do cardápio.') }}" rel="noopener">neste número</a>,
+                    @endif
+                    que apague os seus dados a qualquer momento.</li>
+                <li><strong>Neste aparelho:</strong> guardamos seu nome, WhatsApp e endereço no navegador só para preencher o próximo pedido. Limpar os dados do navegador apaga isso.</li>
+            </ul>
+        </section>
+    @endif
+
     <p>Esta Política explica como o {{ config('app.name') }} trata dados pessoais, de acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD).</p>
 
     <h2>1. Dados que tratamos</h2>
@@ -6,7 +23,8 @@
         <li><strong>Donos e equipes de restaurantes:</strong> nome, e-mail, senha (guardada de forma criptografada), nome e dados do restaurante, conteúdos enviados (fotos, vídeos, logo, textos), registros de acesso (endereço IP, navegador, aparelhos conectados).</li>
         <li><strong>Chamados de suporte:</strong> as mensagens que você envia à nossa equipe pelo painel e as respostas que recebe.</li>
         <li><strong>Pagamentos:</strong> processados pela Stripe. Não armazenamos o número do cartão; recebemos apenas o status das cobranças e das assinaturas.</li>
-        <li><strong>Clientes que abrem o cardápio:</strong> não pedimos cadastro. Registramos, de forma agregada e sem identificação pessoal, quais pratos foram vistos e por quanto tempo, usando um identificador de sessão anônimo guardado no navegador.</li>
+        <li><strong>Clientes que abrem o cardápio:</strong> não pedimos cadastro. Registramos, de forma agregada e sem identificação pessoal, quais produtos foram vistos e por quanto tempo, usando um identificador de sessão anônimo guardado no navegador.</li>
+        <li><strong>Clientes que fazem pedido:</strong> nome, WhatsApp, endereço de entrega e observações, enviados ao restaurante escolhido. O endereço e as observações são apagados em até 30 dias após o fim do pedido; nome e WhatsApp ficam com o restaurante por até 2 anos sem novos pedidos, ou até o restaurante apagar os dados a seu pedido.</li>
     </ul>
 
     <h2>2. Para que usamos</h2>

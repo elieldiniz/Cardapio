@@ -6,6 +6,6 @@
             data-category="{{ $category['id'] }}"
             @if ($category['url'] ?? null) data-category-url="{{ $category['url'] }}" @endif
             aria-pressed="{{ $category['id'] === $activeCategoryId ? 'true' : 'false' }}"
-        >{{ $category['name'] }}</button>
+        >@if ($category['icon'] ?? null)<span aria-hidden="true">{{ $category['icon'] }}</span> @endif{{ $category['name'] }}</button>
     @endforeach
 </nav>

@@ -2,6 +2,7 @@
 
 use App\Actions\RegisterRestaurantOwner;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -17,6 +18,8 @@ new #[Layout('layouts::auth')] #[Title('Criar conta')] class extends Component
 
     public string $password = '';
 
+    public string $business_type = '';
+
     protected function rules(): array
     {
         return [
@@ -24,6 +27,7 @@ new #[Layout('layouts::auth')] #[Title('Criar conta')] class extends Component
             'restaurant_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', Password::min(8)],
+            'business_type' => ['nullable', 'string', Rule::in(array_keys(config('business_types', [])))],
         ];
     }
 
@@ -61,6 +65,15 @@ new #[Layout('layouts::auth')] #[Title('Criar conta')] class extends Component
 
     <x-ui.field label="Nome do restaurante" for="restaurant_name" error="restaurant_name">
         <x-ui.input id="restaurant_name" wire:model="restaurant_name" autocomplete="organization" required />
+    </x-ui.field>
+
+    <x-ui.field label="Tipo de negócio" for="business_type" error="business_type" hint="Opcional. Já começamos o cardápio com as categorias certas.">
+        <x-ui.select id="business_type" wire:model="business_type">
+            <option value="">Prefiro montar do zero</option>
+            @foreach (config('business_types') as $key => $type)
+                <option value="{{ $key }}">{{ $type['label'] }}</option>
+            @endforeach
+        </x-ui.select>
     </x-ui.field>
 
     <x-ui.field label="E-mail" for="email" error="email">

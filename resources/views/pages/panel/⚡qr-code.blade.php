@@ -42,6 +42,9 @@ new #[Layout('layouts::panel')] #[Title('QR Code')] class extends Component
 
     public bool $showName = true;
 
+    /** Campaign name added to the tracked links ("?campanha="); letters, numbers and dashes only. */
+    public string $campaign = '';
+
 
     public function mount(): void
     {
@@ -67,6 +70,25 @@ new #[Layout('layouts::panel')] #[Title('QR Code')] class extends Component
     public function render()
     {
         return $this->view()->layoutData(['wide' => true]);
+    }
+
+    /**
+     * Links to share on each channel (RF-20): the visit and its orders are recorded with that origin,
+     * and the report shows the sales by origin.
+     *
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function trackedLinks(): array
+    {
+        $campaign = \Illuminate\Support\Str::slug($this->campaign);
+        $links = [];
+
+        foreach (['instagram' => 'Instagram', 'whatsapp' => 'WhatsApp', 'facebook' => 'Facebook', 'anuncio' => 'Anúncio pago'] as $origin => $label) {
+            $links[$label] = route('feed.show', $this->restaurant).'?'.http_build_query(array_filter(['origem' => $origin, 'campanha' => $campaign]));
+        }
+
+        return $links;
     }
 
     #[Computed]
@@ -463,5 +485,21 @@ new #[Layout('layouts::panel')] #[Title('QR Code')] class extends Component
             </x-ui.card>
         </div>
     </div>
+
+    <x-ui.card data-tracked-links>
+        <h2 class="text-[15px] font-bold text-ink">Links para divulgar</h2>
+        <p class="mt-1 text-[13px] text-ink/55">Use um link por canal. Os pedidos ficam marcados com a origem e o relatório mostra quanto cada canal vendeu.</p>
+        <x-ui.field class="mt-3" label="Nome da campanha (opcional)" for="campaign" hint="Ex.: sextou, dia-das-maes">
+            <x-ui.input id="campaign" wire:model.live.debounce.400ms="campaign" maxlength="40" />
+        </x-ui.field>
+        <ul class="mt-3 flex flex-col gap-2">
+            @foreach ($this->trackedLinks as $label => $link)
+                <li class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink/10 px-3 py-2" data-tracked-link="{{ $label }}">
+                    <div class="min-w-0"><p class="text-[13px] font-bold text-ink">{{ $label }}</p><p class="truncate text-[11.5px] text-ink/45">{{ $link }}</p></div>
+                    <button type="button" class="text-[12.5px] font-bold text-accent hover:underline" x-data x-on:click="copyText(@js($link)).then((ok) => $dispatch('toast', { message: ok ? 'Link copiado.' : 'Não deu para copiar. Selecione e copie: ' + @js($link) }))">Copiar</button>
+                </li>
+            @endforeach
+        </ul>
+    </x-ui.card>
 </div>
 </div>

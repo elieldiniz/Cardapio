@@ -123,7 +123,7 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
     $plan = $this->restaurant->plan;
     $balance = $this->restaurant->generationBalance;
     $isPaid = $this->subscription?->valid();
-    $metricsLabels = ['cardapio_total' => 'Total do cardápio', 'por_prato' => 'Por prato', 'por_prato_com_tempo_assistido' => 'Por prato + tempo assistido'];
+    $metricsLabels = ['cardapio_total' => 'Total do cardápio', 'por_prato' => 'Por produto', 'por_prato_com_tempo_assistido' => 'Por produto + tempo assistido'];
 @endphp
 
 <div class="flex flex-col gap-[18px]">
@@ -145,9 +145,13 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
     <x-ui.card title="Seu plano">
         <ul class="grid gap-2 text-[13.5px] text-ink/70 sm:grid-cols-2">
             <li><strong class="text-ink">{{ $plan->price_cents ? Money::brlFromCents($plan->price_cents).'/mês' : 'Grátis' }}</strong></li>
-            <li>Pratos: <strong class="text-ink">{{ $this->restaurant->dishes()->count() }} de {{ $plan->dish_limit ?? 'ilimitados' }}</strong></li>
+            <li>Produtos: <strong class="text-ink">{{ $this->restaurant->dishes()->count() }} de {{ $plan->dish_limit ?? 'ilimitados' }}</strong></li>
             <li>Gerações: <strong class="text-ink">{{ $plan->monthly_generations > 0 ? $plan->monthly_generations.' por mês' : 'em pacotes avulsos' }}</strong>@if ($plan->initial_generations) · {{ $plan->initial_generations }} de degustação (uma vez)@endif</li>
             <li>Métricas: <strong class="text-ink">{{ $metricsLabels[$plan->metricsLevel?->slug] ?? '—' }}</strong></li>
+            <li>Recursos: <strong class="text-ink" data-plan-features>{{ collect(['cash' => 'Caixa', 'pdv' => 'PDV', 'promo_codes' => 'Cupons', 'loyalty' => 'Fidelidade', 'couriers' => 'Motoboys'])->filter(fn ($label, $feature) => $plan->hasFeature($feature))->values()->whenEmpty(fn ($list) => collect(['só pedidos']))->implode(', ') }}</strong></li>
+            @if ($this->restaurant->onTrial())
+                <li class="sm:col-span-2" data-trial-note>🎁 Teste completo: tudo liberado por mais {{ $this->restaurant->trialDaysLeft() }} {{ $this->restaurant->trialDaysLeft() === 1 ? 'dia' : 'dias' }}.</li>
+            @endif
             <li>Marca "feito com": <strong class="text-ink">{{ $plan->removes_branding ? 'removida' : 'exibida' }}</strong></li>
             @if ($balance?->renews_at)
                 <li>Renova em: <strong class="text-ink">{{ $balance->renews_at->format('d/m/Y') }}</strong></li>
@@ -174,7 +178,7 @@ new #[Layout('layouts::panel')] #[Title('Assinatura')] class extends Component
                             <span class="text-[15px] font-bold text-ink">{{ Money::brlFromCents($option->price_cents) }}<span class="text-[12px] font-medium text-ink/50">/mês</span></span>
                         </div>
                         <ul class="flex flex-col gap-1 text-[13px] text-ink/65">
-                            <li>{{ $option->dish_limit ? 'Até '.$option->dish_limit.' pratos' : 'Pratos ilimitados' }}</li>
+                            <li>{{ $option->dish_limit ? 'Até '.$option->dish_limit.' produtos' : 'Produtos ilimitados' }}</li>
                             @if ($option->monthly_generations > 0)
                                 <li>{{ $option->monthly_generations }} gerações de vídeo por mês</li>
                             @elseif ($option->first_subscription_bonus > 0)

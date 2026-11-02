@@ -21,12 +21,14 @@
 
     $faq = [
         ['O cliente precisa baixar algum aplicativo?', 'Não. Ele aponta a câmera do celular para o QR Code da mesa e o cardápio abre direto no navegador, sem cadastro.'],
-        ['Como o vídeo do prato é criado?', 'Você envia 1 foto do prato, escolhe um estilo (ou descreve do seu jeito) e nós criamos um clipe curto e vertical. Você confere o resultado e só vai para o cardápio o que você aprovar.'],
-        ['O que é uma “geração”?', 'Cada vídeo criado a partir da sua foto consome 1 geração. Você ganha gerações grátis ao se cadastrar e um brinde ao assinar pela primeira vez; depois, compra pacotes avulsos, que não expiram. Se algo falhar, a geração não é descontada. Não gostou do resultado? É só gerar de novo, o que consome mais 1 geração.'],
-        ['E se as minhas gerações acabarem?', 'Você compra um pacote avulso de gerações, que não expira, quando precisar. Enviar vídeo próprio nunca consome gerações.'],
-        ['Dá para fazer pedido pelo cardápio?', 'Não. O cardápio é para ver os pratos em vídeo; o pedido continua sendo feito com o garçom, como o cliente já está acostumado.'],
+        ['Como funciona o pedido?', 'O cliente monta o pedido no próprio cardápio (com tamanho, adicionais e observações), escolhe retirada ou entrega e envia. O pedido chega pronto no WhatsApp da loja e aparece no seu gestor de pedidos, onde você aceita, prepara e acompanha. Não há pagamento online: o Pix vai direto para a sua chave e você confere.'],
+        ['Vocês cobram comissão por pedido?', 'Não. Você paga só o plano. O pedido, o cliente e o dinheiro são seus, sem percentual sobre as vendas.'],
+        ['Como funcionam os 14 dias grátis?', 'Todo cadastro começa com 14 dias com todos os recursos liberados, sem cartão de crédito. Depois disso, se você não assinar, a conta continua no plano Grátis, com cardápio e pedidos. Caixa, PDV, cupons e outros recursos ficam guardados e voltam quando você assinar um plano que os inclua. Nada é apagado.'],
+        ['Serve para entrega e para retirada?', 'Os dois. Na entrega você pode cobrar taxa por bairro, por distância ou combinar pelo WhatsApp, definir pedido mínimo e frete grátis acima de um valor, e passar a corrida para um motoboy com link próprio.'],
+        ['Como o vídeo do prato é criado?', 'Você envia 1 foto do prato, escolhe um estilo (ou descreve do seu jeito) e nós criamos um clipe curto e vertical. Você confere o resultado e só vai para o cardápio o que você aprovar. Também dá para enviar um vídeo seu.'],
+        ['O que é uma “geração”?', 'Cada vídeo criado a partir da sua foto consome 1 geração. Você ganha gerações grátis ao se cadastrar e um brinde ao assinar pela primeira vez; depois, compra pacotes avulsos, que não expiram. Se algo falhar, a geração não é descontada. Não gostou do resultado? É só gerar de novo, o que consome mais 1 geração. Enviar vídeo próprio nunca consome gerações.'],
         ['Posso cancelar quando quiser?', 'Sim. A assinatura é mensal e você cancela pelo próprio painel. O cardápio continua no ar no plano Grátis.'],
-        ['Quais formas de pagamento são aceitas?', 'Cartão de crédito, com pagamento processado com segurança pela Stripe.'],
+        ['Quais formas de pagamento são aceitas na assinatura?', 'Cartão de crédito, com pagamento processado com segurança pela Stripe.'],
     ];
 @endphp
 
@@ -48,19 +50,19 @@
         </div>
         <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:grid-cols-[1.15fr_0.85fr] md:py-24">
             <div>
-                <h1 class="hero-rise font-display text-[38px] leading-[1.08] text-balance text-white sm:text-[56px]" style="--d: 0.1s">Faça o cliente <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">desejar o prato</span> antes de pedir.</h1>
-                <p class="hero-rise mt-6 max-w-xl text-[17px] leading-relaxed text-pretty text-white/75 sm:text-[18px]" style="--d: 0.3s">Envie a foto e a IA faz o vídeo. O cliente escaneia o QR Code e vê cada prato “vivo”, como nos Reels. Sem app e sem gravar nada.</p>
+                <h1 class="hero-rise font-display text-[38px] leading-[1.08] text-balance text-white sm:text-[56px]" style="--d: 0.1s">Faça o cliente <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">desejar o prato</span> e pedir na hora.</h1>
+                <p class="hero-rise mt-6 max-w-xl text-[17px] leading-relaxed text-pretty text-white/75 sm:text-[18px]" style="--d: 0.3s">O cliente escaneia o QR Code, vê cada prato em vídeo e faz o pedido pelo celular. Você recebe tudo pronto no WhatsApp, com entrega e caixa organizados.</p>
 
                 <div class="hero-rise mt-9 flex flex-wrap gap-3" style="--d: 0.5s">
-                    <a href="{{ route('register') }}" class="rounded-[10px] bg-accent px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-95">Criar conta grátis</a>
+                    <a href="{{ route('register') }}" class="rounded-[10px] bg-accent px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-95">Testar 14 dias grátis</a>
                     <a href="#como-funciona" class="rounded-[10px] border border-white/20 px-6 py-3.5 text-[15px] font-bold text-white transition hover:bg-white/5">Ver como funciona</a>
                 </div>
-                <p class="hero-rise mt-4 text-[13px] text-white/55" style="--d: 0.6s">Plano grátis com {{ $freeGenerations }} vídeos para experimentar. Sem cartão de crédito.</p>
+                <p class="hero-rise mt-4 text-[13px] text-white/55" style="--d: 0.6s">14 dias com tudo liberado, sem cartão de crédito. Depois, o plano Grátis continua.</p>
 
                 <ul class="hero-rise mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[13.5px] text-white/80" style="--d: 0.75s">
                     <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Sem app para o cliente</li>
-                    <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Da foto ao vídeo em minutos</li>
-                    <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Preço e esgotado na hora</li>
+                    <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Pedido pronto no WhatsApp</li>
+                    <li class="flex items-center gap-1.5"><x-ui.icon name="check" class="size-4 text-accent" />Sem comissão por pedido</li>
                 </ul>
             </div>
 
@@ -95,6 +97,80 @@
                         <span class="flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/40"><x-ui.icon name="alert" class="size-4" /></span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ===== Faixa dos 14 dias grátis ===== --}}
+    <section class="bg-accent/10 py-6" data-trial-strip>
+        <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center sm:px-6 md:flex-row md:text-left">
+            <div class="flex items-center gap-3">
+                <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-[#ff9a5c] text-white shadow-lg shadow-accent/25"><x-ui.icon name="sparkles" class="size-5" /></span>
+                <p class="text-[15.5px] leading-snug text-ink/80"><strong class="text-ink">14 dias com tudo liberado.</strong> Pedidos, caixa, PDV, cupons, fidelidade e motoboys, sem cartão. Depois, o plano Grátis continua com cardápio e pedidos.</p>
+            </div>
+            <a href="{{ route('register') }}" class="shrink-0 rounded-[10px] bg-accent px-6 py-3 text-[15px] font-bold text-white shadow-lg shadow-accent/25 transition hover:brightness-95">Começar o teste grátis</a>
+        </div>
+    </section>
+
+
+    {{-- ===== Como funciona ===== --}}
+    <section id="como-funciona" class="scroll-mt-20 bg-white py-20">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="font-serif text-[34px] leading-tight text-balance sm:text-[44px]">Do QR Code ao pedido no seu WhatsApp em <span class="text-accent">3 passos</span></h2>
+                <p class="mt-4 text-[17px] leading-relaxed text-pretty text-ink/60">Sem app, sem site para montar e sem digitar pedido na mão.</p>
+            </div>
+
+            <ol class="relative mt-16 grid gap-12 md:grid-cols-3 md:gap-6" data-steps>
+                <span class="absolute top-7 right-[16.66%] left-[16.66%] hidden border-t-2 border-dashed border-accent/35 md:block" aria-hidden="true"></span>
+
+                @foreach ([
+                    ['O cliente escaneia e vê o prato em vídeo', 'Aponta a câmera para o QR Code da mesa, do balcão ou do Instagram. O cardápio abre na hora.'],
+                    ['Monta o pedido do jeito dele', 'Escolhe tamanho, sabores e adicionais, retirada ou entrega, e como vai pagar.'],
+                    ['Você recebe tudo pronto', 'O pedido chega no WhatsApp e no gestor. Você aceita, prepara e acompanha até a entrega.'],
+                ] as [$title, $text])
+                    <li class="reveal-up relative flex flex-col items-center gap-5 text-center" style="--i: {{ $loop->index }}">
+                        <span class="relative z-10 flex size-14 items-center justify-center rounded-full bg-accent font-serif text-[24px] text-white ring-[10px] ring-white">{{ $loop->iteration }}</span>
+
+                        <div class="flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-night to-[#3a2416] p-4 text-white shadow-lg ring-1 ring-black/5">
+                            @if ($loop->first)
+                                <div class="flex items-center gap-4">
+                                    <span class="flex size-24 items-center justify-center rounded-2xl bg-white p-2.5 text-night"><x-ui.icon name="qr" class="size-full" /></span>
+                                    <span class="text-[22px] text-accent" aria-hidden="true">→</span>
+                                    <div class="relative h-32 w-[74px] overflow-hidden rounded-xl border-2 border-black ring-1 ring-white/20">
+                                        <img src="{{ $heroDish['image'] }}" alt="" class="size-full object-cover" loading="lazy">
+                                        <span class="absolute inset-x-1 bottom-1 rounded bg-black/55 px-1 py-0.5 text-[8px] leading-tight font-bold">{{ $heroDish['price'] }}</span>
+                                    </div>
+                                </div>
+                            @elseif ($loop->index === 1)
+                                <div class="w-full max-w-[240px] space-y-2 rounded-xl bg-white/10 p-3 text-left text-[11.5px] text-white/85 ring-1 ring-white/15">
+                                    <p class="text-[13px] font-semibold text-white">Espaguete à Bolonhesa</p>
+                                    <div class="flex gap-1.5"><span class="rounded-full bg-accent px-2 py-0.5 font-bold text-white">Médio</span><span class="rounded-full bg-white/15 px-2 py-0.5">Grande</span></div>
+                                    <p class="text-white/65">+ Queijo extra · + Bacon</p>
+                                    <div class="flex gap-1.5 pt-1"><span class="rounded-full bg-white/15 px-2 py-0.5">Retirar</span><span class="rounded-full bg-accent px-2 py-0.5 font-bold text-white">Entrega</span><span class="rounded-full bg-white/15 px-2 py-0.5">Pix</span></div>
+                                    <p class="rounded-lg bg-accent py-1.5 text-center text-[12px] font-bold text-white">Pedir pelo WhatsApp · R$ 52,90</p>
+                                </div>
+                            @else
+                                <div class="w-full max-w-[240px] space-y-1 rounded-xl bg-[#d9fdd3] p-3 text-left text-[11.5px] leading-snug text-ink shadow-lg">
+                                    <p class="font-bold">Pedido D-79CF7</p>
+                                    <p>1× Espaguete · Médio<br>+ Queijo extra, Bacon</p>
+                                    <p>Entrega: Rua das Flores, 120</p>
+                                    <p class="font-bold">Total R$ 52,90 · Pix</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <h3 class="text-[19px] font-bold">{{ $title }}</h3>
+                            <p class="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-ink/60">{{ $text }}</p>
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+
+            <div class="mt-14 flex flex-col items-center gap-2">
+                <a href="{{ route('register') }}" class="rounded-xl bg-accent px-8 py-4 text-[16px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-105">Testar 14 dias grátis</a>
+                <p class="text-[13px] text-ink/50">Sem cartão de crédito. Pronto em poucos minutos.</p>
             </div>
         </div>
     </section>
@@ -164,180 +240,120 @@
         </div>
     </section>
 
-    {{-- ===== Como funciona ===== --}}
-    <section id="como-funciona" class="scroll-mt-20 bg-white py-20">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6">
-            <div class="mx-auto max-w-2xl text-center">
-                <h2 class="font-serif text-[34px] leading-tight text-balance sm:text-[44px]">Do prato ao vídeo em <span class="text-accent">3 passos</span></h2>
-                <p class="mt-4 text-[17px] leading-relaxed text-pretty text-ink/60">Do cadastro ao primeiro cliente assistindo, em poucos minutos.</p>
-            </div>
-
-            <ol class="relative mt-16 grid gap-12 md:grid-cols-3 md:gap-6" data-steps>
-                {{-- Dashed line joining the three numbers (desktop). --}}
-                <span class="absolute top-7 right-[16.66%] left-[16.66%] hidden border-t-2 border-dashed border-accent/35 md:block" aria-hidden="true"></span>
-
-                @foreach ([
-                    ['Cadastre seus pratos', 'Nome, preço e fotos, direto do celular. Leva poucos minutos.'],
-                    ['Transformamos a foto em vídeo', 'Você confere o resultado e só vai ao ar o que você aprovar.'],
-                    ['Coloque o QR Code na mesa', 'O cliente escaneia e vê os pratos em vídeo na hora, sem baixar nada.'],
-                ] as [$title, $text])
-                    <li class="reveal-up relative flex flex-col items-center gap-5 text-center" style="--i: {{ $loop->index }}">
-                        <span class="relative z-10 flex size-14 items-center justify-center rounded-full bg-accent font-serif text-[24px] text-white ring-[10px] ring-white">{{ $loop->iteration }}</span>
-
-                        {{-- Mini scene: shows the step instead of only describing it. --}}
-                        <div class="flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-night to-[#3a2416] p-4 shadow-lg ring-1 ring-black/5">
-                            @if ($loop->first)
-                                <div class="w-full max-w-[230px] space-y-2.5 rounded-xl bg-white/10 p-3 text-left text-[11.5px] text-white/80 ring-1 ring-white/15">
-                                    <div class="flex items-center gap-2.5">
-                                        <img src="{{ $heroDish['image'] }}" alt="" class="size-11 rounded-lg object-cover" loading="lazy">
-                                        <div class="min-w-0">
-                                            <p class="truncate text-[13px] font-semibold text-white">{{ $heroDish['name'] }}</p>
-                                            <p class="font-bold text-accent">{{ $heroDish['price'] }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-1.5">
-                                        <span class="rounded-full bg-accent px-2 py-0.5 font-bold text-white">{{ $heroDish['badge'] }}</span>
-                                        <span class="rounded-full bg-white/15 px-2 py-0.5">Massas</span>
-                                    </div>
-                                    <div class="h-8 rounded-lg bg-white/10"></div>
-                                </div>
-                            @elseif ($loop->iteration === 2)
-                                <div class="flex items-center gap-4">
-                                    <img src="{{ $heroDish['image'] }}" alt="" class="h-32 w-[74px] rounded-lg object-cover shadow-lg ring-1 ring-white/15" loading="lazy">
-                                    <span class="text-[18px] text-accent" aria-hidden="true">→</span>
-                                    <video src="{{ $heroDish['video'] }}" poster="{{ $heroDish['image'] }}" class="ring-pulse h-32 w-[74px] rounded-lg object-cover shadow-lg ring-2 ring-accent" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
-                                </div>
-                            @else
-                                <div class="flex items-center gap-5">
-                                    <div class="relative size-[104px] overflow-hidden rounded-xl bg-white p-2.5 shadow-lg">
-                                        <svg viewBox="0 0 9 9" class="size-full" shape-rendering="crispEdges" aria-hidden="true">
-                                            <g fill="#161412">
-                                                <rect x="0" y="0" width="3" height="3"/><rect x="6" y="0" width="3" height="3"/><rect x="0" y="6" width="3" height="3"/>
-                                                <rect x="4" y="0" width="1" height="1"/><rect x="4" y="2" width="1" height="2"/><rect x="3" y="4" width="2" height="1"/><rect x="6" y="4" width="1" height="1"/>
-                                                <rect x="8" y="4" width="1" height="2"/><rect x="4" y="6" width="2" height="1"/><rect x="7" y="7" width="2" height="2"/><rect x="5" y="8" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/>
-                                            </g>
-                                            <g fill="#fff"><rect x="1" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/></g>
-                                        </svg>
-                                        <span class="qr-scan-line absolute inset-x-0 h-0.5 bg-accent shadow-[0_0_12px_2px_var(--color-accent)]" aria-hidden="true"></span>
-                                    </div>
-                                    <div class="flex flex-col items-start gap-2 text-left">
-                                        <span class="rounded-full bg-white/10 px-3 py-1 text-[12px] font-bold text-white ring-1 ring-white/15">Mesa 12</span>
-                                        <span class="flex items-center gap-1.5 text-[12px] font-semibold text-accent"><x-ui.icon name="media" class="size-4" />Abrindo o cardápio…</span>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div>
-                            <h3 class="text-[19px] font-bold">{{ $title }}</h3>
-                            <p class="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-ink/60">{{ $text }}</p>
-                        </div>
-                    </li>
-                @endforeach
-            </ol>
-
-            <div class="mt-14 flex flex-col items-center gap-3 text-center">
-                <a href="{{ route('register') }}" class="rounded-[10px] bg-accent px-7 py-4 text-[15px] font-bold text-white transition hover:brightness-95">Criar conta grátis</a>
-                <p class="text-[13px] text-ink/50">Pronto em poucos minutos. Sem cartão de crédito.</p>
-            </div>
-        </div>
-    </section>
-
     {{-- ===== Recursos ===== --}}
-    <section class="features-stage relative isolate overflow-hidden py-24 text-white">
+    <section id="recursos" class="features-stage relative isolate scroll-mt-20 overflow-hidden py-24 text-white">
         <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent" aria-hidden="true"></div>
         <div class="mx-auto max-w-6xl px-4 sm:px-6">
             <div class="mx-auto max-w-2xl text-center">
                 <span class="inline-block rounded-full bg-accent/15 px-3.5 py-1 text-[12px] font-bold tracking-wide text-accent uppercase ring-1 ring-accent/30">Tudo em um só lugar</span>
-                <h2 class="mt-5 font-serif text-[36px] leading-[1.1] text-balance sm:text-[50px]">Simples para você. <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">Irresistível para o cliente.</span></h2>
-                <p class="mt-5 text-[17px] leading-relaxed text-pretty text-white/75 sm:text-[18px]">Tudo se resolve pelo celular, no meio do expediente: sem técnico, sem designer e sem complicação.</p>
+                <h2 class="mt-5 font-serif text-[36px] leading-[1.1] text-balance sm:text-[50px]">Do pedido ao caixa, <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">sem planilha e sem confusão.</span></h2>
+                <p class="mt-5 text-[17px] leading-relaxed text-pretty text-white/75 sm:text-[18px]">Tudo pelo celular, no meio do expediente: sem técnico, sem designer e sem sistema caro.</p>
             </div>
 
-            {{-- Bento: three headline features with a live mini scene, three supporting ones. --}}
-            <div class="mt-14 grid gap-5 md:grid-cols-3" data-features>
-                {{-- 1. Price and sold out --}}
-                <article class="reveal-up group flex flex-col overflow-hidden rounded-3xl bg-gradient-to-b from-white/[0.09] to-white/[0.02] shadow-xl shadow-black/20 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1.5 hover:ring-accent/50 hover:shadow-accent/10" style="--i: 0">
-                    <div class="flex h-48 items-center justify-center bg-gradient-to-br from-accent/25 via-accent/[0.07] to-transparent p-5">
-                        <div class="w-full max-w-[250px] rounded-xl bg-night/70 p-3 ring-1 ring-white/15">
-                            <div class="flex items-center gap-3">
-                                <img src="{{ $heroDish['image'] }}" alt="" class="size-12 rounded-lg object-cover" loading="lazy">
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-[13px] font-semibold">{{ $heroDish['name'] }}</p>
-                                    <p class="text-[13px] font-bold text-accent">{{ $heroDish['price'] }}</p>
-                                </div>
-                                <span class="sold-switch relative h-6 w-11 shrink-0 rounded-full" aria-hidden="true"><span class="sold-knob absolute top-0.5 left-0.5 size-5 rounded-full bg-white"></span></span>
-                            </div>
-                            <div class="relative mt-3 h-6 text-[11.5px] font-bold">
-                                <span class="sold-on absolute inset-0 flex items-center gap-1.5 text-success"><span class="size-2 rounded-full bg-success"></span>Disponível</span>
-                                <span class="sold-off absolute inset-0 flex items-center gap-1.5 text-white/60"><span class="size-2 rounded-full bg-[#c0392b]"></span>Esgotado agora</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-[19px] font-bold">Preço e esgotado na hora</h3>
-                        <p class="mt-2 text-[15px] leading-relaxed text-white/70">Acabou o prato ou mudou o preço? Altere no celular e o cardápio atualiza na próxima visita.</p>
-                    </div>
-                </article>
-
-                {{-- 2. Which dishes get attention --}}
-                <article class="reveal-up group flex flex-col overflow-hidden rounded-3xl bg-gradient-to-b from-white/[0.09] to-white/[0.02] shadow-xl shadow-black/20 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1.5 hover:ring-accent/50 hover:shadow-accent/10" style="--i: 1">
-                    <div class="flex h-48 items-center justify-center bg-gradient-to-br from-accent/25 via-accent/[0.07] to-transparent p-5">
-                        <div class="w-full max-w-[250px] space-y-3 rounded-xl bg-night/70 p-4 ring-1 ring-white/15">
-                            <p class="text-[11px] font-bold tracking-wide text-white/50 uppercase">Mais assistidos</p>
-                            @foreach ([['Espaguete', '92%'], ['Picanha', '68%'], ['Risoto', '45%']] as [$dish, $width])
-                                <div class="flex items-center gap-3 text-[12px]">
-                                    <span class="w-[62px] shrink-0 text-white/80">{{ $dish }}</span>
-                                    <span class="h-2 flex-1 overflow-hidden rounded-full bg-white/10"><span class="bar-fill block h-full rounded-full bg-gradient-to-r from-accent to-amber-300" style="--w: {{ $width }}; --d: {{ $loop->index * 0.25 }}s"></span></span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-[19px] font-bold">Saiba quais pratos chamam atenção</h3>
-                        <p class="mt-2 text-[15px] leading-relaxed text-white/70">Veja visualizações e tempo assistido por prato e decida o que destacar.</p>
-                    </div>
-                </article>
-
-                {{-- 3. Brand identity --}}
-                <article class="reveal-up group flex flex-col overflow-hidden rounded-3xl bg-gradient-to-b from-white/[0.09] to-white/[0.02] shadow-xl shadow-black/20 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1.5 hover:ring-accent/50 hover:shadow-accent/10" style="--i: 2">
-                    <div class="flex h-48 items-center justify-center bg-gradient-to-br from-accent/25 via-accent/[0.07] to-transparent p-5">
-                        <div class="w-full max-w-[250px] rounded-xl bg-night/70 p-4 ring-1 ring-white/15">
-                            <div class="flex items-center gap-3">
-                                <span class="brand-swatch flex size-10 items-center justify-center rounded-full font-serif text-[18px] text-white">T</span>
-                                <span class="font-serif text-[20px]">Trattoria</span>
-                            </div>
-                            <div class="mt-4 flex items-center justify-between">
-                                <div class="flex gap-2" aria-hidden="true">
-                                    @foreach (['#FF6B3D', '#2E9E6B', '#3E7BFA', '#D94F8C'] as $swatch)
-                                        <span class="size-5 rounded-full ring-2 ring-white/20" style="background: {{ $swatch }}"></span>
-                                    @endforeach
-                                </div>
-                                <span class="brand-swatch rounded-full px-3 py-1 text-[11px] font-bold text-white">Massas</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-[19px] font-bold">A cara do seu restaurante</h3>
-                        <p class="mt-2 text-[15px] leading-relaxed text-white/70">Logo, capa, cor de destaque e fonte. O cardápio fica com a sua identidade.</p>
-                    </div>
-                </article>
-
-                {{-- Supporting features --}}
+            <div class="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3" data-features>
                 @foreach ([
-                    ['check', 'Nada vai ao ar sem você aprovar', 'Você confere o vídeo e só publica se ele representar o prato de verdade.'],
-                    ['qr', 'QR Code que nunca muda', 'Imprima uma vez e edite pratos, categorias e aparência quando quiser.'],
-                    ['home', 'Sem app para o cliente', 'O cliente aponta a câmera e o cardápio abre no navegador, em segundos.'],
+                    ['orders', 'Pedidos direto do cardápio', 'Carrinho com tamanhos, adicionais, pizza por sabores e produtos por kg. O servidor confere cada preço.'],
+                    ['receipt', 'Gestor de pedidos', 'Novos, em preparo, em rota e finalizados num quadro. Aviso sonoro, comanda para impressora e link de acompanhamento para o cliente.'],
+                    ['bike', 'Entrega do seu jeito', 'Taxa por bairro ou por distância, pedido mínimo, frete grátis e motoboy com link próprio e acerto no caixa.'],
+                    ['cash', 'Caixa, fiado e relatório', 'Abra e feche o caixa, controle o fiado e veja vendas por forma de pagamento e por origem.'],
+                    ['pos', 'PDV de balcão', 'Venda rápida no balcão, com pagamento dividido e tudo entrando no mesmo caixa.'],
+                    ['tag', 'Cupons e fidelidade', 'Códigos de desconto com link para divulgar e cartão de selos que traz o cliente de volta.'],
+                    ['chart', 'Saiba o que vende', 'Funil do cardápio ao pedido, produtos mais pedidos e horário de pico.'],
+                    ['sparkles', 'Foto vira vídeo', 'Cada prato ganha um clipe curto com IA, e só vai ao ar o que você aprovar.'],
+                    ['qr', 'Sua marca, QR Code fixo', 'Logo, cor e fonte do restaurante, e um QR Code que você imprime uma vez só, com display de mesa.'],
                 ] as $i => [$icon, $title, $text])
-                    <article class="reveal-up flex items-start gap-4 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1 hover:ring-accent/50" style="--i: {{ $i }}">
+                    <article class="reveal-up flex items-start gap-4 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 ring-1 ring-white/10 transition duration-300 hover:-translate-y-1 hover:ring-accent/40" style="--i: {{ $i % 3 }}">
                         <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-[#ff9a5c] text-white shadow-lg shadow-accent/30"><x-ui.icon :name="$icon" class="size-6" /></span>
                         <div>
-                            <h3 class="text-[16.5px] font-bold">{{ $title }}</h3>
+                            <h3 class="text-[17px] font-bold">{{ $title }}</h3>
                             <p class="mt-1.5 text-[14.5px] leading-relaxed text-white/70">{{ $text }}</p>
                         </div>
                     </article>
                 @endforeach
             </div>
         </div>
+    </section>
+
+
+    {{-- ===== Comparativo de mensagens ===== --}}
+    <section id="comparativo" class="scroll-mt-20 bg-white py-20" data-comparison>
+        <div class="mx-auto max-w-5xl px-4 sm:px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="font-serif text-[34px] leading-tight text-balance sm:text-[44px]">11 mensagens para fechar um pedido, ou <span class="text-accent">1 mensagem</span> pronta</h2>
+                <p class="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-pretty text-ink/65">No pedido por conversa, você pergunta tudo. No cardápio do Degusta o cliente escolhe, e o pedido chega completo no seu WhatsApp.</p>
+            </div>
+
+            <div class="mt-12 grid gap-6 md:grid-cols-2">
+                <div class="rounded-3xl bg-sand p-6 ring-1 ring-black/5" data-comparison-chat>
+                    <p class="text-[13px] font-bold tracking-wide text-ink/50 uppercase">Pedido por conversa · 11 mensagens</p>
+                    <ol class="mt-4 flex flex-col gap-2 text-[14px] text-ink/75">
+                        @foreach (['Oi, vocês estão abertos?', 'Estamos! Qual o seu pedido?', 'Quero um X-Bacon', 'Qual tamanho? Quer adicional?', 'Médio, com bacon extra', 'Mais alguma coisa?', 'Uma Coca 2L', 'Qual o endereço?', 'Rua das Flores, 120', 'Total R$ 48,90 + entrega. Pix ou dinheiro?', 'Pix'] as $index => $line)
+                            <li class="flex gap-2 {{ $index % 2 === 0 ? '' : 'justify-end' }}"><span class="rounded-2xl px-3 py-1.5 {{ $index % 2 === 0 ? 'bg-white' : 'bg-accent/15' }}">{{ $line }}</span></li>
+                        @endforeach
+                    </ol>
+                </div>
+                <div class="rounded-3xl bg-night p-6 text-white shadow-xl" data-comparison-one>
+                    <p class="text-[13px] font-bold tracking-wide text-accent uppercase">Com o Degusta · 1 mensagem</p>
+                    <div class="mt-4 rounded-2xl bg-white/10 p-4 text-[14px] leading-relaxed text-white/90">
+                        <p class="font-bold">Pedido D-79CF7</p>
+                        <p class="mt-1">1× X-Bacon · Médio<br>+ Bacon extra<br>1× Coca-Cola 2L</p>
+                        <p class="mt-2">Entrega: Rua das Flores, 120 · Centro</p>
+                        <p class="mt-2 font-bold">Total: R$ 48,90 · Pix</p>
+                    </div>
+                    <p class="mt-4 text-[14px] text-white/70">Itens, adicionais, endereço, taxa e forma de pagamento já vêm certos. Você só confirma.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ===== Calculadora de comissão ===== --}}
+    @php
+        $commissionRates = config('landing.commission_rates');
+        $defaultSales = (int) config('landing.commission_default_sales');
+    @endphp
+    <section id="comissao" class="scroll-mt-20 bg-sand py-20" data-commission data-rates="{{ implode(',', $commissionRates) }}">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="font-serif text-[34px] leading-tight text-balance sm:text-[44px]">Sem comissão: quanto os apps de delivery <span class="text-accent">levam de você</span>?</h2>
+                <p class="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-pretty text-ink/65">Digite quanto você vende por mês e veja a comissão. No Degusta você paga só o plano: o pedido é seu, e o Pix cai direto na sua conta.</p>
+            </div>
+
+            <div class="mt-10 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
+                <label class="flex flex-col gap-2 text-[14px] font-bold text-ink">
+                    Quanto você vende por mês (R$)
+                    <input type="number" min="0" step="100" value="{{ $defaultSales }}" inputmode="numeric" class="w-full rounded-xl border border-ink/15 px-4 py-3 text-[18px] font-bold" data-commission-sales>
+                </label>
+
+                <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                    @foreach ($commissionRates as $rate)
+                        <div class="rounded-2xl bg-sand p-4 text-center" data-commission-card="{{ $rate }}">
+                            <p class="text-[12px] font-bold tracking-wide text-ink/50 uppercase">App que cobra {{ $rate }}%</p>
+                            <p class="mt-1 text-[24px] font-extrabold text-accent" data-commission-month>{{ Money::brl($defaultSales * $rate / 100) }}</p>
+                            <p class="text-[12.5px] text-ink/55">por mês · <span data-commission-year>{{ Money::brl($defaultSales * $rate / 100 * 12) }}</span> por ano</p>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="mt-4 text-center text-[12.5px] text-ink/50">Comissão = vendas × percentual. Os percentuais são exemplos do que os apps costumam cobrar.</p>
+            </div>
+        </div>
+        <script>
+            (() => {
+                const root = document.querySelector('[data-commission]');
+                const input = root?.querySelector('[data-commission-sales]');
+                const brl = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                input?.addEventListener('input', () => {
+                    const sales = Math.max(0, Number(input.value) || 0);
+
+                    root.querySelectorAll('[data-commission-card]').forEach((card) => {
+                        const commission = sales * Number(card.dataset.commissionCard) / 100;
+
+                        card.querySelector('[data-commission-month]').textContent = brl(commission);
+                        card.querySelector('[data-commission-year]').textContent = brl(commission * 12);
+                    });
+                });
+            })();
+        </script>
     </section>
 
     {{-- ===== Planos ===== --}}
@@ -348,6 +364,7 @@
                     <span class="inline-block rounded-full bg-accent/10 px-3.5 py-1 text-[12px] font-bold tracking-wide text-accent uppercase ring-1 ring-accent/25">Planos</span>
                     <h2 class="mt-5 font-serif text-[36px] leading-[1.1] text-balance sm:text-[48px]">Comece grátis. <span class="text-accent">Cresça quando fizer sentido.</span></h2>
                     <p class="mt-5 text-[17px] leading-relaxed text-pretty text-ink/65">Sem fidelidade: cancele quando quiser, pelo próprio painel.</p>
+                    <p class="mt-3 inline-block rounded-full bg-accent/10 px-4 py-1.5 text-[14px] font-bold text-accent ring-1 ring-accent/25" data-trial-offer>🎁 Todo cadastro começa com 14 dias de tudo liberado, sem cartão.</p>
                 </div>
 
                 <div class="mt-14 grid items-stretch gap-6 {{ $plans->count() >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2' }}">
@@ -398,6 +415,15 @@
 
                                 if ($plan->qr_customization) {
                                     $lines[] = ['Personalize o QR Code e o display: estilo, logo, modelos e textos', false];
+                                }
+
+                                // What the plan includes for taking orders (the free plan has all of it during the 14-day trial).
+                                $lines[] = ['Receba pedidos pelo cardápio, com gestor de pedidos e comanda', true];
+
+                                foreach (['cash' => 'Caixa, fiado e relatório de vendas', 'pdv' => 'PDV para vender no balcão', 'promo_codes' => 'Cupons de desconto', 'loyalty' => 'Cartão fidelidade', 'couriers' => 'Motoboys com link próprio e acerto'] as $feature => $featureLabel) {
+                                    if ($plan->hasFeature($feature)) {
+                                        $lines[] = [$featureLabel, false];
+                                    }
                                 }
 
                                 array_push($lines,
@@ -453,6 +479,52 @@
                 @endif
             </div>
         </section>
+
+        {{-- What each plan keeps once the 14-day trial is over. --}}
+        <section class="bg-white py-16" data-plan-matrix>
+            <div class="mx-auto max-w-4xl px-4 sm:px-6">
+                <h3 class="text-center font-serif text-[28px] leading-tight sm:text-[34px]">O que cada plano inclui</h3>
+                <p class="mx-auto mt-3 max-w-xl text-center text-[15px] text-ink/60">Nos primeiros 14 dias todo cadastro tem tudo liberado. Depois, vale a tabela abaixo.</p>
+                <div class="mt-8 overflow-x-auto rounded-2xl ring-1 ring-black/[0.06]">
+                    <table class="w-full min-w-[520px] text-left text-[14.5px]">
+                        <thead class="bg-sand text-[13px] font-bold text-ink/70">
+                            <tr><th class="px-5 py-3.5">Recurso</th>@foreach ($plans as $plan)<th class="px-4 py-3.5 text-center">{{ $plan->name }}</th>@endforeach</tr>
+                        </thead>
+                        <tbody class="divide-y divide-black/[0.05]">
+                            @foreach ([
+                                ['Cardápio, pedidos e gestor de pedidos', 'orders'],
+                                ['Caixa, fiado e relatório', 'cash'],
+                                ['PDV de balcão', 'pdv'],
+                                ['Cupons de desconto', 'promo_codes'],
+                                ['Cartão fidelidade', 'loyalty'],
+                                ['Motoboys com link e acerto', 'couriers'],
+                            ] as [$label, $feature])
+                                <tr>
+                                    <td class="px-5 py-3">{{ $label }}</td>
+                                    @foreach ($plans as $plan)
+                                        <td class="px-4 py-3 text-center">{!! $plan->hasFeature($feature) ? '<span class="font-bold text-success" aria-label="Incluído">✓</span>' : '<span class="text-ink/30" aria-label="Não incluído">—</span>' !!}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            <tr>
+                                <td class="px-5 py-3">Estatísticas</td>
+                                @foreach ($plans as $plan)
+                                    <td class="px-4 py-3 text-center text-[13px] text-ink/70">{{ ['cardapio_total' => 'Total', 'por_prato' => 'Por prato', 'por_prato_com_tempo_assistido' => 'Por prato + tempo'][$plan->metricsLevel?->slug] ?? '—' }}</td>
+                                @endforeach
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3">Produtos no cardápio</td>
+                                @foreach ($plans as $plan)
+                                    <td class="px-4 py-3 text-center text-[13px] text-ink/70">{{ $plan->dish_limit ?? 'Ilimitados' }}</td>
+                                @endforeach
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-4 text-center text-[13px] text-ink/50">Sem comissão por pedido em nenhum plano.</p>
+            </div>
+        </section>
+
     @endif
 
     {{-- ===== Perguntas frequentes ===== --}}
@@ -493,11 +565,11 @@
         <div class="cta-overlay pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
 
         <div class="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 text-center sm:px-6">
-            <h2 class="font-serif text-[36px] leading-[1.1] text-balance sm:text-[52px]">Seu primeiro prato em vídeo pode estar <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">no ar hoje.</span></h2>
-            <p class="max-w-xl text-[17px] leading-relaxed text-pretty text-white/80 sm:text-[18px]">Crie sua conta grátis, cadastre o primeiro prato e veja o vídeo pronto em minutos.</p>
+            <h2 class="font-serif text-[36px] leading-[1.1] text-balance sm:text-[52px]">Seu cardápio em vídeo, já recebendo pedidos, pode estar <span class="bg-gradient-to-r from-accent to-amber-300 bg-clip-text text-transparent">no ar hoje.</span></h2>
+            <p class="max-w-xl text-[17px] leading-relaxed text-pretty text-white/80 sm:text-[18px]">Crie a conta, cadastre o primeiro prato e teste 14 dias com tudo liberado: pedidos, caixa, cupons e motoboys.</p>
             <div class="mt-2 flex flex-col items-center gap-3">
-                <a href="{{ route('register') }}" class="rounded-xl bg-accent px-8 py-4 text-[16px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-105">Criar conta grátis</a>
-                <p class="text-[13px] text-white/60">Sem cartão de crédito. Cancele quando quiser.</p>
+                <a href="{{ route('register') }}" class="rounded-xl bg-accent px-8 py-4 text-[16px] font-bold text-white shadow-lg shadow-accent/30 transition hover:brightness-105">Testar 14 dias grátis</a>
+                <p class="text-[13px] text-white/60">Sem cartão de crédito. Depois dos 14 dias, o plano Grátis continua.</p>
             </div>
         </div>
     </section>

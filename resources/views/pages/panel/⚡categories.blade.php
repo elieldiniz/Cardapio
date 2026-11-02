@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Menu\MoveCategory;
+use App\Actions\Menu\SaveCategory;
 use App\Models\Category;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -18,9 +19,52 @@ new #[Layout('layouts::panel')] #[Title('Categorias')] class extends Component
      */
     public array $names = [];
 
+    // Detalhes (ícone e horário próprio) da categoria que está sendo editada.
+    public ?int $editingId = null;
+
+    public string $icon = '';
+
+    public string $shows_from = '';
+
+    public string $shows_until = '';
+
     public function mount(): void
     {
         $this->names = $this->categories->pluck('name', 'id')->all();
+    }
+
+    public function editDetails(int $categoryId): void
+    {
+        if ($this->editingId === $categoryId) {
+            $this->editingId = null;
+
+            return;
+        }
+
+        $category = $this->findCategory($categoryId);
+
+        $this->resetErrorBag();
+        $this->editingId = $category->id;
+        $this->icon = (string) $category->icon;
+        $this->shows_from = $category->shows_from ? substr($category->shows_from, 0, 5) : '';
+        $this->shows_until = $category->shows_until ? substr($category->shows_until, 0, 5) : '';
+    }
+
+    public function saveDetails(SaveCategory $saveCategory): void
+    {
+        $category = $this->findCategory((int) $this->editingId);
+
+        $saveCategory->handle(auth()->user()->restaurant, [
+            'name' => $this->names[$category->id] ?? $category->name,
+            'icon' => $this->icon,
+            'shows_from' => $this->shows_from,
+            'shows_until' => $this->shows_until,
+        ], $category);
+
+        $this->editingId = null;
+        unset($this->categories);
+
+        $this->dispatch('toast', message: 'Categoria atualizada.');
     }
 
     #[Computed]
@@ -92,7 +136,7 @@ new #[Layout('layouts::panel')] #[Title('Categorias')] class extends Component
 
     <x-ui.card>
         @if ($this->categories->isEmpty())
-            <x-ui.empty-state icon="categories" title="Nenhuma categoria ainda" description="Crie categorias como Burgers, Bebidas ou Sobremesas para organizar os pratos no feed." />
+            <x-ui.empty-state icon="categories" title="Nenhuma categoria ainda" description="Crie categorias como Burgers, Bebidas ou Sobremesas para organizar os produtos no feed." />
         @else
             <ul wire:sort="sortCategory" class="flex flex-col" data-category-list>
                 @foreach ($this->categories as $category)
@@ -105,6 +149,9 @@ new #[Layout('layouts::panel')] #[Title('Categorias')] class extends Component
                             <x-ui.icon name="grip" />
                         </button>
                         <span class="w-5 text-[13px] font-semibold text-ink/35">{{ $loop->iteration }}</span>
+                        @if ($category->icon)
+                            <span class="text-[18px] leading-none" aria-hidden="true">{{ $category->icon }}</span>
+                        @endif
 
                         <div class="flex min-w-0 flex-1 flex-col">
                             <input
@@ -119,12 +166,37 @@ new #[Layout('layouts::panel')] #[Title('Categorias')] class extends Component
                             @enderror
                         </div>
 
-                        <span class="hidden text-[12px] font-medium text-ink/40 sm:inline">{{ $category->dishes_count }} {{ $category->dishes_count === 1 ? 'prato' : 'pratos' }}</span>
+                        <span class="hidden text-[12px] font-medium text-ink/40 sm:inline">{{ $category->dishes_count }} {{ $category->dishes_count === 1 ? 'produto' : 'produtos' }}</span>
+
+                        @if ($category->shows_from && $category->shows_until)
+                            <span class="hidden rounded-full bg-ink/[0.06] px-2.5 py-1 text-[11.5px] font-semibold text-ink/55 sm:inline" data-category-window>{{ substr($category->shows_from, 0, 5) }}–{{ substr($category->shows_until, 0, 5) }}</span>
+                        @endif
+
+                        <x-ui.button size="sm" variant="ghost" wire:click="editDetails({{ $category->id }})" data-edit-details>Detalhes</x-ui.button>
 
                         <x-ui.button size="sm" variant="ghost" wire:click="toggleVisibility({{ $category->id }})">
                             {{ $category->is_visible ? 'Ocultar' : 'Mostrar' }}
                         </x-ui.button>
                     </li>
+                    @if ($editingId === $category->id)
+                        <li wire:key="category-details-{{ $category->id }}" class="border-b border-ink/[0.06] bg-ink/[0.03] px-3 py-3" data-category-details>
+                            <form wire:submit="saveDetails" class="grid gap-3 sm:grid-cols-4">
+                                <x-ui.field label="Ícone" for="icon-{{ $category->id }}" error="icon" hint="Um emoji, ex.: 🍕">
+                                    <x-ui.input id="icon-{{ $category->id }}" wire:model="icon" maxlength="16" />
+                                </x-ui.field>
+                                <x-ui.field label="Mostrar a partir de" for="from-{{ $category->id }}" error="shows_from" hint="Vazio = sempre.">
+                                    <x-ui.input id="from-{{ $category->id }}" type="time" wire:model="shows_from" />
+                                </x-ui.field>
+                                <x-ui.field label="Mostrar até" for="until-{{ $category->id }}" error="shows_until" hint="Se for antes do início, passa da meia-noite.">
+                                    <x-ui.input id="until-{{ $category->id }}" type="time" wire:model="shows_until" />
+                                </x-ui.field>
+                                <div class="flex items-end">
+                                    <x-ui.button type="submit" size="sm">Salvar detalhes</x-ui.button>
+                                </div>
+                            </form>
+                            <p class="mt-2 text-[12px] text-ink/50">Ex.: cardápio do almoço das 11:00 às 15:00. Fora desse horário a categoria some do cardápio.</p>
+                        </li>
+                    @endif
                 @endforeach
             </ul>
         @endif

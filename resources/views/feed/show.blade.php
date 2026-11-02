@@ -13,6 +13,7 @@
       $grid             array<array{id, category_id, name, sold_out, thumb_url}>  every feed-eligible dish
       $trackUrl         string|null      watch-time endpoint (Phase 14.3)
       $preview          bool             appearance live preview inside the panel (Phase 16)
+      $order            array|null       cart catalog + store rules; null when the store takes no orders (RF-04)
       $openDishId       int|null         shared link (?prato=): open the feed straight on this dish
       $meta             array{title, description, image, url}|null  link preview (Open Graph)
 --}}
@@ -21,11 +22,13 @@
     $preview ??= false;
     $openDishId ??= null;
     $meta ??= null;
+    $order ??= null;
+    $ordering = $order !== null && ! $preview;
     $fonts = config('feed.fonts');
     $font = array_key_exists($restaurant['font'] ?? '', $fonts) ? $restaurant['font'] : config('feed.default_font');
 @endphp
 <!DOCTYPE html>
-<html lang="pt-BR" style="--accent: {{ $restaurant['accent'] }}; --feed-display-font: '{{ $font }}';">
+<html lang="pt-BR" data-menu-style="{{ $restaurant['style'] ?? 'vidro' }}" style="--accent: {{ $restaurant['accent'] }}; --feed-display-font: '{{ $font }}';">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -128,6 +131,13 @@
         </div>
 
         @include('feed.partials.detail-sheet')
+
+        @if ($ordering)
+            {{-- Ordering (RF-04, RF-06): the catalog travels as JSON; resources/js/cart.js loads on demand. --}}
+            <script type="application/json" data-order-config>@json($order, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
+            @include('feed.partials.cart-bar')
+            @include('feed.partials.cart-sheet')
+        @endif
 
         @if ($restaurant['show_branding'])
             <a class="feed-branding" href="{{ url('/') }}" target="_blank" rel="noopener">feito com <strong>{{ config('app.name') }}</strong></a>

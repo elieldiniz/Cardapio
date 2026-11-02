@@ -16,6 +16,8 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
 
     public string $font = '';
 
+    public string $menu_style = 'vidro';
+
     public string $description = '';
 
     /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
@@ -30,6 +32,7 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
 
         $this->accent_color = $restaurant->accentColor();
         $this->font = $restaurant->font ?: config('feed.default_font');
+        $this->menu_style = $restaurant->menuStyle();
         $this->description = (string) $restaurant->description;
     }
 
@@ -54,6 +57,7 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
         return [
             'accent_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'font' => ['required', Rule::in(array_keys(config('feed.fonts')))],
+            'menu_style' => ['required', Rule::in(array_keys(config('feed.styles')))],
             'logo' => ['nullable', 'image', 'max:4096'],
             'cover' => ['nullable', 'image', 'max:8192'],
             'description' => ['nullable', 'string', 'max:200'],
@@ -79,6 +83,7 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
         $attributes = [
             'accent_color' => strtoupper($this->accent_color),
             'font' => $this->font,
+            'menu_style' => $this->menu_style,
             'description' => trim($this->description) ?: null,
         ];
 
@@ -117,13 +122,14 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
                     type: 'appearance',
                     accent: $wire.accent_color,
                     font: $wire.font,
+                    menuStyle: $wire.menu_style,
                     logoUrl: this.$root.dataset.logoUrl || null,
                     coverUrl: this.$root.dataset.coverUrl || null,
                     description: $wire.description,
                 }, window.location.origin);
             },
         }"
-        x-init="$watch('$wire.accent_color', () => send()); $watch('$wire.font', () => send()); $watch('$wire.description', () => send())"
+        x-init="$watch('$wire.accent_color', () => send()); $watch('$wire.font', () => send()); $watch('$wire.menu_style', () => send()); $watch('$wire.description', () => send())"
         data-logo-url="{{ $logoPreview }}"
         data-cover-url="{{ $coverPreview }}"
     >
@@ -155,7 +161,7 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
                         <span class="{{ $coverPreview ? 'rounded-md bg-ink/60 px-2.5 py-1 text-white' : '' }}">{{ $coverPreview ? 'Trocar capa' : 'Enviar foto de capa' }}</span>
                         <input type="file" wire:model="cover" accept="image/*" class="sr-only">
                     </label>
-                    <span class="text-[12px] text-ink/45">Aparece no topo do cardápio, atrás do logo. Use uma foto horizontal do salão ou de um prato.</span>
+                    <span class="text-[12px] text-ink/45">Aparece no topo do cardápio, atrás do logo. Use uma foto horizontal do salão ou de um produto.</span>
                     <div wire:loading wire:target="cover" class="text-[12.5px] text-ink/55">Enviando…</div>
                     @error('cover') <span class="text-[12px] text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -182,6 +188,20 @@ new #[Layout('layouts::panel')] #[Title('Aparência')] class extends Component
                         </label>
                     </div>
                     @error('accent_color') <span class="text-[12px] text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="flex flex-col gap-2.5" data-menu-styles>
+                    <span class="text-[14px] font-bold text-ink">Estilo do cardápio</span>
+                    <div class="grid gap-2 sm:grid-cols-3">
+                        @foreach (config('feed.styles') as $key => $option)
+                            <label class="flex cursor-pointer flex-col rounded-xl border p-3 text-[13px] has-[:checked]:border-accent has-[:checked]:bg-accent/5">
+                                <input type="radio" wire:model.live="menu_style" value="{{ $key }}" class="sr-only" data-menu-style="{{ $key }}">
+                                <span class="font-bold text-ink">{{ $option['label'] }}</span>
+                                <span class="text-ink/55">{{ $option['hint'] }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('menu_style') <span class="text-[12px] text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <x-ui.field label="Fonte dos títulos" for="font" error="font">

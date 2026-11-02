@@ -190,8 +190,8 @@ new #[Layout('layouts::panel')] class extends Component
         $this->validate([
             'selectedPhotoIds' => ['required', 'array', 'min:1', 'max:'.RequestVideoGeneration::MAX_PHOTOS],
         ], [
-            'selectedPhotoIds.required' => 'Escolha a foto do prato.',
-            'selectedPhotoIds.min' => 'Escolha a foto do prato.',
+            'selectedPhotoIds.required' => 'Escolha a foto do produto.',
+            'selectedPhotoIds.min' => 'Escolha a foto do produto.',
             'selectedPhotoIds.max' => 'Escolha apenas 1 foto.',
         ]);
 
@@ -363,7 +363,7 @@ new #[Layout('layouts::panel')] class extends Component
 
 <div class="flex flex-col gap-[18px]" @if ($this->isWorking) wire:poll.5s @endif>
     <x-ui.page-header :title="'Vídeo · '.$this->dish->name" subtitle="Nada vai ao ar sem a sua aprovação.">
-        <x-ui.button variant="secondary" :href="route('panel.dishes.edit', $this->dish)" wire:navigate>Voltar ao prato</x-ui.button>
+        <x-ui.button variant="secondary" :href="route('panel.dishes.edit', $this->dish)" wire:navigate>Voltar ao produto</x-ui.button>
     </x-ui.page-header>
 
     <x-ui.card title="Vídeo no cardápio">
@@ -389,7 +389,7 @@ new #[Layout('layouts::panel')] class extends Component
                 </div>
             </div>
         @else
-            <x-ui.empty-state icon="media" title="Sem vídeo aprovado" description="Este prato ainda não aparece no feed. Gere um vídeo por IA ou envie um vídeo próprio e aprove." />
+            <x-ui.empty-state icon="media" title="Sem vídeo aprovado" description="Este produto ainda não aparece no feed. Gere um vídeo por IA ou envie um vídeo próprio e aprove." />
         @endif
     </x-ui.card>
 
@@ -409,17 +409,17 @@ new #[Layout('layouts::panel')] class extends Component
         @elseif ($showGenerateForm)
             <form wire:submit="generate" class="flex flex-col gap-4" data-generate-form>
                 <div class="rounded-xl bg-sand/70 p-3.5 text-[13px] leading-relaxed text-ink/70">
-                    <strong class="text-ink">Escolha a melhor foto do prato:</strong> bem iluminada, com o prato inteiro à mostra. O vídeo é criado a partir dela e ela também vira a <strong class="text-ink">capa do vídeo</strong> no cardápio.
+                    <strong class="text-ink">Escolha a melhor foto do produto:</strong> bem iluminada, com o produto inteiro à mostra. O vídeo é criado a partir dela e ela também vira a <strong class="text-ink">capa do vídeo</strong> no cardápio.
                 </div>
 
                 @php $chosen = $this->dish->photos->firstWhere('id', $selectedPhotoIds[0] ?? null); @endphp
                 <div data-photo-slot>
-                    <p class="mb-2 text-[12px] font-semibold text-ink/60">Foto do prato (vira a capa do vídeo)</p>
+                    <p class="mb-2 text-[12px] font-semibold text-ink/60">Foto do produto (vira a capa do vídeo)</p>
                     <div class="flex flex-wrap items-center gap-4">
                         {{-- One slot: the chosen photo. Clicking it opens the picker, and a new upload replaces it. --}}
                         <label class="relative flex size-32 cursor-pointer overflow-hidden rounded-xl bg-ink/[0.06] ring-2 ring-accent transition hover:brightness-95" data-photo-replace>
                             @if ($chosen)
-                                <img src="{{ Storage::disk('public')->url($chosen->file_path) }}" alt="Foto escolhida do prato" class="size-full object-cover">
+                                <img src="{{ Storage::disk('public')->url($chosen->file_path) }}" alt="Foto escolhida do produto" class="size-full object-cover">
                                 <span class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-black/60 py-1.5 text-[12px] font-bold text-white"><x-ui.icon name="upload" class="size-3.5" />Trocar foto</span>
                             @else
                                 <span class="flex size-full flex-col items-center justify-center gap-1.5 text-[12.5px] font-semibold text-ink/55"><x-ui.icon name="upload" />Enviar foto</span>
@@ -458,8 +458,8 @@ new #[Layout('layouts::panel')] class extends Component
 
                         <div>
                             <label for="prompt" class="mb-1.5 block text-[12px] font-semibold text-ink/60">Como você quer o vídeo?</label>
-                            <x-ui.textarea id="prompt" wire:model="prompt" rows="6" maxlength="{{ RequestVideoGeneration::PROMPT_MAX }}" placeholder="Ex.: a câmera se aproxima devagar do prato" />
-                            <p class="mt-1.5 text-[12px] leading-relaxed text-ink/50" data-style-hint>Não exagere: descreva só o movimento e mantenha o prato como ele realmente é. Assim o cliente sente o sabor mais de perto.</p>
+                            <x-ui.textarea id="prompt" wire:model="prompt" rows="6" maxlength="{{ RequestVideoGeneration::PROMPT_MAX }}" placeholder="Ex.: a câmera se aproxima devagar do produto" />
+                            <p class="mt-1.5 text-[12px] leading-relaxed text-ink/50" data-style-hint>Não exagere: descreva só o movimento e mantenha o produto como ele realmente é. Assim o cliente sente o sabor mais de perto.</p>
                             @error('prompt') <p class="mt-1.5 text-[12px] text-danger">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -495,7 +495,7 @@ new #[Layout('layouts::panel')] class extends Component
                 </div>
             </form>
         @elseif (! $latestGeneration)
-            <p class="text-[13.5px] text-ink/55">Transforme as fotos do prato num vídeo curto, sempre no mesmo estilo visual.</p>
+            <p class="text-[13.5px] text-ink/55">Transforme as fotos do produto num vídeo curto, sempre no mesmo estilo visual.</p>
         @endif
 
         {{-- ===== Rodadas de geração ===== --}}
@@ -546,7 +546,7 @@ new #[Layout('layouts::panel')] class extends Component
             <ul class="flex flex-col gap-1 rounded-xl bg-sand/70 p-3.5 text-[13px] text-ink/70">
                 <li><strong class="text-ink">Vertical</strong> (celular em pé, 9:16)</li>
                 <li><strong class="text-ink">De 5 a 15 segundos</strong> — vídeos fora disso são recusados</li>
-                <li><strong class="text-ink">Prato em destaque</strong>, bem iluminado</li>
+                <li><strong class="text-ink">Produto em destaque</strong>, bem iluminado</li>
                 <li class="text-ink/50">Enviar vídeo próprio não consome gerações.</li>
             </ul>
 
@@ -556,7 +556,7 @@ new #[Layout('layouts::panel')] class extends Component
                 @endif
                 <div class="flex flex-col gap-1 text-[13px]">
                     <strong class="text-ink">Capa do vídeo (opcional)</strong>
-                    <span class="text-ink/55">{{ $pendingCover ? 'Será a capa do próximo vídeo que você enviar.' : 'Uma foto do prato que aparece antes do vídeo e na grade do cardápio. Sem ela, usamos um quadro do vídeo.' }}</span>
+                    <span class="text-ink/55">{{ $pendingCover ? 'Será a capa do próximo vídeo que você enviar.' : 'Uma foto do produto que aparece antes do vídeo e na grade do cardápio. Sem ela, usamos um quadro do vídeo.' }}</span>
                 </div>
                 <div class="ml-auto flex items-center gap-2">
                     @if ($pendingCover)
@@ -602,7 +602,7 @@ new #[Layout('layouts::panel')] class extends Component
     {{-- Confirmation before taking the live video off the cardápio. --}}
     @if ($active)
         <x-ui.modal wire:model="confirmingRemoval" title="Remover este vídeo?">
-            <p class="text-[14px] leading-relaxed text-ink/70">O vídeo sai do cardápio e é apagado de vez. O prato deixa de aparecer no feed até você aprovar outro vídeo. <strong class="text-ink">Não dá para desfazer.</strong></p>
+            <p class="text-[14px] leading-relaxed text-ink/70">O vídeo sai do cardápio e é apagado de vez. O produto deixa de aparecer no feed até você aprovar outro vídeo. <strong class="text-ink">Não dá para desfazer.</strong></p>
             <x-slot:footer>
                 <x-ui.button variant="secondary" class="flex-1" wire:click="$set('confirmingRemoval', false)" data-cancel-remove>Cancelar</x-ui.button>
                 <x-ui.button class="flex-1 !bg-danger" wire:click="removeLive" wire:loading.attr="disabled" wire:target="removeLive" data-confirm-remove>Sim, remover</x-ui.button>
@@ -656,7 +656,7 @@ new #[Layout('layouts::panel')] class extends Component
                 await this.put(result.upload_url, file);
                 await $wire.uploadFinished();
             } catch {
-                this.error = 'O envio falhou. Verifique a conexão e tente de novo — os dados do prato continuam salvos.';
+                this.error = 'O envio falhou. Verifique a conexão e tente de novo — os dados do produto continuam salvos.';
             } finally {
                 this.busy = false;
             }
