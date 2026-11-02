@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 it('lists all the videos without a search', function () {
-    Livewire::actingAs($this->dono)->test('pages::panel.help')->assertSee('Abrir e fechar o caixa')->assertSee('Cupons e cartão fidelidade');
+    Livewire::actingAs($this->dono)->test('pages::panel.help')->assertSee('Abrir e fechar o caixa')->assertSee('Criar um cupom de desconto');
 });
 
 it('finds videos by a term in the title, description or tags, ignoring case and accents', function (string $term, string $expected) {
@@ -20,7 +20,7 @@ it('finds videos by a term in the title, description or tags, ignoring case and 
 })->with([
     'tag' => ['SANGRIA', 'Abrir e fechar o caixa'],
     'sem acento' => ['promocao', 'Cadastrar produtos, complementos e pizzas'],
-    'descrição' => ['selos', 'Cupons e cartão fidelidade'],
+    'descrição' => ['selos', 'Cartão fidelidade'],
 ]);
 
 it('shows an empty state when nothing matches', function () {
@@ -37,4 +37,14 @@ it('shows the support WhatsApp only when it is configured', function () {
 
 it('is reachable from the menu', function () {
     $this->actingAs($this->dono)->get(route('panel.help'))->assertOk()->assertSee('Ajuda');
+});
+
+it('plays a recorded video inside the card when the video is an mp4 of the app', function () {
+    Livewire::actingAs($this->dono)->test('pages::panel.help')->set('search', 'cupom')->assertSeeHtml('data-help-player')->assertSeeHtml('/videos/ajuda/cupons.mp4');
+
+    expect(file_exists(public_path('videos/ajuda/cupons.mp4')))->toBeTrue();
+});
+
+it('shows "Vídeo em breve" for a topic that has no video yet', function () {
+    Livewire::actingAs($this->dono)->test('pages::panel.help')->set('search', 'fidelidade')->assertSee('Vídeo em breve');
 });

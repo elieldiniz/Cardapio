@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Central de ajuda em vídeo (RF-24). Cada vídeo tem `url` (YouTube, Vimeo ou arquivo); enquanto estiver
+ * Central de ajuda em vídeo (RF-24). Cada vídeo tem `url` (arquivo MP4 em public/videos/ajuda, ou um link externo); enquanto estiver
  * nulo, a tela mostra "Vídeo em breve". `tags` alimentam a busca. Para adicionar um vídeo, basta um item novo.
  */
 return [
@@ -15,7 +15,8 @@ return [
         ['title' => 'Receber e acompanhar pedidos', 'description' => 'Aceitar, preparar, mandar para entrega e finalizar.', 'tags' => ['pedido', 'pedidos', 'gestor', 'aceitar', 'status', 'whatsapp'], 'url' => null],
         ['title' => 'Abrir e fechar o caixa', 'description' => 'Troco inicial, sangria, reforço e fechamento.', 'tags' => ['caixa', 'sangria', 'reforço', 'fechamento', 'dinheiro'], 'url' => null],
         ['title' => 'Vender no balcão (PDV) e fiado', 'description' => 'Venda rápida, pagamento dividido e cobrança de fiado.', 'tags' => ['pdv', 'balcão', 'fiado', 'venda', 'pagamento'], 'url' => null],
-        ['title' => 'Cupons e cartão fidelidade', 'description' => 'Crie códigos de desconto e programa de selos.', 'tags' => ['cupom', 'desconto', 'fidelidade', 'selo', 'clientes'], 'url' => null],
+        ['title' => 'Criar um cupom de desconto', 'description' => 'Crie um código, defina o desconto e copie o link para divulgar.', 'tags' => ['cupom', 'desconto', 'código', 'link', 'divulgar', 'instagram'], 'url' => '/videos/ajuda/cupons.mp4'],
+        ['title' => 'Cartão fidelidade', 'description' => 'Configure o programa de selos e entregue o prêmio.', 'tags' => ['fidelidade', 'selo', 'prêmio', 'clientes', 'cartão'], 'url' => null],
         ['title' => 'Motoboys e comanda de impressão', 'description' => 'Link do entregador, acerto e impressão 58/80 mm.', 'tags' => ['motoboy', 'entregador', 'comanda', 'impressora', 'acerto'], 'url' => null],
         ['title' => 'QR Code e divulgação', 'description' => 'Display de mesa e links por canal para medir vendas.', 'tags' => ['qr', 'divulgação', 'instagram', 'campanha', 'origem'], 'url' => null],
     ],

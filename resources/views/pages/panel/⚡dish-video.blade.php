@@ -514,7 +514,11 @@ new #[Layout('layouts::panel')] class extends Component
                 </div>
 
                 @if ($generation->status->slug === 'erro')
-                    <p class="text-[13px] text-ink/60">Não conseguimos gerar o vídeo nesta rodada. Nenhuma geração foi descontada do seu saldo.</p>
+                    <div class="flex flex-col gap-1 text-[13px] text-ink/60" data-generation-error>
+                        <p>{{ $generation->ownerErrorMessage() }}</p>
+                        <p>Nenhuma geração foi descontada do seu saldo.</p>
+                        <p class="text-[12px] text-ink/45">Código do erro: <strong class="font-bold text-ink/70" data-error-code>{{ $generation->errorCode() }}</strong>. Se continuar, <a href="{{ route('panel.support') }}" wire:navigate class="font-bold text-accent hover:underline">fale com o suporte</a> informando esse código.</p>
+                    </div>
                 @elseif (! $generation->isFinished())
                     <x-ui.skeleton rows="1" avatar />
                 @endif
