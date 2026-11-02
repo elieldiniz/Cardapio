@@ -1095,6 +1095,31 @@ button {
     display: none;
 }
 
+/*
+ * The cart bar covers the last ~80px of the screen. While the cart has items, lift what normally lives
+ * there (the dish card with its "Adicionar", the side buttons, the grid's last row) so nothing hides behind it.
+ */
+.dish__info,
+.feed-actions {
+    transition: bottom 200ms ease;
+}
+
+.feed-app[data-cart='on'] .dish__info {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.feed-app[data-cart='on'] .feed-actions {
+    bottom: calc(242px + env(safe-area-inset-bottom));
+}
+
+.feed-app[data-cart='on'] .feed-branding {
+    display: none;
+}
+
+.feed-app[data-cart='on'] .grid-branding {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
 .order-sheet {
     max-height: 90%;
     gap: 12px;
