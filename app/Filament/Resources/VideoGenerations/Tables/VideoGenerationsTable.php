@@ -31,6 +31,20 @@ class VideoGenerationsTable
                         'gerando' => 'warning',
                         default => 'gray',
                     }),
+                TextColumn::make('error_code')
+                    ->label('Código do erro')
+                    ->getStateUsing(fn (VideoGeneration $record) => $record->status?->slug === 'erro' ? $record->errorCode() : null)
+                    ->placeholder('—')
+                    ->copyable()
+                    ->toggleable(),
+                TextColumn::make('failure_reason')
+                    ->label('Motivo do erro')
+                    ->limit(60)
+                    ->tooltip(fn (VideoGeneration $record) => $record->failure_reason)
+                    ->wrap()
+                    ->color('danger')
+                    ->placeholder('—')
+                    ->searchable(),
                 TextColumn::make('variations_requested')->label('Variações')->description(fn (VideoGeneration $record) => $record->videos_count.' vídeos · '.$record->photos_count.' fotos'),
                 TextColumn::make('provider.name')->label('Provedor'),
                 TextColumn::make('preset.name')->label('Preset'),

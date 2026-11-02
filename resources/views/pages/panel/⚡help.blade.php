@@ -58,7 +58,9 @@ new #[Layout('layouts::panel')] #[Title('Ajuda')] class extends Component
                 <h2 class="text-[14.5px] font-bold text-ink">{{ $video['title'] }}</h2>
                 <p class="mt-1 text-[13px] text-ink/60">{{ $video['description'] }}</p>
                 <div class="mt-3">
-                    @if ($video['url'])
+                    @if ($video['url'] && str_ends_with($video['url'], '.mp4'))
+                        <video controls preload="metadata" playsinline class="w-full rounded-lg bg-black" src="{{ $video['url'] }}" data-help-player></video>
+                    @elseif ($video['url'])
                         <x-ui.button size="sm" :href="$video['url']" target="_blank" rel="noopener">▶ Assistir</x-ui.button>
                     @else
                         <span class="text-[12px] font-semibold text-ink/40">Vídeo em breve</span>

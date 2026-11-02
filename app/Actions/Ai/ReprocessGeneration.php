@@ -21,7 +21,7 @@ class ReprocessGeneration
         }
 
         // Async providers start over: the failed operations are not resumed.
-        $generation->update(['status_id' => GenerationStatus::idFor('fila'), 'provider_operations' => null]);
+        $generation->update(['status_id' => GenerationStatus::idFor('fila'), 'provider_operations' => null, 'failure_reason' => null]);
 
         GenerateDishVideo::dispatch($generation->id);
     }

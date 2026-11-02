@@ -11,6 +11,7 @@ use App\Models\VideoGeneration;
 use App\Models\VideoOrigin;
 use App\Models\VideoStatus;
 use App\Services\Ai\VideoGenerationProviderResolver;
+use App\Support\FailureReason;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -154,7 +155,7 @@ class GenerateDishVideo implements ShouldQueue
 
     private function markAsErrored(VideoGeneration $generation, ?Throwable $exception): void
     {
-        $generation->update(['status_id' => GenerationStatus::idFor('erro')]);
+        $generation->update(['status_id' => GenerationStatus::idFor('erro'), 'failure_reason' => FailureReason::from($exception)]);
 
         Log::warning('AI video generation failed', [
             'video_generation_id' => $generation->id,
