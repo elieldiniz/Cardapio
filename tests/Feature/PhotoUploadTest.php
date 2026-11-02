@@ -22,11 +22,11 @@ it('no longer takes photos on the dish form: the photo comes with the video', fu
     Livewire::test('pages::panel.dish-form', ['dish' => $dish])
         ->assertDontSee('Adicionar')
         ->assertDontSeeHtml('type="file"')
-        ->assertSee('Foto e vídeo do prato')
+        ->assertSee('Foto e vídeo do produto')
         ->assertSee('vira a capa dele no cardápio');
 
     // A new dish has nothing to link to yet.
-    Livewire::test('pages::panel.dish-form')->assertDontSee('Foto e vídeo do prato');
+    Livewire::test('pages::panel.dish-form')->assertDontSee('Foto e vídeo do produto');
 });
 
 it('stores each photo right away on the video screen and selects the latest one for the generation', function () {

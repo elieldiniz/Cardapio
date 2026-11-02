@@ -33,7 +33,7 @@ it('lists the active styles and prefills the text with the default one', functio
         ->assertSee('Close nos detalhes')
         ->assertDontSee('Estilo desligado')
         ->assertSeeHtml('data-write-own')
-        ->assertSee('mantenha o prato como ele realmente é')
+        ->assertSee('mantenha o produto como ele realmente é')
         ->assertDontSee('giro completo')
         ->assertSet('presetId', $this->default->id)
         ->assertSet('prompt', 'Slow push-in on the dish with gentle steam.');

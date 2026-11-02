@@ -20,7 +20,7 @@ it('exposes every navigation entry from the mockup and highlights the active one
 
     $response = $this->actingAs($dono)->get(route('panel.home'))->assertOk();
 
-    foreach (['Início', 'Categorias', 'Pratos', 'Aparência', 'QR Code', 'Visualizações', 'Assinatura'] as $label) {
+    foreach (['Início', 'Categorias', 'Produtos', 'Aparência', 'QR Code', 'Visualizações', 'Assinatura'] as $label) {
         $response->assertSee($label);
     }
 
@@ -38,7 +38,7 @@ it('shows the home summary cards with real counts', function () {
 
     $this->actingAs($dono)
         ->get(route('panel.home'))
-        ->assertSeeInOrder(['Pratos ativos', 'Esgotados', 'Categorias', 'Visualizações hoje']);
+        ->assertSeeInOrder(['Produtos ativos', 'Esgotados', 'Categorias', 'Visualizações hoje']);
 });
 
 it('documents every shared component on the dev preview route', function () {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureOwnerEmailIsVerified;
+use App\Http\Middleware\EnsurePlanFeature;
 use App\Http\Middleware\EnsureUserIsOwner;
 use App\Support\HomeRedirect;
 use Illuminate\Foundation\Application;
@@ -18,11 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (Request $request) => HomeRedirect::for($request->user()));
 
         // Webhooks are signature-verified; feed view beacons are anonymous and carry no session state.
-        $middleware->validateCsrfTokens(except: ['webhooks/*', 'stripe/*', 'r/*/visualizacoes']);
+        $middleware->validateCsrfTokens(except: ['webhooks/*', 'stripe/*', 'r/*/visualizacoes', 'r/*/pedidos', 'r/*/cupom', 'r/*/pedidos/*/whatsapp', 'r/*/eventos']);
 
         $middleware->alias([
             'owner' => EnsureUserIsOwner::class,
             'verified.owner' => EnsureOwnerEmailIsVerified::class,
+            'plan.feature' => EnsurePlanFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
