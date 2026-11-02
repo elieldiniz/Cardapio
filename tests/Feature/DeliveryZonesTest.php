@@ -3,6 +3,7 @@
 use App\Actions\Settings\SaveDeliveryZones;
 use App\Models\DeliveryZone;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 
@@ -91,4 +92,41 @@ it('shows the zone error on the settings screen', function () {
         ->set('zones.0.fee', 'abc')
         ->call('saveDelivery')
         ->assertHasErrors('zones.0.fee');
+});
+
+it('adds a neighborhood by CEP through ViaCEP', function () {
+    Http::fake(['viacep.com.br/*' => Http::response([
+        'cep' => '76801-000', 'logradouro' => 'Rua Dom Pedro II', 'bairro' => 'Centro', 'localidade' => 'Porto Velho', 'uf' => 'RO',
+    ])]);
+
+    Livewire::actingAs($this->dono)->test('pages::panel.settings')
+        ->set('delivery_mode', 'bairro')
+        ->set('cep', '76801000')
+        ->call('searchCep')
+        ->assertSet('cepFound.neighborhood', 'Centro')
+        ->call('addCepZone')
+        ->assertSet('zones.0.name', 'Centro')
+        ->assertSet('zones.0.fee', '')
+        ->assertSet('cepFound', null)
+        ->set('cep', '76801-000')
+        ->call('searchCep')
+        ->call('addCepZone')
+        ->assertCount('zones', 1);
+});
+
+it('explains when the CEP is not found, has no neighborhood or the service is down', function () {
+    Http::fake(['viacep.com.br/*' => Http::sequence()
+        ->push(['erro' => true])
+        ->push(['bairro' => '', 'localidade' => 'Cacoal', 'uf' => 'RO'])
+        ->push('x', 500)]);
+
+    $component = Livewire::actingAs($this->dono)->test('pages::panel.settings')->set('delivery_mode', 'bairro');
+
+    $component->set('cep', '00000000')->call('searchCep')->assertSet('cepMessage', 'CEP não encontrado.');
+
+    $component->set('cep', '76960000')->call('searchCep')->assertSet('cepFound', null)->assertSee('CEP único');
+
+    $component->set('cep', '76801000')->call('searchCep')->assertSee('Não consegui consultar');
+
+    $component->set('cep', '123')->call('searchCep')->assertSet('cepMessage', 'Digite o CEP com 8 números.');
 });

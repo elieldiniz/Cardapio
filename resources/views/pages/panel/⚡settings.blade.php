@@ -3,6 +3,8 @@
 use App\Actions\Settings\SaveBusinessHours;
 use App\Actions\Settings\SaveDeliveryZones;
 use App\Actions\Settings\SaveOrderSettings;
+use App\Services\Address\CepLookupFailed;
+use App\Services\Address\ViaCepLookup;
 use App\Support\BusinessHours;
 use App\Support\Money;
 use Illuminate\Validation\ValidationException;
@@ -74,6 +76,14 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
 
     /** @var array<int, array{id: ?int, name: string, fee: string, is_active: bool}> */
     public array $zones = [];
+
+    // Cadastro de bairro pelo CEP (ViaCEP).
+    public string $cep = '';
+
+    /** @var array{cep: string, street: string, neighborhood: string, city: string, state: string}|null */
+    public ?array $cepFound = null;
+
+    public string $cepMessage = '';
 
     /**
      * Turnos de cada dia da semana (0 = domingo … 6 = sábado).
@@ -224,6 +234,56 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
     public function addZone(): void
     {
         $this->zones[] = ['id' => null, 'name' => '', 'fee' => '', 'is_active' => true];
+    }
+
+    public function searchCep(ViaCepLookup $lookup): void
+    {
+        $this->cepFound = null;
+        $this->cepMessage = '';
+
+        if (strlen(preg_replace('/\D/', '', $this->cep) ?? '') !== 8) {
+            $this->cepMessage = 'Digite o CEP com 8 números.';
+
+            return;
+        }
+
+        try {
+            $found = $lookup->find($this->cep);
+        } catch (CepLookupFailed) {
+            $this->cepMessage = 'Não consegui consultar o CEP agora. Tente de novo em instantes ou digite o bairro.';
+
+            return;
+        }
+
+        if ($found === null) {
+            $this->cepMessage = 'CEP não encontrado.';
+        } elseif ($found['neighborhood'] === '') {
+            $this->cepMessage = 'Este CEP não tem bairro cadastrado (CEP único da cidade). Digite o nome do bairro.';
+        } else {
+            $this->cepFound = $found;
+        }
+    }
+
+    public function addCepZone(): void
+    {
+        if ($this->cepFound === null) {
+            return;
+        }
+
+        $name = $this->cepFound['neighborhood'];
+        $exists = collect($this->zones)->contains(fn ($zone) => mb_strtolower(trim($zone['name'])) === mb_strtolower($name));
+
+        if ($exists) {
+            $this->cepMessage = "{$name} já está na lista.";
+        } elseif (count($this->zones) >= SaveDeliveryZones::MAX_ZONES) {
+            $this->cepMessage = 'Limite de bairros atingido.';
+        } else {
+            $this->zones[] = ['id' => null, 'name' => $name, 'fee' => '', 'is_active' => true];
+            $this->cepMessage = "{$name} adicionado. Informe a taxa e clique em salvar.";
+        }
+
+        $this->cepFound = null;
+        $this->cep = '';
     }
 
     public function removeZone(int $index): void
@@ -409,6 +469,23 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
                             <x-ui.button size="sm" variant="danger" type="button" wire:click="removeZone({{ $index }})" class="mt-1">Remover</x-ui.button>
                         </div>
                     @endforeach
+
+                    <div class="flex flex-col gap-2 rounded-xl border border-dashed p-3" data-cep-search>
+                        <span class="text-[13px] font-bold text-ink">Adicionar pelo CEP</span>
+                        <div class="flex flex-wrap items-start gap-2">
+                            <x-ui.input wire:model="cep" wire:keydown.enter.prevent="searchCep" placeholder="00000-000" inputmode="numeric" maxlength="9" class="w-36" aria-label="CEP de um endereço do bairro" />
+                            <x-ui.button size="sm" variant="secondary" type="button" wire:click="searchCep" wire:loading.attr="disabled" wire:target="searchCep">Buscar</x-ui.button>
+                        </div>
+                        @if ($cepFound)
+                            <div class="flex flex-wrap items-center gap-2 text-[13px]" data-cep-result>
+                                <span><b>{{ $cepFound['neighborhood'] }}</b> <span class="text-ink/55">— {{ $cepFound['street'] ? $cepFound['street'].', ' : '' }}{{ $cepFound['city'] }}/{{ $cepFound['state'] }}</span></span>
+                                <x-ui.button size="sm" type="button" wire:click="addCepZone">Adicionar</x-ui.button>
+                            </div>
+                        @endif
+                        @if ($cepMessage)
+                            <p class="text-[12.5px] text-ink/65" role="status">{{ $cepMessage }}</p>
+                        @endif
+                    </div>
 
                     <div><x-ui.button size="sm" variant="secondary" type="button" wire:click="addZone">Adicionar bairro</x-ui.button></div>
 

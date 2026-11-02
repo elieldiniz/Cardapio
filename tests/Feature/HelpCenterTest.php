@@ -46,5 +46,17 @@ it('plays a recorded video inside the card when the video is an mp4 of the app',
 });
 
 it('shows "Vídeo em breve" for a topic that has no video yet', function () {
-    Livewire::actingAs($this->dono)->test('pages::panel.help')->set('search', 'fidelidade')->assertSee('Vídeo em breve');
+    config()->set('help_videos.videos', [['title' => 'Tema novo', 'description' => 'Ainda sem vídeo.', 'tags' => ['novo'], 'url' => null]]);
+
+    Livewire::actingAs($this->dono)->test('pages::panel.help')->assertSee('Tema novo')->assertSee('Vídeo em breve')->assertDontSeeHtml('data-help-player');
+});
+
+it('has a recorded video file for every topic of the help center', function () {
+    $videos = config('help_videos.videos');
+
+    expect($videos)->toHaveCount(11);
+
+    foreach ($videos as $video) {
+        expect($video['url'])->toStartWith('/videos/ajuda/')->and(file_exists(public_path(ltrim($video['url'], '/'))))->toBeTrue("Falta o arquivo de {$video['title']}");
+    }
 });
