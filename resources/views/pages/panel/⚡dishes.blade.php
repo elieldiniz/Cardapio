@@ -358,7 +358,7 @@ new #[Layout('layouts::panel')] #[Title('Produtos')] class extends Component
 
                         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
                             <span class="truncate text-[14px] font-semibold text-ink">{{ $dish->name }}</span>
-                            <span class="text-[12px] text-ink/50">{{ $dish->category->name }}{{ $dish->active_video_id ? '' : ' · sem vídeo aprovado' }}</span>
+                            <span class="text-[12px] text-ink/50">{{ $dish->category->name }}{{ $dish->active_video_id ? '' : ($dish->photos->isNotEmpty() ? ' · cardápio mostra a foto' : ' · sem vídeo nem foto') }}</span>
                         </div>
 
                         <div class="flex w-full flex-wrap items-center gap-2.5 sm:w-auto sm:flex-nowrap">

@@ -13,8 +13,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Builds the public feed's data (US-1.1–US-1.4). Only dishes with an approved
- * active video, not hidden, in a visible category are feed-eligible.
+ * Builds the public feed's data (US-1.1–US-1.4). Dishes that are not hidden and sit in a
+ * visible category are feed-eligible when they have an approved active video or, failing
+ * that, at least one photo — the photo then takes the video's place on the screen.
  */
 class FeedBuilder
 {
@@ -27,8 +28,11 @@ class FeedBuilder
             ->visible()
             ->where('dishes.restaurant_id', $restaurant->id)
             ->whereIn('dishes.category_id', $this->shownCategoryIds($restaurant))
-            ->whereNotNull('dishes.active_video_id')
-            ->whereHas('activeVideo.status', fn (Builder $status) => $status->where('slug', 'aprovado'))
+            ->where(fn (Builder $media) => $media
+                ->where(fn (Builder $video) => $video
+                    ->whereNotNull('dishes.active_video_id')
+                    ->whereHas('activeVideo.status', fn (Builder $status) => $status->where('slug', 'aprovado')))
+                ->orWhereHas('photos'))
             ->join('categories', 'categories.id', '=', 'dishes.category_id')
             ->orderBy('categories.display_order')
             ->orderBy('categories.id')
@@ -335,8 +339,12 @@ class FeedBuilder
         $video = $dish->activeVideo;
         $playbackId = $video?->mux_playback_id;
 
-        $cover = $video?->coverUrl() ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : null);
         $photo = $dish->photos->first();
+        $photoUrl = $photo ? Storage::disk('public')->url($photo->file_path) : null;
+
+        // With a video the cover is its poster; without one the dish's photo takes the whole screen
+        // (a <video> with no source shows its poster).
+        $cover = $video?->coverUrl() ?: ($playbackId ? MuxUrls::thumbnail($playbackId) : $photoUrl);
 
         return [
             'id' => $dish->id,
@@ -359,7 +367,8 @@ class FeedBuilder
             // The grid shows the cover the dono chose for the video; older dishes fall back to their own photo, then to a frame of the video.
             'thumb_url' => $video?->cover_photo_path
                 ? Storage::disk('public')->url($video->cover_photo_path)
-                : ($photo ? Storage::disk('public')->url($photo->file_path) : $cover),
+                : ($photoUrl ?? $cover),
+            'media' => $playbackId ? 'video' : 'photo',
             'video_url' => $playbackId ? MuxUrls::mp4($playbackId, '480p') : null,
             'video_url_hd' => $playbackId ? MuxUrls::mp4($playbackId, '720p') : null,
         ];

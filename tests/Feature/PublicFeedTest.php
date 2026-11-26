@@ -6,6 +6,7 @@ use App\Models\DishStatus;
 use App\Models\Restaurant;
 use App\Models\Video;
 use App\Support\MuxUrls;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     seedReferenceData();
@@ -102,4 +103,39 @@ it('reflects a price change on the next request without caching', function () {
     $dish->update(['price' => '35.00']);
 
     $this->get(route('feed.show', $this->restaurant))->assertSee('R$ 35,00');
+});
+
+test('a dish with only a photo shows the photo where the video would be', function () {
+    $category = Category::factory()->create(['restaurant_id' => $this->restaurant->id]);
+    $dish = Dish::factory()->create(['restaurant_id' => $this->restaurant->id, 'category_id' => $category->id, 'name' => 'Só a foto']);
+    $dish->photos()->create(['file_path' => 'dishes/so-a-foto.jpg', 'display_order' => 0]);
+
+    $html = $this->get(route('feed.show', $this->restaurant))->assertOk()->assertSee('Só a foto')->getContent();
+
+    expect($html)
+        ->toContain('poster="'.Storage::disk('public')->url('dishes/so-a-foto.jpg').'"')
+        ->toContain('data-video-src=""');
+});
+
+test('the approved video wins over the photo when the dish has both', function () {
+    $dish = feedDish($this->restaurant, ['name' => 'Com os dois']);
+    $dish->photos()->create(['file_path' => 'dishes/foto.jpg', 'display_order' => 0]);
+
+    $html = $this->get(route('feed.show', $this->restaurant))->getContent();
+
+    expect($html)
+        ->toContain('data-video-src="'.MuxUrls::mp4($dish->activeVideo->mux_playback_id).'"')
+        ->toContain('poster="'.$dish->activeVideo->cover_path.'"');
+});
+
+test('a dish with a pending video and a photo shows the photo, not the video', function () {
+    $category = Category::factory()->create(['restaurant_id' => $this->restaurant->id]);
+    $dish = Dish::factory()->create(['restaurant_id' => $this->restaurant->id, 'category_id' => $category->id, 'name' => 'Pendente com foto']);
+    $dish->photos()->create(['file_path' => 'dishes/p.jpg', 'display_order' => 0]);
+    $video = Video::factory()->awaitingApproval()->create(['dish_id' => $dish->id]);
+    $dish->update(['active_video_id' => $video->id]);
+
+    $this->get(route('feed.show', $this->restaurant))
+        ->assertSee('Pendente com foto')
+        ->assertSee('data-video-src=""', false);
 });
