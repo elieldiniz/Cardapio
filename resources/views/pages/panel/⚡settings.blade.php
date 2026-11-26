@@ -3,10 +3,15 @@
 use App\Actions\Settings\SaveBusinessHours;
 use App\Actions\Settings\SaveDeliveryZones;
 use App\Actions\Settings\SaveOrderSettings;
+use App\Jobs\FetchCityNeighborhoods;
+use App\Models\City;
 use App\Services\Address\CepLookupFailed;
+use App\Services\Address\CityNeighborhoods;
+use App\Services\Address\GeoDataImporter;
 use App\Services\Address\ViaCepLookup;
 use App\Support\BusinessHours;
 use App\Support\Money;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -85,6 +90,30 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
 
     public string $cepMessage = '';
 
+    // Cadastro de bairros pela cidade: escolhe a cidade, marca os bairros e aplica uma taxa padrão.
+    public string $geoState = '';
+
+    public string $cityQuery = '';
+
+    public ?int $cityId = null;
+
+    public string $cityName = '';
+
+    /** @var array<int, string> */
+    public array $cityBairros = [];
+
+    public string $bairroFilter = '';
+
+    /** @var array<int, string> */
+    public array $picked = [];
+
+    public string $defaultFee = '';
+
+    public string $cityMessage = '';
+
+    /** True while the neighborhoods of a city IBGE does not cover are being looked up in the background. */
+    public bool $cityLoading = false;
+
     /**
      * Turnos de cada dia da semana (0 = domingo … 6 = sábado).
      *
@@ -124,6 +153,8 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
             'fee' => Money::input($zone->fee),
             'is_active' => $zone->is_active,
         ])->all();
+
+        $this->guessCity((string) $settings->pix_city);
 
         $this->hours = array_fill(0, 7, []);
 
@@ -231,6 +262,202 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
         $this->tiers = array_values($this->tiers);
     }
 
+    public const STATES = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
+
+    /** Cities matching what the owner typed (accent-insensitive), within the chosen state when there is one. */
+    #[Computed]
+    public function cityMatches()
+    {
+        $term = GeoDataImporter::normalize($this->cityQuery);
+
+        if ($this->cityId !== null || mb_strlen($term) < 2) {
+            return collect();
+        }
+
+        return City::query()
+            ->when($this->geoState !== '', fn ($query) => $query->where('state', $this->geoState))
+            ->where('search_name', 'like', str_replace(['%', '_'], ['\\%', '\\_'], $term).'%')
+            ->orderBy('name')
+            ->limit(8)
+            ->get();
+    }
+
+    /** @return array<int, string> the neighborhoods of the chosen city that match the filter */
+    #[Computed]
+    public function visibleBairros(): array
+    {
+        $term = GeoDataImporter::normalize($this->bairroFilter);
+
+        return array_values(array_filter(
+            $this->cityBairros,
+            fn (string $name) => $term === '' || str_contains(GeoDataImporter::normalize($name), $term),
+        ));
+    }
+
+    /** @return array<int, string> lowercase names already in the delivery list */
+    #[Computed]
+    public function addedNames(): array
+    {
+        return collect($this->zones)->map(fn ($zone) => mb_strtolower(trim($zone['name'])))->all();
+    }
+
+    /** Opens with the store's city when the Pix city matches exactly one municipality. */
+    private function guessCity(string $pixCity): void
+    {
+        $term = GeoDataImporter::normalize($pixCity);
+
+        if ($term === '') {
+            return;
+        }
+
+        $matches = City::query()->where('search_name', $term)->limit(2)->get();
+
+        if ($matches->count() === 1) {
+            $this->geoState = $matches->first()->state;
+            $this->cityQuery = $matches->first()->name;
+        }
+    }
+
+    public function selectCity(int $id, CityNeighborhoods $neighborhoods): void
+    {
+        $city = City::query()->find($id);
+
+        if ($city === null) {
+            return;
+        }
+
+        $this->cityId = $city->id;
+        $this->cityName = $city->label();
+        $this->geoState = $city->state;
+        $this->cityQuery = $city->name;
+        $this->bairroFilter = '';
+        $this->picked = [];
+        $this->cityBairros = $neighborhoods->for($city)->all();
+        $this->cityLoading = false;
+        $this->cityMessage = '';
+
+        if ($this->cityBairros === [] && $neighborhoods->needsLookup($city)) {
+            $this->startLookup($city->id);
+        } elseif ($this->cityBairros === []) {
+            $this->cityMessage = $this->noListMessage();
+        }
+
+        unset($this->cityMatches, $this->visibleBairros);
+    }
+
+    private function startLookup(int $cityId): void
+    {
+        Cache::forget(FetchCityNeighborhoods::failedKey($cityId));
+        FetchCityNeighborhoods::dispatch($cityId);
+        $this->cityLoading = true;
+        $this->cityMessage = "Buscando os bairros de {$this->cityName}. Isso pode levar até 1 minuto, a lista aparece aqui sozinha.";
+    }
+
+    private function noListMessage(): string
+    {
+        return "Não encontramos a lista de bairros de {$this->cityName}. Use a busca por CEP abaixo ou adicione o bairro à mão.";
+    }
+
+    /** Polled while the background lookup runs. */
+    public function checkCityBairros(CityNeighborhoods $neighborhoods): void
+    {
+        $city = $this->cityId ? City::query()->find($this->cityId) : null;
+
+        if ($city === null) {
+            $this->cityLoading = false;
+
+            return;
+        }
+
+        $this->cityBairros = $neighborhoods->for($city)->all();
+
+        if ($this->cityBairros !== []) {
+            $this->cityLoading = false;
+            $this->cityMessage = '';
+        } elseif (! $neighborhoods->needsLookup($city)) {
+            $this->cityLoading = false;
+            $this->cityMessage = $this->noListMessage();
+        } elseif (Cache::has(FetchCityNeighborhoods::failedKey($city->id))) {
+            $this->cityLoading = false;
+            $this->cityMessage = 'Não consegui buscar os bairros agora (o serviço de mapas está instável). Tente de novo em instantes ou use a busca por CEP.';
+        }
+
+        unset($this->visibleBairros);
+    }
+
+    public function retryLookup(): void
+    {
+        if ($this->cityId !== null && ! $this->cityLoading) {
+            $this->startLookup($this->cityId);
+        }
+    }
+
+    public function changeCity(): void
+    {
+        $this->cityId = null;
+        $this->cityName = '';
+        $this->cityBairros = [];
+        $this->picked = [];
+        $this->cityMessage = '';
+        $this->cityLoading = false;
+        unset($this->cityMatches, $this->visibleBairros);
+    }
+
+    public function pickAllVisible(): void
+    {
+        $this->picked = array_values(array_unique([...$this->picked, ...array_filter(
+            $this->visibleBairros,
+            fn (string $name) => ! in_array(mb_strtolower($name), $this->addedNames, true),
+        )]));
+    }
+
+    public function clearPicked(): void
+    {
+        $this->picked = [];
+    }
+
+    public function addPicked(): void
+    {
+        $this->resetErrorBag('defaultFee');
+        $fee = '';
+
+        if (filled($this->defaultFee)) {
+            $parsed = Money::parse($this->defaultFee);
+
+            if ($parsed === null) {
+                $this->addError('defaultFee', 'Taxa inválida. Use o formato 5,00.');
+
+                return;
+            }
+
+            $fee = Money::input($parsed);
+        }
+
+        $added = 0;
+
+        foreach ($this->picked as $name) {
+            if (count($this->zones) >= SaveDeliveryZones::MAX_ZONES) {
+                $this->cityMessage = 'Limite de '.SaveDeliveryZones::MAX_ZONES.' bairros atingido.';
+                break;
+            }
+
+            if (in_array(mb_strtolower($name), $this->addedNames, true) || ! in_array($name, $this->cityBairros, true)) {
+                continue;
+            }
+
+            $this->zones[] = ['id' => null, 'name' => $name, 'fee' => $fee, 'is_active' => true];
+            unset($this->addedNames);
+            $added++;
+        }
+
+        $this->picked = [];
+
+        if ($added > 0) {
+            $this->cityMessage = $added === 1 ? '1 bairro adicionado' : "{$added} bairros adicionados";
+            $this->cityMessage .= $fee === '' ? ' sem taxa. Informe a taxa de cada um e clique em salvar.' : ' com a taxa padrão. Ajuste o que precisar e clique em salvar.';
+        }
+    }
+
     public function addZone(): void
     {
         $this->zones[] = ['id' => null, 'name' => '', 'fee' => '', 'is_active' => true];
@@ -261,6 +488,12 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
             $this->cepMessage = 'Este CEP não tem bairro cadastrado (CEP único da cidade). Digite o nome do bairro.';
         } else {
             $this->cepFound = $found;
+        }
+
+        if ($found !== null && ($city = City::query()->where('state', $found['state'])->where('search_name', GeoDataImporter::normalize($found['city']))->first())) {
+            if ($this->cityId !== $city->id) {
+                $this->selectCity($city->id, app(CityNeighborhoods::class));
+            }
         }
     }
 
@@ -470,8 +703,86 @@ new #[Layout('layouts::panel')] #[Title('Configurações')] class extends Compon
                         </div>
                     @endforeach
 
+                    <div class="flex flex-col gap-3 rounded-xl border p-3" data-city-picker>
+                        <div>
+                            <span class="text-[13px] font-bold text-ink">Adicionar bairros pela cidade</span>
+                            <p class="text-[12px] text-ink/55">Escolha a cidade, marque os bairros que você atende e aplique uma taxa de uma vez.</p>
+                        </div>
+
+                        @if ($cityId === null)
+                            <div class="flex flex-wrap items-start gap-2">
+                                <div class="w-24">
+                                    <x-ui.select wire:model.live="geoState" aria-label="Estado">
+                                        <option value="">UF</option>
+                                        @foreach (self::STATES as $uf)
+                                            <option value="{{ $uf }}">{{ $uf }}</option>
+                                        @endforeach
+                                    </x-ui.select>
+                                </div>
+                                <x-ui.input wire:model.live.debounce.250ms="cityQuery" placeholder="Digite o nome da cidade" class="min-w-[200px] flex-1" aria-label="Cidade" autocomplete="off" />
+                            </div>
+                            @if ($this->cityMatches->isNotEmpty())
+                                <ul class="flex flex-col overflow-hidden rounded-lg border" data-city-results>
+                                    @foreach ($this->cityMatches as $match)
+                                        <li wire:key="city-{{ $match->id }}">
+                                            <button type="button" wire:click="selectCity({{ $match->id }})" class="w-full px-3 py-2 text-left text-[13.5px] hover:bg-ink/5">{{ $match->name }} <span class="text-ink/50">— {{ $match->state }}</span></button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @elseif (mb_strlen(trim($cityQuery)) >= 2)
+                                <p class="text-[12.5px] text-ink/55">Nenhuma cidade encontrada{{ $geoState !== '' ? " em {$geoState}" : '' }}.</p>
+                            @endif
+                        @else
+                            <div class="flex flex-wrap items-center gap-2 text-[13.5px]">
+                                <span><b>{{ $cityName }}</b> <span class="text-ink/55">· {{ count($cityBairros) }} {{ count($cityBairros) === 1 ? 'bairro' : 'bairros' }}</span></span>
+                                <x-ui.button size="sm" variant="secondary" type="button" wire:click="changeCity">Trocar cidade</x-ui.button>
+                            </div>
+
+                            @if ($cityBairros !== [])
+                                <div class="flex flex-wrap items-start gap-2">
+                                    <x-ui.field error="defaultFee" class="w-40">
+                                        <x-ui.input wire:model="defaultFee" placeholder="Taxa padrão R$ 0,00" inputmode="decimal" aria-label="Taxa padrão para os bairros marcados" />
+                                    </x-ui.field>
+                                    <x-ui.input wire:model.live.debounce.200ms="bairroFilter" placeholder="Filtrar bairro" class="min-w-[160px] flex-1" aria-label="Filtrar bairros" autocomplete="off" />
+                                </div>
+
+                                <div class="flex flex-wrap gap-2">
+                                    <x-ui.button size="sm" variant="secondary" type="button" wire:click="pickAllVisible">Marcar todos{{ trim($bairroFilter) !== '' ? ' do filtro' : '' }}</x-ui.button>
+                                    <x-ui.button size="sm" variant="secondary" type="button" wire:click="clearPicked">Limpar marcação</x-ui.button>
+                                </div>
+
+                                <div class="max-h-64 overflow-y-auto rounded-lg border p-1" data-bairro-list>
+                                    @foreach ($this->visibleBairros as $bairro)
+                                        @php($already = in_array(mb_strtolower($bairro), $this->addedNames, true))
+                                        <label wire:key="bairro-{{ md5($bairro) }}" class="flex items-center gap-2 rounded px-2 py-1.5 text-[13.5px] {{ $already ? 'text-ink/40' : 'cursor-pointer hover:bg-ink/5' }}">
+                                            <input type="checkbox" value="{{ $bairro }}" wire:model="picked" @disabled($already) class="size-4 accent-[var(--accent)]">
+                                            <span>{{ $bairro }}</span>
+                                            @if ($already)<span class="text-[11.5px]">já na lista</span>@endif
+                                        </label>
+                                    @endforeach
+                                    @if ($this->visibleBairros === [])
+                                        <p class="px-2 py-3 text-[12.5px] text-ink/55">Nenhum bairro com esse nome.</p>
+                                    @endif
+                                </div>
+
+                                <div>
+                                    <x-ui.button size="sm" type="button" wire:click="addPicked" wire:loading.attr="disabled" wire:target="addPicked">
+                                        Adicionar {{ count($picked) > 0 ? count($picked) : '' }} {{ count($picked) === 1 ? 'selecionado' : 'selecionados' }}
+                                    </x-ui.button>
+                                </div>
+                            @endif
+                        @endif
+
+                        @if ($cityMessage)
+                            <p class="text-[12.5px] text-ink/65" role="status" data-city-message @if ($cityLoading) wire:poll.3s="checkCityBairros" @endif>{{ $cityMessage }}</p>
+                        @endif
+                        @if ($cityId !== null && ! $cityLoading && $cityBairros === [])
+                            <div><x-ui.button size="sm" variant="secondary" type="button" wire:click="retryLookup">Buscar de novo</x-ui.button></div>
+                        @endif
+                    </div>
+
                     <div class="flex flex-col gap-2 rounded-xl border border-dashed p-3" data-cep-search>
-                        <span class="text-[13px] font-bold text-ink">Adicionar pelo CEP</span>
+                        <span class="text-[13px] font-bold text-ink">Ou procure pelo CEP</span>
                         <div class="flex flex-wrap items-start gap-2">
                             <x-ui.input wire:model="cep" wire:keydown.enter.prevent="searchCep" placeholder="00000-000" inputmode="numeric" maxlength="9" class="w-36" aria-label="CEP de um endereço do bairro" />
                             <x-ui.button size="sm" variant="secondary" type="button" wire:click="searchCep" wire:loading.attr="disabled" wire:target="searchCep">Buscar</x-ui.button>
